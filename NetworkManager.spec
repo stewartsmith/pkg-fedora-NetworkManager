@@ -1,11 +1,22 @@
 ExcludeArch: s390 s390x
 
-%define dbus_version	0.23
 %define hal_version		0.4
 
 %define build_fc3			0
 %define build_rhel4			0
 %define build_fc4			1
+
+%if %{build_rhel4}
+%define dbus_version	0.22
+%endif
+
+%if %{build_fc3}
+%define dbus_version	0.22
+%endif
+
+%if %{build_fc4}
+%define dbus_version	0.23
+%endif
 
 %if %{build_fc3}
 %define release_extension 1.0.fc3
@@ -16,14 +27,14 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.1
+%define release_extension 3.0
 %endif
 
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.3.3
-Release: 1.cvs20050125.%{release_extension}
+Release: 1.cvs20050202.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -35,7 +46,11 @@ Requires: wireless-tools >= 27
 Requires: dbus = %{dbus_version}
 Requires: dbus-glib = %{dbus_version}
 Requires: hal >= %{hal_version}
-Requires: iproute openssl bind caching-nameserver
+Requires: iproute openssl
+
+%if %{build_fc4}
+Requires: bind caching-nameserver
+%endif
 
 BuildRequires: dbus-devel = %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
@@ -169,6 +184,20 @@ fi
 
 
 %changelog
+* Wed Feb  2 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050202
+- Display wireless network name in applet tooltip
+- Hopefully fix double-default-route problem
+- Write out valid resolv.conf when we exit
+- Make multi-domain search options work
+- Rework signal strength code to be WEXT conformant, if strength is
+	still wierd then its 95% surely a driver problem
+- Fix annoying instances of suddenly dropping and reactivating a
+	wireless device (Cisco cards were worst offenders here)
+- Fix some instances of NetworkManager not remembering your WEP key
+- Fix some races between NetworkManager and NetworkManagerInfo where
+	NetworkManager wouldn't recognize changes in the allowed list
+- Don't shove Ad-Hoc Access Point MAC addresses into GConf
+
 * Tue Jan 25 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050125
 - Play nice with dbus 0.23
 - Update our list of Allowed Wireless Networks more quickly
