@@ -27,14 +27,14 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.1
+%define release_extension 3.0
 %endif
 
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.3.3
-Release: 1.cvs20050202.%{release_extension}
+Release: 2.cvs20050214.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -191,6 +191,17 @@ fi
 
 
 %changelog
+* Mon Feb 14 2005 Dan Williams <dcbw@redhat.com> 0.3.3-2.cvs20050214
+- Never automatically choose a device that doesn't support carrier detection
+- Add right-click menu to applet, can now "Pause/Resume" scanning through it
+- Fix DHCP Renew/Rebind timeouts
+- Fix frequency cycling problem on some cards, even when scanning was off
+- Play better with IPv6
+- Don't send kernel version in DHCP packets, and ensure DHCP packets are at
+	least 300 bytes in length to work around broken router
+- New DHCP options D-BUS API by Dan Reed
+- Handle multiple domain search options in DHCP responses
+
 * Wed Feb  2 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050202
 - Display wireless network name in applet tooltip
 - Hopefully fix double-default-route problem
