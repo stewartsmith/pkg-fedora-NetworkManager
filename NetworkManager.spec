@@ -3,10 +3,27 @@ ExcludeArch: s390 s390x
 %define dbus_version	0.22
 %define hal_version		0.4
 
+%define build_fc3			0
+%define build_rhel4			0
+%define build_fc4			1
+
+%if %{build_fc3}
+%define release_extension 1.fc3
+%endif
+
+%if %{build_rhel4}
+%define release_extension 2.EL4
+%endif
+
+%if %{build_fc4}
+%define release_extension 3
+%endif
+
+
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.3.3
-Release: 1.cvs20050112
+Release: 1.cvs20050112.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
