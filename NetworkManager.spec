@@ -191,7 +191,7 @@ fi
 
 
 %changelog
-* Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-1.1.cvs20050315
+* Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-1.cvs20050315.1
 - Upload new source tarball (woops)
 
 * Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-1.cvs20050315
