@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.2
-Release:		2
+Release:		3
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -135,6 +135,8 @@ fi
 %dir %{_sysconfdir}/dbus-1/system.d
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
+%{_libdir}/pkgconfig/*
+%{_datadir}/locale/*/*/*.mo
 
 %files gnome
 %defattr(-,root,root)
@@ -151,6 +153,9 @@ fi
 # Changelog
 ##################################
 %changelog
+* Mon Sep 13 2004 Dan Williams <dcbw@redhat.com> 0.2-3
+- Update from CVS
+
 * Sat Sep 11 2004 Dan Williams <dcbw@redhat.com> 0.2-2
 - Require gnome-panel, not gnome-panel-devel
 - Turn off by default
