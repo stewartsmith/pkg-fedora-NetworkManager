@@ -19,22 +19,22 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc3}
-%define release_extension 1.1.fc3
+%define release_extension 1.0.fc3
 %endif
 
 %if %{build_rhel4}
-%define release_extension 2.1.EL4
+%define release_extension 2.0.EL4
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.1
+%define release_extension 3.0
 %endif
 
 
 Name: NetworkManager
 Summary: Network link manager and user applications
-Version: 0.3.3
-Release: 2.cvs20050214.%{release_extension}
+Version: 0.4.0
+Release: 1.cvs20050304.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -191,6 +191,13 @@ fi
 
 
 %changelog
+* Fri Mar  4 2005 Dan Williams <dcbw@redhat.com> 0.3.4-1.cvs20050304
+- Pull from latest CVS HEAD
+- Rebuild for gcc 4.0
+
+* Tue Feb 22 2005 Dan Williams <dcbw@redhat.com> 0.3.3-2.cvs20050222
+- Update from CVS
+
 * Mon Feb 14 2005 Dan Williams <dcbw@redhat.com> 0.3.3-2.cvs20050214.x.1
 - Fix free of invalid pointer for multiple search domains
 
