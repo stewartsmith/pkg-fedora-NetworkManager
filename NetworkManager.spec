@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.3.2
-Release:		2.cvs20041115
+Release:		3.cvs20041117
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -155,7 +155,13 @@ fi
 # Changelog
 ##################################
 %changelog
-* Mon Nov 11 2004 <dcbw@redhat.com> - 0.3.2-4.cvs20041115
+* Wed Nov 17 2004 <dcbw@redhat.com> - 0.3.2-3.cvs20041117
+- Update to CVS
+- Fixes to link detection
+- Better detection of non-ESSID-broadcasting access points
+- Don't dialog-spam the user if a connection fails
+
+* Mon Nov 11 2004 <dcbw@redhat.com> - 0.3.2-2.cvs20041115
 - Update to CVS
 - Much better link detection, works with Open System authentication
 - Blacklist wireless cards rather than whitelisting them
