@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.2
-Release:		1
+Release:		2
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -18,8 +18,8 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 ########################
 PreReq:	chkconfig
-Requires:	wireless-tools >= 27
-Requires:	dbus >= 0.22
+Requires: wireless-tools >= 27
+Requires: dbus >= 0.22
 Requires: dbus-glib >= 0.22
 Requires: hal >= 0.2.95
 Requires: dhclient iproute openssl glib2
@@ -51,8 +51,8 @@ Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
 Requires: NetworkManager
 Requires: GConf2
-Requires: gnome-panel-devel
-Requires:	dbus >= 0.22
+Requires: gnome-panel
+Requires: dbus >= 0.22
 Requires: dbus-glib >= 0.22
 Requires: glib2
 Requires: libglade2
@@ -100,6 +100,7 @@ rm -rf $RPM_BUILD_ROOT
 ##################################
 %post
 /sbin/chkconfig --add NetworkManager
+/sbin/chkconfig --level 123456 NetworkManager off
 
 
 ##################################
@@ -150,6 +151,10 @@ fi
 # Changelog
 ##################################
 %changelog
+* Sat Sep 11 2004 Dan Williams <dcbw@redhat.com> 0.2-2
+- Require gnome-panel, not gnome-panel-devel
+- Turn off by default
+
 * Thu Aug 26 2004 Dan Williams <dcbw@redhat.com> 0.2-1
 - Update to 0.2
 
