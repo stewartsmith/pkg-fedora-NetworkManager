@@ -9,11 +9,11 @@ ExcludeArch: s390 s390x
 ##################################
 Name:		NetworkManager
 Summary:		A network link manager and user applications
-Version:		0.1
-Release:		4
+Version:		0.2
+Release:		1
 Group:		System Environment/Base
 License:		GPL
-Source:		%{name}.tar.bz2
+Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 ########################
@@ -67,7 +67,7 @@ networks.
 # Prep/Setup
 ##################################
 %prep
-%setup -q -n %{name}
+%setup -q
 
 
 ##################################
@@ -129,6 +129,7 @@ fi
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %{_bindir}/%{name}
 %{_bindir}/NMLoadModules
+%{_bindir}/NMLaunchHelper
 %{_bindir}/NetworkManagerDispatcher
 %dir %{_sysconfdir}/dbus-1/system.d
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
@@ -143,12 +144,15 @@ fi
 %{_datadir}/pixmaps/NMWirelessApplet/*
 %{_datadir}/gnome-2.0/ui/*
 %{_datadir}/NetworkManagerInfo
-
+%{_datadir}/NMWirelessApplet/wireless-applet.glade
 
 ##################################
 # Changelog
 ##################################
 %changelog
+* Thu Aug 26 2004 Dan Williams <dcbw@redhat.com> 0.2-1
+- Update to 0.2
+
 * Thu Aug 26 2004 Florian La Roche <Florian.LaRoche@redhat.de>
 - spec-changes to req glib2 instead of glib
 
