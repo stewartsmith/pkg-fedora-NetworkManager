@@ -8,22 +8,22 @@ ExcludeArch: s390 s390x
 %define build_fc4			1
 
 %if %{build_fc3}
-%define release_extension 1.fc3
+%define release_extension 1.0.fc3
 %endif
 
 %if %{build_rhel4}
-%define release_extension 2.EL4
+%define release_extension 2.0.EL4
 %endif
 
 %if %{build_fc4}
-%define release_extension 4
+%define release_extension 3.0
 %endif
 
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.3.3
-Release: 1.cvs20050112.%{release_extension}
+Release: 1.cvs20050124.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -89,7 +89,7 @@ accessing some NetworkManager functionality from applications.
 
 
 %build
-%configure
+%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
 make
 
 
@@ -151,6 +151,12 @@ fi
 %{_libdir}/pkgconfig/libnm_glib.pc
 
 %changelog
+* Mon Jan 24 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050124
+- Update to latest CVS
+- Make sure we start as late as possible so that we ensure dbus & HAL
+	are already around
+- Fix race in initial device activation
+
 * Mon Jan 24 2005 Than Ngo <than@redhat.com> 0.3.3-1.cvs20050112.4
 - rebuilt against new wireless tool
 
