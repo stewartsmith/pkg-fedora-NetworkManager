@@ -16,7 +16,7 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.0
+%define release_extension 3.1
 %endif
 
 
@@ -62,7 +62,7 @@ from a DHCP server, and change nameservers whenever it sees fit.
 %package gnome
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
-Requires: %{name} = %{release}
+Requires: %{name} = %{version}-%{release}
 Requires: gnome-panel
 Requires: dbus = %{dbus_version}
 Requires: dbus-glib = %{dbus_version}
@@ -76,7 +76,7 @@ NetworkManager, including a panel applet for wireless networks.
 %package devel
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
-Requires: %{name} = %{release}
+Requires: %{name} = %{version}-%{release}
 Requires: dbus = %{dbus_version}
 Requires: dbus-glib = %{dbus_version}
 
@@ -88,7 +88,7 @@ from applications.
 %package glib
 Summary: Libraries and headers for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
-Requires: %{name} = %{release}
+Requires: %{name} = %{version}-%{release}
 Requires: dbus = %{dbus_version}
 Requires: dbus-glib = %{dbus_version}
 
