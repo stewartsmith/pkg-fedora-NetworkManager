@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.2
-Release:		3
+Release:		4
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -99,8 +99,10 @@ rm -rf $RPM_BUILD_ROOT
 # Post-install
 ##################################
 %post
-/sbin/chkconfig --add NetworkManager
-/sbin/chkconfig --level 123456 NetworkManager off
+if ! chkconfig --list | grep NetworkManager | grep on; then
+	/sbin/chkconfig --add NetworkManager
+	/sbin/chkconfig --level 123456 NetworkManager off
+fi
 
 
 ##################################
@@ -141,18 +143,25 @@ fi
 %files gnome
 %defattr(-,root,root)
 %{_bindir}/NetworkManagerInfo
-%{_libexecdir}/NMWirelessApplet
-%{_libdir}/bonobo/servers/NMWirelessApplet.server
+%{_libexecdir}/NetworkManagerNotification
 %{_sysconfdir}/dbus-1/system.d/NetworkManagerInfo.conf
 %{_datadir}/pixmaps/NMWirelessApplet/*
 %{_datadir}/gnome-2.0/ui/*
 %{_datadir}/NetworkManagerInfo
 %{_datadir}/NMWirelessApplet/wireless-applet.glade
+%{_datadir}/icons/hicolor/48x48/apps/*.png
 
 ##################################
 # Changelog
 ##################################
 %changelog
+* Tue Oct 12 2004 Dan Williams <dcbw@redhat.com> 0.2-4
+- Update from CVS
+- Improvements:
+	o Better link checking on wireless cards
+	o Panel applet now a Notification Area icon
+	o Static IP configuration support
+
 * Mon Sep 13 2004 Dan Williams <dcbw@redhat.com> 0.2-3
 - Update from CVS
 
