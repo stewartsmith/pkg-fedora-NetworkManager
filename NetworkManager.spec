@@ -19,15 +19,15 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc3}
-%define release_extension 1.0.fc3
+%define release_extension 1.1.fc3
 %endif
 
 %if %{build_rhel4}
-%define release_extension 2.0.EL4
+%define release_extension 2.1.EL4
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.0
+%define release_extension 3.1
 %endif
 
 
@@ -191,6 +191,9 @@ fi
 
 
 %changelog
+* Mon Feb 14 2005 Dan Williams <dcbw@redhat.com> 0.3.3-2.cvs20050214.x.1
+- Fix free of invalid pointer for multiple search domains
+
 * Mon Feb 14 2005 Dan Williams <dcbw@redhat.com> 0.3.3-2.cvs20050214
 - Never automatically choose a device that doesn't support carrier detection
 - Add right-click menu to applet, can now "Pause/Resume" scanning through it
