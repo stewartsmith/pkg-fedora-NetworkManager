@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.1
-Release:		3
+Release:		4
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}.tar.bz2
@@ -22,14 +22,14 @@ Requires:	wireless-tools >= 27
 Requires:	dbus >= 0.22
 Requires: dbus-glib >= 0.22
 Requires: hal >= 0.2.95
-Requires: dhclient iproute openssl glib
+Requires: dhclient iproute openssl glib2
 
 
 ########################
 BuildRequires: dbus-devel >= 0.22
 BuildRequires: hal-devel >= 0.2.95
 BuildRequires: wireless-tools >= 27
-BuildRequires: glib-devel gtk2-devel
+BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
 BuildRequires: GConf2-devel
@@ -54,7 +54,7 @@ Requires: GConf2
 Requires: gnome-panel-devel
 Requires:	dbus >= 0.22
 Requires: dbus-glib >= 0.22
-Requires: glib
+Requires: glib2
 Requires: libglade2
 
 %description gnome
@@ -149,6 +149,8 @@ fi
 # Changelog
 ##################################
 %changelog
+* Thu Aug 26 2004 Florian La Roche <Florian.LaRoche@redhat.de>
+- spec-changes to req glib2 instead of glib
 
 * Fri Aug 20 2004 Dan Williams <dcbw@redhat.com> 0.1-3
 - First public release
