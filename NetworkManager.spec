@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 ##################################
 Name:		NetworkManager
 Summary:		A network link manager and user applications
-Version:		0.2
-Release:		4
+Version:		0.3
+Release:		1
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -144,17 +144,19 @@ fi
 %defattr(-,root,root)
 %{_bindir}/NetworkManagerInfo
 %{_libexecdir}/NetworkManagerNotification
+%{_datadir}/NetworkManagerNotification
 %{_sysconfdir}/dbus-1/system.d/NetworkManagerInfo.conf
-%{_datadir}/pixmaps/NMWirelessApplet/*
-%{_datadir}/gnome-2.0/ui/*
 %{_datadir}/NetworkManagerInfo
-%{_datadir}/NMWirelessApplet/wireless-applet.glade
+%{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 
 ##################################
 # Changelog
 ##################################
 %changelog
+* Fri Oct 15 2004 Dan Williams <dcbw@redhat.com> 0.3-1
+- Update from CVS, version 0.3
+
 * Tue Oct 12 2004 Dan Williams <dcbw@redhat.com> 0.2-4
 - Update from CVS
 - Improvements:
