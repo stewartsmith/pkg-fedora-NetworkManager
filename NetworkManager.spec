@@ -117,7 +117,14 @@ functionality from applications that use glib.
 
 
 %build
-%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
+
+%if %{build_fc4}
+%define configure_args "--with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named"
+%else
+%define configure_args %{nil}
+%endif
+
+%configure %{configure_args}
 make
 
 
@@ -210,6 +217,14 @@ fi
 
 * Mon Jan 24 2005 Than Ngo <than@redhat.com> 0.3.3-1.cvs20050112.4
 - rebuilt against new wireless tool
+
+* Thu Jan 21 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050118
+- Fix issue where NM wouldn't recognize that access points were
+	encrypted, and then would try to connect without encryption
+- Refine packaging to put client library in separate package
+- Remove bind+caching-nameserver dep for FC-3, use 'nscd -i hosts'
+	instead.  DNS queries may timeout now right after device
+	activation due to this change.
 
 * Wed Jan 12 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050112
 - Update to latest CVS
