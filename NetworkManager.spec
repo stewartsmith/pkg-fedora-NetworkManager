@@ -9,12 +9,14 @@ ExcludeArch: s390 s390x
 ##################################
 Name:		NetworkManager
 Summary:		A network link manager and user applications
-Version:		0.3.1
-Release:		1
+Version:		0.3.2
+Release:		2.cvs20041029
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
+
+Patch0: NetworkManager-0.3.2-full-device-support.patch
 
 ########################
 PreReq:	chkconfig
@@ -68,6 +70,8 @@ networks.
 ##################################
 %prep
 %setup -q
+
+%patch0 -p1 -b .full-device-support
 
 
 ##################################
@@ -131,6 +135,7 @@ fi
 %defattr(-,root,root)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %{_bindir}/%{name}
+%{_includedir}/NetworkManager/NetworkManager.h
 %{_bindir}/NMLoadModules
 %{_bindir}/NMLaunchHelper
 %{_bindir}/NetworkManagerDispatcher
@@ -154,6 +159,31 @@ fi
 # Changelog
 ##################################
 %changelog
+* Fri Oct 29 2004 <dcbw@redhat.com> - 0.3.2-2.cvs20041029
+- #rh134893# NetworkManagerInfo and the panel-icon life-cycle
+- #rh134895# Status icon should hide when in Wired-only mode
+- #rh134896# Icon code needs rewrite
+- #rh134897# "Other Networks..." dialog needs implementing
+- #rh135055# Menu highlights incorrectly in NM
+- #rh135648# segfault with cipsec0
+- #rh135722# NetworkManager will not allow zaurus to sync via usb0
+- #rh135999# NetworkManager-0.3.1 will not connect to 128 wep
+- #rh136866# applet needs tooltips
+- #rh137047# lots of applets, yay!
+- #rh137341# Network Manager dies after disconnecting from wired network second time
+- Better checking for wireless devices
+- Fix some memleaks
+- Fix issues with dhclient declining an offered address
+- Fix an activation thread deadlock
+- More accurately detect "Other wireless networks" that are encrypted
+- Don't bring devices down as much, won't hotplug-spam as much anymore
+	about firmware
+- Add a "network not found" dialog when the user chooses a network that could
+	not be connected to
+
+* Tue Oct 26 2004 <dcbw@redhat.com> - 0.3.1-2
+- Fix escaping of ESSIDs in gconf
+
 * Tue Oct 19 2004  <jrb@redhat.com> - 0.3.1-1
 - minor point release to improve error handling and translations
 
