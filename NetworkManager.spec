@@ -7,11 +7,11 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 5.cvs20050402
+Release: 6.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.cvs20050402.tar.gz
+Source: %{name}-%{version}.cvs20050404.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -166,6 +166,9 @@ fi
 
 
 %changelog
+* Mon Apr  4 2005 Dan Williams <dcbw@redhat.com> 0.4-6.cvs20050404
+- #rh153234# NetworkManager quits/cores just as a connection is made
+
 * Fri Apr  2 2005 Dan Williams <dcbw@redhat.com> 0.4-5.cvs20050402
 - Update from latest CVS HEAD
 
