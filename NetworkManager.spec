@@ -27,7 +27,7 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc4}
-%define release_extension 3.0
+%define release_extension 3.1
 %endif
 
 
@@ -119,7 +119,7 @@ functionality from applications that use glib.
 %build
 
 %if %{build_fc4}
-%define configure_args "--with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named"
+%define configure_args --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
 %else
 %define configure_args %{nil}
 %endif
