@@ -1,33 +1,27 @@
 ExcludeArch: s390 s390x
 
-##########################################################
-# NetworkManager RPM Specfile
-##########################################################
+%define dbus_version	0.22
+%define hal_version		0.4
 
-##################################
-# Main Package Info
-##################################
-Name:		NetworkManager
-Summary:		A network link manager and user applications
-Version:		0.3.2
-Release:		4.3.cvs20041208
-Group:		System Environment/Base
-License:		GPL
-Source:		%{name}-%{version}.tar.gz
-BuildRoot:	%{_tmppath}/%{name}-%{version}-root
+Name: NetworkManager
+Summary: Network link manager and user applications
+Version: 0.3.3
+Release: 1.cvs20050112
+Group: System Environment/Base
+License: GPL
+URL: http://people.redhat.com/dcbw/NetworkManager/
+Source: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
-########################
-PreReq:	chkconfig
+PreReq:   chkconfig
 Requires: wireless-tools >= 27
-Requires: dbus >= 0.22
-Requires: dbus-glib >= 0.22
-Requires: hal >= 0.2.95
-Requires: dhclient iproute openssl glib2
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
+Requires: hal >= %{hal_version}
+Requires: iproute openssl bind caching-nameserver
 
-
-########################
-BuildRequires: dbus-devel >= 0.22
-BuildRequires: hal-devel >= 0.2.95
+BuildRequires: dbus-devel >= %{dbus_version}
+BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: wireless-tools >= 27
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
@@ -35,125 +29,122 @@ BuildRequires: openssl-devel
 BuildRequires: GConf2-devel
 BuildRequires: gnome-panel-devel
 BuildRequires: libgnomeui-devel
+BuildRequires: gnome-keyring-devel
+BuildRequires: gettext-devel
 
-
-##################################
 %description
-NetworkManager is a network link manager that attempts to keep a
-wired or wireless network connection active at all times.
+NetworkManager attempts to keep an active network connection available at all
+times.  It is intended only for the desktop use-case, and is not intended for
+usage on servers.   The point of NetworkManager is to make networking
+configuration and setup as painless and automatic as possible.  If using DHCP,
+NetworkManager is _intended_ to replace default routes, obtain IP addresses
+from a DHCP server, and change nameservers whenever it sees fit.
 
 
-##################################
-# GNOME Package Info
-##################################
 %package gnome
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
-Requires: NetworkManager
-Requires: GConf2
+Requires: %{name}
 Requires: gnome-panel
-Requires: dbus >= 0.22
-Requires: dbus-glib >= 0.22
-Requires: glib2
-Requires: libglade2
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
+Requires: hal >= %{hal_version}
 
 %description gnome
-This package contains GNOME utilities and applications for use
-with NetworkManager, including a panel applet for wireless
-networks.
+This package contains GNOME utilities and applications for use with
+NetworkManager, including a panel applet for wireless networks.
 
 
-##################################
-# Prep/Setup
-##################################
+%package devel
+Summary: Libraries and headers for adding NetworkManager support to applications
+Group: Development/Libraries
+Requires: %{name}
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
+
+%description devel
+This package contains various headers and a glib-based C client library for
+accessing some NetworkManager functionality from applications.
+
+
 %prep
 %setup -q
 
 
-##################################
-# Build
-##################################
 %build
-
 %configure
 make
 
 
-##################################
-# Install
-##################################
 %install
 rm -rf $RPM_BUILD_ROOT
-
 make install DESTDIR=$RPM_BUILD_ROOT
-rm -f $RPM_BUILD_ROOT/%{_bindir}/dhcp_test
+%find_lang %{name}
+rm -f $RPM_BUILD_ROOT%{_bindir}/dhcp_test
+rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
 
-##################################
-# Clean
-##################################
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 
-##################################
-# Post-install
-##################################
 %post
-if ! chkconfig --list | grep NetworkManager | grep on; then
-	/sbin/chkconfig --add NetworkManager
-	/sbin/chkconfig --level 123456 NetworkManager off
-fi
+/sbin/chkconfig --add NetworkManager
 
 
-##################################
-# Pre-uninstall
-##################################
 %preun
-if [ $1 = 0 ]; then
-    service NetworkManager stop > /dev/null 2>&1
+if [ $1 -eq 0 ]; then
+    /sbin/service NetworkManager stop >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
 fi
 
 
-##################################
-# Post-uninstall
-##################################
 %postun
-if [ "$1" -ge "1" ]; then
-  service NetworkManager condrestart > /dev/null 2>&1
+if [ $1 -ge 1 ]; then
+    /sbin/service NetworkManager condrestart >/dev/null 2>&1
 fi
 
 
-##################################
-# Main Package Files
-##################################
-%files
-%defattr(-,root,root)
+%files -f %{name}.lang
+%defattr(-,root,root,0755)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
-%{_bindir}/%{name}
-%{_includedir}/NetworkManager/NetworkManager.h
-%{_bindir}/NMLoadModules
-%{_bindir}/NetworkManagerDispatcher
-%dir %{_sysconfdir}/dbus-1/system.d
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
-%{_libdir}/pkgconfig/*
-%{_datadir}/locale/*/*/*.mo
+%config %{_datadir}/%{name}/named.conf
+%{_bindir}/%{name}
+%{_bindir}/NMLoadModules
+%{_bindir}/NetworkManagerDispatcher
+%{_libdir}/pkgconfig/%{name}.pc
 
 %files gnome
-%defattr(-,root,root)
+%defattr(-,root,root,0755)
+%config %{_sysconfdir}/dbus-1/system.d/NetworkManagerInfo.conf
 %{_bindir}/NetworkManagerInfo
 %{_libexecdir}/NetworkManagerNotification
-%{_datadir}/NetworkManagerNotification
-%{_sysconfdir}/dbus-1/system.d/NetworkManagerInfo.conf
-%{_datadir}/NetworkManagerInfo
+%{_datadir}/NetworkManagerNotification/
+%{_datadir}/NetworkManagerInfo/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 
-##################################
-# Changelog
-##################################
+%files devel
+%defattr(-,root,root,0755)
+%{_libdir}/libnm_glib.so*
+%{_includedir}/%{name}/*.h
+%{_libdir}/pkgconfig/libnm_glib.pc
+
 %changelog
+* Wed Jan 12 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050112
+- Update to latest CVS
+- Fixes to DHCP code
+- Link-Local (ZeroConf/Rendezvous) support
+- Use bind in "caching-nameserver" mode to work around stupidity
+	in glibc's resolver library not recognizing resolv.conf changes
+- #rh144818# Clean up the specfile (Patch from Matthias Saou)
+- Ad-Hoc mode support with Link-Local addressing only (for now)
+- Fixes for device activation race conditions
+- Wireless scanning in separate thread
+
 * Wed Dec  8 2004 <dcbw@redhat.com> - 0.3.2-4.3.cvs20041208
 - Update to CVS
 - Updates to link detection, DHCP code
