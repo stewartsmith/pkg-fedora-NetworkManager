@@ -34,7 +34,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 2.cvs20050315.%{release_extension}
+Release: 3.cvs20050315.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -191,6 +191,9 @@ fi
 
 
 %changelog
+* Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-3.cvs20050315
+- Pull from latest CVS HEAD
+
 * Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-2.cvs20050315
 - Upload new source tarball (woops)
 
