@@ -88,6 +88,7 @@ functionality from applications that use glib.
 
 
 %build
+export LDFLAGS="$LDFLAGS -lrt"
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
 make
 
