@@ -1,6 +1,6 @@
 ExcludeArch: s390 s390x
 
-%define dbus_version	0.22
+%define dbus_version	0.23
 %define hal_version		0.4
 
 %define build_fc3			0
@@ -38,7 +38,7 @@ Requires: hal >= %{hal_version}
 Requires: iproute openssl bind caching-nameserver
 
 BuildRequires: dbus-devel = %{dbus_version}
-BuildRequires: hal-devel = %{hal_version}
+BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: wireless-tools >= 27
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
