@@ -33,7 +33,7 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network link manager and user applications
-Version: 0.4.0
+Version: 0.4
 Release: 1.cvs20050304.%{release_extension}
 Group: System Environment/Base
 License: GPL
