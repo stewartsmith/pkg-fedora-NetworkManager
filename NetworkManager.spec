@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 ##################################
 Name:		NetworkManager
 Summary:		A network link manager and user applications
-Version:		0.3
+Version:		0.3.1
 Release:		1
 Group:		System Environment/Base
 License:		GPL
@@ -154,6 +154,9 @@ fi
 # Changelog
 ##################################
 %changelog
+* Tue Oct 19 2004  <jrb@redhat.com> - 0.3.1-1
+- minor point release to improve error handling and translations
+
 * Fri Oct 15 2004 Dan Williams <dcbw@redhat.com> 0.3-1
 - Update from CVS, version 0.3
 
