@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.3.2
-Release:		3.cvs20041117
+Release:		4.3.cvs20041208
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
@@ -133,7 +133,6 @@ fi
 %{_bindir}/%{name}
 %{_includedir}/NetworkManager/NetworkManager.h
 %{_bindir}/NMLoadModules
-%{_bindir}/NMLaunchHelper
 %{_bindir}/NetworkManagerDispatcher
 %dir %{_sysconfdir}/dbus-1/system.d
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
@@ -155,6 +154,14 @@ fi
 # Changelog
 ##################################
 %changelog
+* Wed Dec  8 2004 <dcbw@redhat.com> - 0.3.2-4.3.cvs20041208
+- Update to CVS
+- Updates to link detection, DHCP code
+- Remove NMLaunchHelper so we start up faster and don't
+	block for a connection.  This means services that depend
+	on the network may fail if they start right after NM
+- Make sure DHCP renew/rebinding works
+
 * Wed Nov 17 2004 <dcbw@redhat.com> - 0.3.2-3.cvs20041117
 - Update to CVS
 - Fixes to link detection
