@@ -30,11 +30,15 @@ ExcludeArch: s390 s390x
 %define release_extension 3.0
 %endif
 
+# For gtk+ icon cache
+%if %{build_fc4}
+%define gtk2_version 2.6.0
+%endif
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 3.cvs20050315.%{release_extension}
+Release: 4.cvs20050315.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -82,6 +86,9 @@ Requires: gnome-panel
 Requires: dbus = %{dbus_version}
 Requires: dbus-glib = %{dbus_version}
 Requires: hal >= %{hal_version}
+%if %{build_fc4}
+PreReq:  gtk2 >= %{gtk2_version}
+%endif
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -144,7 +151,6 @@ rm -rf $RPM_BUILD_ROOT
 %post
 /sbin/chkconfig --add NetworkManager
 
-
 %preun
 if [ $1 -eq 0 ]; then
     /sbin/service NetworkManager stop >/dev/null 2>&1
@@ -157,6 +163,21 @@ if [ $1 -ge 1 ]; then
     /sbin/service NetworkManager condrestart >/dev/null 2>&1
 fi
 
+%post gnome
+%if %{build_fc4}
+touch --no-create %{_datadir}/icons/hicolor
+if [-x /usr/bin/gtk-update-icon-cache ]; then
+  gtk-update-icon-cache %{_datadir}/icons/hicolor
+fi
+%endif
+
+%postun gnome
+%if %{build_fc4}
+touch --no-create %{_datadir}/icons/hicolor
+if [-x /usr/bin/gtk-update-icon-cache ]; then
+  gtk-update-icon-cache %{_datadir}/icons/hicolor
+fi
+%endif}
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
@@ -191,6 +212,9 @@ fi
 
 
 %changelog
+* Fri Mar 25 2005 Christopher Aillon <caillon@redhat.com> 0.4-4.cvs20050315
+- Update the GTK+ theme icon cache on (un)install
+
 * Tue Mar 15 2005 Ray Strode <rstrode@redhat.com> 0.4-3.cvs20050315
 - Pull from latest CVS HEAD
 
