@@ -16,7 +16,7 @@ ExcludeArch: s390 s390x
 %endif
 
 %if %{build_fc4}
-%define release_extension 3
+%define release_extension 4
 %endif
 
 
@@ -151,6 +151,9 @@ fi
 %{_libdir}/pkgconfig/libnm_glib.pc
 
 %changelog
+* Mon Jan 24 2005 Than Ngo <than@redhat.com> 0.3.3-1.cvs20050112.4
+- rebuilt against new wireless tool
+
 * Wed Jan 12 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050112
 - Update to latest CVS
 - Fixes to DHCP code
