@@ -23,7 +23,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.3.3
-Release: 1.cvs20050124.%{release_extension}
+Release: 1.cvs20050125.%{release_extension}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -32,13 +32,13 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
 Requires: wireless-tools >= 27
-Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus = %{dbus_version}
+Requires: dbus-glib = %{dbus_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl bind caching-nameserver
 
-BuildRequires: dbus-devel >= %{dbus_version}
-BuildRequires: hal-devel >= %{hal_version}
+BuildRequires: dbus-devel = %{dbus_version}
+BuildRequires: hal-devel = %{hal_version}
 BuildRequires: wireless-tools >= 27
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
@@ -48,6 +48,7 @@ BuildRequires: gnome-panel-devel
 BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
+BuildRequires: pkgconfig
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -61,10 +62,10 @@ from a DHCP server, and change nameservers whenever it sees fit.
 %package gnome
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
-Requires: %{name}
+Requires: %{name} = %{release}
 Requires: gnome-panel
-Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus = %{dbus_version}
+Requires: dbus-glib = %{dbus_version}
 Requires: hal >= %{hal_version}
 
 %description gnome
@@ -75,13 +76,25 @@ NetworkManager, including a panel applet for wireless networks.
 %package devel
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
-Requires: %{name}
-Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: %{name} = %{release}
+Requires: dbus = %{dbus_version}
+Requires: dbus-glib = %{dbus_version}
 
 %description devel
-This package contains various headers and a glib-based C client library for
-accessing some NetworkManager functionality from applications.
+This package contains various headers accessing some NetworkManager functionality
+from applications.
+
+
+%package glib
+Summary: Libraries and headers for adding NetworkManager support to applications that use glib.
+Group: Development/Libraries
+Requires: %{name} = %{release}
+Requires: dbus = %{dbus_version}
+Requires: dbus-glib = %{dbus_version}
+
+%description glib
+This package contains the headers and libraries that make it easier to use some Network Manager
+functionality from applications that use glib.
 
 
 %prep
@@ -146,11 +159,20 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
+%{_includedir}/%{name}/%{name}.h
+
+%files glib
+%defattr(-,root,root,0755)
 %{_libdir}/libnm_glib.so*
-%{_includedir}/%{name}/*.h
+%{_includedir}/%{name}/libnm_glib.h
 %{_libdir}/pkgconfig/libnm_glib.pc
 
+
 %changelog
+* Tue Jan 25 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050125
+- Play nice with dbus 0.23
+- Update our list of Allowed Wireless Networks more quickly
+
 * Mon Jan 24 2005 Dan Williams <dcbw@redhat.com> 0.3.3-1.cvs20050124
 - Update to latest CVS
 - Make sure we start as late as possible so that we ensure dbus & HAL
