@@ -166,7 +166,7 @@ fi
 %post gnome
 %if %{build_fc4}
 touch --no-create %{_datadir}/icons/hicolor
-if [-x /usr/bin/gtk-update-icon-cache ]; then
+if [ -x /usr/bin/gtk-update-icon-cache ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor
 fi
 %endif
@@ -174,7 +174,7 @@ fi
 %postun gnome
 %if %{build_fc4}
 touch --no-create %{_datadir}/icons/hicolor
-if [-x /usr/bin/gtk-update-icon-cache ]; then
+if [ -x /usr/bin/gtk-update-icon-cache ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor
 fi
 %endif}
