@@ -1,64 +1,30 @@
 ExcludeArch: s390 s390x
 
-%define hal_version		0.4
-
-%define build_fc3			0
-%define build_rhel4			0
-%define build_fc4			1
-
-%if %{build_rhel4}
-%define dbus_version	0.22
-%endif
-
-%if %{build_fc3}
-%define dbus_version	0.22
-%endif
-
-%if %{build_fc4}
+%define hal_version		0.5.0
 %define dbus_version	0.31
-%endif
-
-%if %{build_fc3}
-%define release_extension 1.0.fc3
-%endif
-
-%if %{build_rhel4}
-%define release_extension 2.0.EL4
-%endif
-
-%if %{build_fc4}
-%define release_extension 3.0
-%endif
-
-# For gtk+ icon cache
-%if %{build_fc4}
-%define gtk2_version 2.6.0
-%endif
+%define gtk2_version	2.6.0
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 4.cvs20050315.%{release_extension}
+Release: 5.cvs20050401
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.tar.gz
+Source: %{name}-%{version}.cvs20050401.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
 Requires: wireless-tools >= 27
-Requires: dbus = %{dbus_version}
-Requires: dbus-glib = %{dbus_version}
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
-
-%if %{build_fc4}
 Requires: bind caching-nameserver
-%endif
 
-BuildRequires: dbus-devel = %{dbus_version}
+BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
-BuildRequires: wireless-tools >= 27
+BuildRequires: wireless-tools >= 28
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
@@ -83,12 +49,10 @@ Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
 Requires: %{name} = %{version}-%{release}
 Requires: gnome-panel
-Requires: dbus = %{dbus_version}
-Requires: dbus-glib = %{dbus_version}
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
-%if %{build_fc4}
 PreReq:  gtk2 >= %{gtk2_version}
-%endif
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -99,8 +63,8 @@ NetworkManager, including a panel applet for wireless networks.
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: dbus = %{dbus_version}
-Requires: dbus-glib = %{dbus_version}
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
 
 %description devel
 This package contains various headers accessing some NetworkManager functionality
@@ -111,8 +75,8 @@ from applications.
 Summary: Libraries and headers for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: dbus = %{dbus_version}
-Requires: dbus-glib = %{dbus_version}
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_version}
 
 %description glib
 This package contains the headers and libraries that make it easier to use some Network Manager
@@ -124,14 +88,7 @@ functionality from applications that use glib.
 
 
 %build
-
-%if %{build_fc4}
-%define configure_args --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
-%else
-%define configure_args %{nil}
-%endif
-
-%configure %{configure_args}
+%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
 make
 
 
@@ -164,20 +121,16 @@ if [ $1 -ge 1 ]; then
 fi
 
 %post gnome
-%if %{build_fc4}
 touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor
 fi
-%endif
 
 %postun gnome
-%if %{build_fc4}
 touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor
 fi
-%endif}
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
@@ -212,6 +165,9 @@ fi
 
 
 %changelog
+* Fri Apr  1 2005 Dan Williams <dcbw@redhat.com> 0.4-5.cvs20050401
+- Update from latest CVS HEAD
+
 * Fri Mar 25 2005 Christopher Aillon <caillon@redhat.com> 0.4-4.cvs20050315
 - Update the GTK+ theme icon cache on (un)install
 
