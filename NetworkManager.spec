@@ -10,13 +10,11 @@ ExcludeArch: s390 s390x
 Name:		NetworkManager
 Summary:		A network link manager and user applications
 Version:		0.3.2
-Release:		2.cvs20041029
+Release:		2.cvs20041115
 Group:		System Environment/Base
 License:		GPL
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
-
-Patch0: NetworkManager-0.3.2-full-device-support.patch
 
 ########################
 PreReq:	chkconfig
@@ -71,8 +69,6 @@ networks.
 %prep
 %setup -q
 
-%patch0 -p1 -b .full-device-support
-
 
 ##################################
 # Build
@@ -90,7 +86,7 @@ make
 rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
-
+rm -f $RPM_BUILD_ROOT/%{_bindir}/dhcp_test
 
 ##################################
 # Clean
@@ -159,6 +155,11 @@ fi
 # Changelog
 ##################################
 %changelog
+* Mon Nov 11 2004 <dcbw@redhat.com> - 0.3.2-4.cvs20041115
+- Update to CVS
+- Much better link detection, works with Open System authentication
+- Blacklist wireless cards rather than whitelisting them
+
 * Fri Oct 29 2004 <dcbw@redhat.com> - 0.3.2-2.cvs20041029
 - #rh134893# NetworkManagerInfo and the panel-icon life-cycle
 - #rh134895# Status icon should hide when in Wired-only mode
