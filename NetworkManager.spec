@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 6.cvs20050404
+Release: 7.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -124,13 +124,13 @@ fi
 %post gnome
 touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
-  gtk-update-icon-cache %{_datadir}/icons/hicolor
+  gtk-update-icon-cache -q %{_datadir}/icons/hicolor
 fi
 
 %postun gnome
 touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
-  gtk-update-icon-cache %{_datadir}/icons/hicolor
+  gtk-update-icon-cache -q %{_datadir}/icons/hicolor
 fi
 
 %files -f %{name}.lang
@@ -166,6 +166,9 @@ fi
 
 
 %changelog
+* Wed Apr 27 2005 Jeremy Katz <katzj@redhat.com> - 0.4-7.cvs20050404
+- silence %%post
+
 * Mon Apr  4 2005 Dan Williams <dcbw@redhat.com> 0.4-6.cvs20050404
 - #rh153234# NetworkManager quits/cores just as a connection is made
 
