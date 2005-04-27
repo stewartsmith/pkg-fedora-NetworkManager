@@ -7,11 +7,12 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 7.cvs20050404
+Release: 8.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
 Source: %{name}-%{version}.cvs20050404.tar.gz
+Patch0: NetworkManager-0.4-newdbus.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -85,6 +86,7 @@ functionality from applications that use glib.
 
 %prep
 %setup -q
+%patch0 -p1
 
 
 %build
@@ -166,6 +168,9 @@ fi
 
 
 %changelog
+* Wed Apr 27 2005 Jeremy Katz <katzj@redhat.com> - 0.4-8.cvs20050404
+- fix build with newer dbus
+
 * Wed Apr 27 2005 Jeremy Katz <katzj@redhat.com> - 0.4-7.cvs20050404
 - silence %%post
 
