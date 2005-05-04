@@ -13,6 +13,12 @@ License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
 Source: %{name}-%{version}.cvs20050404.tar.gz
 Patch0: NetworkManager-0.4-newdbus.patch
+Patch1: NetworkManager-0.4-leak-fixes.patch
+Patch2: NetworkManager-0.4-use-thread-join.patch
+Patch3: NetworkManager-0.4-assert-fix.patch
+Patch4: NetworkManager-0.4-devup.patch
+Patch5: NetworkManager-0.4-aplist-fix-hidden.patch
+Patch6: NetworkManager-0.4-novarargs.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -86,7 +92,13 @@ functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1
+%patch0 -p1 -b .dbus-0.32
+%patch1 -p0 -b .leak-fixes
+%patch2 -p0 -b .use-thread-join
+%patch3 -p1 -b .assert-fix
+%patch4 -p1 -b .devup
+%patch5 -p1 -b .aplist-fix-hidden
+%patch6 -p0 -b .no-varargs
 
 
 %build
@@ -168,6 +180,14 @@ fi
 
 
 %changelog
+* Wed May  4 2005 Dan Williams <dcbw@redhat.com> - 0.4-9.cvs20050404
+- Fix some memory leaks (Tom Parker)
+- Join to threads rather than spinning for their completion (Tom Parker)
+- Fix misuse of a g_assert() (Colin Walters)
+- Fix return checking of an ioctl() (Bill Moss)
+- Better detection and matching of hidden access points (Bill Moss)
+- Don't use varargs, and therefore don't crash on PPC (Peter Jones)
+
 * Wed Apr 27 2005 Jeremy Katz <katzj@redhat.com> - 0.4-8.cvs20050404
 - fix build with newer dbus
 
