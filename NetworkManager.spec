@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 9.cvs20050404
+Release: 10.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -19,6 +19,7 @@ Patch3: NetworkManager-0.4-assert-fix.patch
 Patch4: NetworkManager-0.4-devup.patch
 Patch5: NetworkManager-0.4-aplist-fix-hidden.patch
 Patch6: NetworkManager-0.4-novarargs.patch
+Patch7: NetworkManager-0.4-dhcp-socket-leak-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -99,6 +100,7 @@ functionality from applications that use glib.
 %patch4 -p1 -b .devup
 %patch5 -p1 -b .aplist-fix-hidden
 %patch6 -p0 -b .no-varargs
+%patch7 -p1 -b .dhcp-socket-leak-fix
 
 
 %build
@@ -180,6 +182,9 @@ fi
 
 
 %changelog
+* Wed May  4 2005 Dan Williams <dcbw@redhat.com> - 0.4-10.cvs20050404
+- Fix leak of a socket in DHCP code
+
 * Wed May  4 2005 Dan Williams <dcbw@redhat.com> - 0.4-9.cvs20050404
 - Fix some memory leaks (Tom Parker)
 - Join to threads rather than spinning for their completion (Tom Parker)
