@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 10.cvs20050404
+Release: 11.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -20,6 +20,7 @@ Patch4: NetworkManager-0.4-devup.patch
 Patch5: NetworkManager-0.4-aplist-fix-hidden.patch
 Patch6: NetworkManager-0.4-novarargs.patch
 Patch7: NetworkManager-0.4-dhcp-socket-leak-fix.patch
+Patch8: NetworkManager-0.4-dont-kill-nifd.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -101,6 +102,7 @@ functionality from applications that use glib.
 %patch5 -p1 -b .aplist-fix-hidden
 %patch6 -p0 -b .no-varargs
 %patch7 -p1 -b .dhcp-socket-leak-fix
+%patch8 -p1 -b .dont-kill-nifd
 
 
 %build
@@ -182,6 +184,9 @@ fi
 
 
 %changelog
+* Thu May  5 2005 Dan Williams <dcbw@redhat.com> - 0.4-11.cvs22050404
+- #rh154391# NetworkManager dies on startup (don't force-kill nifd)
+
 * Wed May  4 2005 Dan Williams <dcbw@redhat.com> - 0.4-10.cvs20050404
 - Fix leak of a socket in DHCP code
 
