@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 13.cvs20050404
+Release: 14.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -23,6 +23,7 @@ Patch7: NetworkManager-0.4-dhcp-socket-leak-fix.patch
 Patch8: NetworkManager-0.4-dont-kill-nifd.patch
 Patch9: NetworkManager-0.4-ok-button-enable-fix.patch
 Patch10: NetworkManager-0.4-dhcp-bad-return.patch
+Patch11: NetworkManager-0.4-dispatcher-fixes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -107,7 +108,10 @@ functionality from applications that use glib.
 %patch8 -p1 -b .dont-kill-nifd
 %patch9 -p1 -b .ok-button-enable-fix
 %patch10 -p0 -b .dhcp-bad-return-fix
+%patch11 -p1 -b .dispatcher-fixes
 
+chmod +ox initscript/RedHat/NetworkManagerDispatcher
+automake-1.7
 
 %build
 export LDFLAGS="$LDFLAGS -lrt -lpthread"
@@ -130,17 +134,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add NetworkManager
+/sbin/chkconfig --add NetworkManagerDispatcher
 
 %preun
 if [ $1 -eq 0 ]; then
     /sbin/service NetworkManager stop >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
+
+    /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
+    /sbin/chkconfig --del NetworkManagerDispatcher
 fi
 
 
 %postun
 if [ $1 -ge 1 ]; then
     /sbin/service NetworkManager condrestart >/dev/null 2>&1
+    /sbin/service NetworkManagerDispatcher condrestart >/dev/null 2>&1
 fi
 
 %post gnome
@@ -160,6 +169,7 @@ fi
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
+%config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
 %config %{_datadir}/%{name}/named.conf
 %{_bindir}/%{name}
 %{_bindir}/NMLoadModules
@@ -188,6 +198,9 @@ fi
 
 
 %changelog
+* Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-14.cvs30050404
+- Fix segfault in NetworkManagerDispatcher, add an initscript for it
+
 * Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-13.cvs30050404
 - Fix condition that may have resulted in DHCP client returning success
 	when it really timed out
