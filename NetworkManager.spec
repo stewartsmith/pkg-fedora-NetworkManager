@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 14.cvs20050404
+Release: 15.cvs20050404
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -198,6 +198,9 @@ fi
 
 
 %changelog
+* Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-15.cvs30050404
+- Fix dispatcher CFLAGS so it gets compiled with FORTIFY_SOURCE
+
 * Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-14.cvs30050404
 - Fix segfault in NetworkManagerDispatcher, add an initscript for it
 
