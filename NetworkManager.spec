@@ -24,6 +24,7 @@ Patch8: NetworkManager-0.4-dont-kill-nifd.patch
 Patch9: NetworkManager-0.4-ok-button-enable-fix.patch
 Patch10: NetworkManager-0.4-dhcp-bad-return.patch
 Patch11: NetworkManager-0.4-dispatcher-fixes.patch
+Patch12: NetworkManager-0.4-cflags-fixes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -46,6 +47,7 @@ BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
+BuildRequires: automake17
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -109,6 +111,7 @@ functionality from applications that use glib.
 %patch9 -p1 -b .ok-button-enable-fix
 %patch10 -p0 -b .dhcp-bad-return-fix
 %patch11 -p1 -b .dispatcher-fixes
+%patch12 -p1 -b .cflags-fixes
 
 chmod +ox initscript/RedHat/NetworkManagerDispatcher
 automake-1.7
@@ -199,7 +202,7 @@ fi
 
 %changelog
 * Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-15.cvs30050404
-- Fix dispatcher CFLAGS so it gets compiled with FORTIFY_SOURCE
+- Fix dispatcher and applet CFLAGS so they gets compiled with FORTIFY_SOURCE
 
 * Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-14.cvs30050404
 - Fix segfault in NetworkManagerDispatcher, add an initscript for it
