@@ -1,30 +1,17 @@
 ExcludeArch: s390 s390x
 
 %define hal_version		0.5.0
-%define dbus_version	0.31
+%define dbus_version	0.4
 %define gtk2_version	2.6.0
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 15.cvs20050404
+Release: 30.cvs20050615
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.cvs20050404.tar.gz
-Patch0: NetworkManager-0.4-newdbus.patch
-Patch1: NetworkManager-0.4-leak-fixes.patch
-Patch2: NetworkManager-0.4-use-thread-join.patch
-Patch3: NetworkManager-0.4-assert-fix.patch
-Patch4: NetworkManager-0.4-devup.patch
-Patch5: NetworkManager-0.4-aplist-fix-hidden.patch
-Patch6: NetworkManager-0.4-novarargs.patch
-Patch7: NetworkManager-0.4-dhcp-socket-leak-fix.patch
-Patch8: NetworkManager-0.4-dont-kill-nifd.patch
-Patch9: NetworkManager-0.4-ok-button-enable-fix.patch
-Patch10: NetworkManager-0.4-dhcp-bad-return.patch
-Patch11: NetworkManager-0.4-dispatcher-fixes.patch
-Patch12: NetworkManager-0.4-cflags-fixes.patch
+Source: %{name}-%{version}.cvs20050615.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -99,25 +86,11 @@ functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 -b .dbus-0.32
-%patch1 -p0 -b .leak-fixes
-%patch2 -p0 -b .use-thread-join
-%patch3 -p1 -b .assert-fix
-%patch4 -p1 -b .devup
-%patch5 -p1 -b .aplist-fix-hidden
-%patch6 -p0 -b .no-varargs
-%patch7 -p1 -b .dhcp-socket-leak-fix
-%patch8 -p1 -b .dont-kill-nifd
-%patch9 -p1 -b .ok-button-enable-fix
-%patch10 -p0 -b .dhcp-bad-return-fix
-%patch11 -p1 -b .dispatcher-fixes
-%patch12 -p1 -b .cflags-fixes
 
 chmod +ox initscript/RedHat/NetworkManagerDispatcher
 automake-1.7
 
 %build
-export LDFLAGS="$LDFLAGS -lrt -lpthread"
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
 make
 
@@ -126,7 +99,6 @@ make
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 %find_lang %{name}
-rm -f $RPM_BUILD_ROOT%{_bindir}/dhcp_test
 rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
 
@@ -181,17 +153,18 @@ fi
 
 %files gnome
 %defattr(-,root,root,0755)
-%config %{_sysconfdir}/dbus-1/system.d/NetworkManagerInfo.conf
-%{_bindir}/NetworkManagerInfo
-%{_libexecdir}/NetworkManagerNotification
+%config %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
+%{_libexecdir}/nm-applet
+%{_bindir}/nm-vpn-properties
 %{_datadir}/NetworkManagerNotification/
-%{_datadir}/NetworkManagerInfo/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 
 %files devel
 %defattr(-,root,root,0755)
 %{_includedir}/%{name}/%{name}.h
+%{_includedir}/%{name}/nm-vpn-ui-interface.h
+%{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 
 %files glib
 %defattr(-,root,root,0755)
@@ -201,6 +174,9 @@ fi
 
 
 %changelog
+* Wed Jun 15 2005 Dan Williams <dcbw@redhat.com> - 0.4-30.cvs20050615
+- Update to latest CVS
+
 * Mon May 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-15.cvs30050404
 - Fix dispatcher and applet CFLAGS so they gets compiled with FORTIFY_SOURCE
 
