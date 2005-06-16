@@ -37,6 +37,7 @@ BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: automake17
+BuildRequires: dhcdbd
 
 %description
 NetworkManager attempts to keep an active network connection available at all
