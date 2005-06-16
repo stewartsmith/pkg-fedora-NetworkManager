@@ -21,6 +21,8 @@ Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: bind caching-nameserver
+Requires: dhcdbd
+Requires: dhclient >= 3.0.2-12
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
