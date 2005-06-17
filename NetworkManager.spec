@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 30.cvs20050615
+Release: 31.cvs20050616
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -177,6 +177,11 @@ fi
 
 
 %changelog
+* Thu Jun 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-31.cvs20050616
+- Update to latest CVS
+	o Clean up wording in Wireless Network Discovery menu
+	o Robert Love's applet beautify patch
+
 * Wed Jun 15 2005 Dan Williams <dcbw@redhat.com> - 0.4-30.cvs20050615
 - Update to latest CVS
 
