@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	cvs20050616
+%define nm_cvs_version	cvs20050617
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 31.%{nm_cvs_version}
+Release: 32.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -160,6 +160,7 @@ fi
 %config %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
 %{_libexecdir}/nm-applet
 %{_bindir}/nm-vpn-properties
+%{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 %{_datadir}/NetworkManagerNotification/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
@@ -168,7 +169,6 @@ fi
 %defattr(-,root,root,0755)
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/nm-vpn-ui-interface.h
-%{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 
 %files glib
 %defattr(-,root,root,0755)
@@ -178,6 +178,12 @@ fi
 
 
 %changelog
+* Fri Jun 17 2005 Dan Williams <dcbw@redhat.com> - 0.4-32.cvs20051617
+- Update to latest CVS
+	o VPN connection import/export capability
+	o Fix up some menu item names
+- Move nm-vpn-properties.glade to the gnome subpackage
+
 * Thu Jun 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-31.cvs20050616
 - Update to latest CVS
 	o Clean up wording in Wireless Network Discovery menu
