@@ -3,15 +3,16 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
+%define nm_cvs_version	cvs20050616
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 31.cvs20050616
+Release: 31.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.cvs20050615.tar.gz
+Source: %{name}-%{version}.%{nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
