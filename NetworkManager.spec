@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	cvs20050617
+%define nm_cvs_version	cvs20050629
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 32.%{nm_cvs_version}
+Release: 33.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -178,7 +178,12 @@ fi
 
 
 %changelog
-* Fri Jun 17 2005 Dan Williams <dcbw@redhat.com> - 0.4-32.cvs20051617
+* Wed Jun 29 2005 David Zeuthen <davidz@redhat.com> - 0.4-33.cvs20050629
+- Update to latest CVS to get latest VPN interface settings to satisfy
+  BuildReq for NetworkManager-vpnc in Fedora Extras Development
+- Latest CVS also contains various bug- and UI-fixes
+
+* Fri Jun 17 2005 Dan Williams <dcbw@redhat.com> - 0.4-32.cvs20050617
 - Update to latest CVS
 	o VPN connection import/export capability
 	o Fix up some menu item names
