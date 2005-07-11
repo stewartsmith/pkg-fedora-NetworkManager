@@ -8,7 +8,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 33.%{nm_cvs_version}
+Release: 34.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -68,7 +68,7 @@ NetworkManager, including a panel applet for wireless networks.
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: dbus >= %{dbus_version}
+Requires: dbus-devel >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 
 %description devel
@@ -153,7 +153,6 @@ fi
 %{_bindir}/%{name}
 %{_bindir}/NMLoadModules
 %{_bindir}/NetworkManagerDispatcher
-%{_libdir}/pkgconfig/%{name}.pc
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -169,6 +168,7 @@ fi
 %defattr(-,root,root,0755)
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/nm-vpn-ui-interface.h
+%{_libdir}/pkgconfig/%{name}.pc
 
 %files glib
 %defattr(-,root,root,0755)
@@ -178,6 +178,9 @@ fi
 
 
 %changelog
+* Mon Jul 11 2005 Dan Williams <dcbw@redhat.com> - 0.4-34.cvs20050629
+- Move pkgconfig file to devel package (#162316, thanks to Michael Schwendt)
+
 * Wed Jun 29 2005 David Zeuthen <davidz@redhat.com> - 0.4-33.cvs20050629
 - Update to latest CVS to get latest VPN interface settings to satisfy
   BuildReq for NetworkManager-vpnc in Fedora Extras Development
