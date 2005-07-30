@@ -3,17 +3,16 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	cvs20050629
+%define nm_cvs_version	cvs20050729
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 34.%{nm_cvs_version}.1
+Release: 34.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
 Source: %{name}-%{version}.%{nm_cvs_version}.tar.gz
-Patch0: NetworkManager-0.34.cvs20050629-pass-format-string-to-syslog.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -91,7 +90,6 @@ functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 -b .pass-format-string-to-syslog
 
 chmod +ox initscript/RedHat/NetworkManagerDispatcher
 automake-1.7
@@ -180,8 +178,8 @@ fi
 
 
 %changelog
-* Fri Jul 29 2005 Ray Strode  <rstrode@redhat.com> - 0.4-34.cvs20050629.1
-- Don't pass log messages into syslog format string (bug 164683).
+* Fri Jul 29 2005 Ray Strode  <rstrode@redhat.com> - 0.4-34.cvs20050729
+- Update to latest CVS to get fix for bug 165683.
 
 * Mon Jul 11 2005 Dan Williams <dcbw@redhat.com> - 0.4-34.cvs20050629
 - Move pkgconfig file to devel package (#162316, thanks to Michael Schwendt)
