@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	cvs20050729
+%define nm_cvs_version	cvs20050811
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 34.%{nm_cvs_version}
+Release: 35.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -178,6 +178,17 @@ fi
 
 
 %changelog
+* Thu Aug 11 2005 Dan Williams <dcbw@redhat.com> - 0.4.35.cvs20050811
+- Update to latest CVS
+	o Use DHCP server address as gateway address if the DHCP server doesn't give
+		us a gateway address #rh165698#
+	o Fixes to the applet (Robert Love)
+	o Better caching of information in the applet (Bill Moss)
+	o Generate automatic suggested Ad-Hoc network name from machine's hostname
+		(Robert Love)
+	o Update all network information on successfull connect, not just 
+		authentication method
+
 * Fri Jul 29 2005 Ray Strode  <rstrode@redhat.com> - 0.4-34.cvs20050729
 - Update to latest CVS to get fix for bug 165683.
 
