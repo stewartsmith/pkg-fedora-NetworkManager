@@ -8,7 +8,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4
-Release: 35.%{nm_cvs_version}
+Release: 36.%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -178,6 +178,9 @@ fi
 
 
 %changelog
+* Tue Aug 16 2005 Dan Williams <dcbw@redhat.com> - 0.4.36.cvs20050811
+- Rebuild against new cairo/gtk
+
 * Thu Aug 11 2005 Dan Williams <dcbw@redhat.com> - 0.4.35.cvs20050811
 - Update to latest CVS
 	o Use DHCP server address as gateway address if the DHCP server doesn't give
