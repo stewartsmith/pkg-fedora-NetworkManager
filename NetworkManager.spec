@@ -7,12 +7,12 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network link manager and user applications
-Version: 0.4
-Release: 36.%{nm_cvs_version}
+Version: 0.4.1
+Release: 1
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.%{nm_cvs_version}.tar.gz
+Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -157,10 +157,10 @@ fi
 %files gnome
 %defattr(-,root,root,0755)
 %config %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
-%{_libexecdir}/nm-applet
+%{_bindir}/nm-applet
 %{_bindir}/nm-vpn-properties
 %{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
-%{_datadir}/NetworkManagerNotification/
+%{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 
@@ -178,6 +178,9 @@ fi
 
 
 %changelog
+* Wed Aug 17 2005 Dan Williams <dcbw@redhat.com> - 0.4.1
+- Update to NetworkManager 0.4.1
+
 * Tue Aug 16 2005 Dan Williams <dcbw@redhat.com> - 0.4.36.cvs20050811
 - Rebuild against new cairo/gtk
 
