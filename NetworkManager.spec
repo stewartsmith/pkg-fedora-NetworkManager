@@ -3,16 +3,16 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	cvs20050811
+%define nm_cvs_version	.cvs20050819
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4.1
-Release: 1
+Release: 2%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}.tar.gz
+Source: %{name}-%{version}%{nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -178,13 +178,16 @@ fi
 
 
 %changelog
+* Fri Aug 19 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-2.cvs20050819
+- Fix occasional hang in NM caused by the applet
+
 * Wed Aug 17 2005 Dan Williams <dcbw@redhat.com> - 0.4.1
 - Update to NetworkManager 0.4.1
 
-* Tue Aug 16 2005 Dan Williams <dcbw@redhat.com> - 0.4.36.cvs20050811
+* Tue Aug 16 2005 Dan Williams <dcbw@redhat.com> - 0.4-36.cvs20050811
 - Rebuild against new cairo/gtk
 
-* Thu Aug 11 2005 Dan Williams <dcbw@redhat.com> - 0.4.35.cvs20050811
+* Thu Aug 11 2005 Dan Williams <dcbw@redhat.com> - 0.4-35.cvs20050811
 - Update to latest CVS
 	o Use DHCP server address as gateway address if the DHCP server doesn't give
 		us a gateway address #rh165698#
