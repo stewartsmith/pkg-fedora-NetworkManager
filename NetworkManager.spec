@@ -3,7 +3,7 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	.cvs20050819
+%define nm_cvs_version	.cvs20050912
 
 Name: NetworkManager
 Summary: Network link manager and user applications
@@ -178,6 +178,9 @@ fi
 
 
 %changelog
+* Mon Sep 12 2005 Jeremy Katz <katzj@redhat.com> - 0.4.1-2.cvs20050912
+- update to current CVS and rebuild (workaround for #168120)
+
 * Fri Aug 19 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-2.cvs20050819
 - Fix occasional hang in NM caused by the applet
 
