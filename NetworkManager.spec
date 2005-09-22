@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	.cvs20050912
+%define nm_cvs_version	.cvs20050922
 
 Name: NetworkManager
 Summary: Network link manager and user applications
 Version: 0.4.1
-Release: 2%{nm_cvs_version}
+Release: 3%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -178,6 +178,9 @@ fi
 
 
 %changelog
+* Thu Sep 22 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-3.cvs20050922
+- Update to current CVS to fix issues with routing table and /sbin/ip
+
 * Mon Sep 12 2005 Jeremy Katz <katzj@redhat.com> - 0.4.1-2.cvs20050912
 - update to current CVS and rebuild (workaround for #168120)
 
