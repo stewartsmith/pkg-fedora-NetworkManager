@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	.cvs20050922
+%define nm_cvs_version	.cvs20051009
 
 Name: NetworkManager
-Summary: Network link manager and user applications
+Summary: Network connection manager and user applications
 Version: 0.4.1
-Release: 3%{nm_cvs_version}
+Release: 4%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -24,6 +24,7 @@ Requires: iproute openssl
 Requires: bind caching-nameserver
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
+Requires: bind >= 9.3.1-18
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
@@ -103,8 +104,10 @@ make
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 %find_lang %{name}
+rm -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
 rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
+cp test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 
 %clean
@@ -151,8 +154,8 @@ fi
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
 %config %{_datadir}/%{name}/named.conf
 %{_bindir}/%{name}
-%{_bindir}/NMLoadModules
 %{_bindir}/NetworkManagerDispatcher
+%{_bindir}/nm-tool
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -178,6 +181,16 @@ fi
 
 
 %changelog
+* Sun Oct 09 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-4.cvs20051009
+- Update to latest CVS
+	o Integrate connection progress with applet icon (Chris Aillon)
+	o More information in "Connection Information" dialog (Robert Love)
+	o Shorten time taken to sleep
+	o Make applet icon wireless strength levels a bit more realistic
+	o Talk to named using DBUS rather than spawning our own
+		- You need to add "-D" to the OPTIONS line in /etc/sysconfig/named
+		- You need to set named to start as a service on startup
+
 * Thu Sep 22 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-3.cvs20050922
 - Update to current CVS to fix issues with routing table and /sbin/ip
 
