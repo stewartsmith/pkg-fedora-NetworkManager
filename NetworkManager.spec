@@ -3,12 +3,12 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
-%define nm_cvs_version	.cvs20051009
+%define nm_cvs_version	.cvs20051010
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.4.1
-Release: 4%{nm_cvs_version}
+Release: 5%{nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
@@ -181,6 +181,11 @@ fi
 
 
 %changelog
+* Mon Oct 10 2005 Dan Williams <dcbw@redaht.com> - 0.4.1-5.cvs20051010
+- Fix automatic wireless connections
+- Remove usage of NMLoadModules callout, no longer needed
+- Try to fix deadlock when menu is down and keyring dialog pops up
+
 * Sun Oct 09 2005 Dan Williams <dcbw@redhat.com> - 0.4.1-4.cvs20051009
 - Update to latest CVS
 	o Integrate connection progress with applet icon (Chris Aillon)
