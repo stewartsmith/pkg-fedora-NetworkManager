@@ -1,18 +1,23 @@
 ExcludeArch: s390 s390x
 
+%define cvs_snapshot 0
+
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
+
+%if %{cvs_snapshot}
 %define nm_cvs_version	.cvs20051010
+%endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.4.1
-Release: 5%{nm_cvs_version}
+Version: 0.5.0
+Release: 2%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://people.redhat.com/dcbw/NetworkManager/
-Source: %{name}-%{version}%{nm_cvs_version}.tar.gz
+Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -181,6 +186,9 @@ fi
 
 
 %changelog
+* Mon Oct 17 2005 Christopher Aillon <caillon@redhat.com> - 0.5.0-2
+- NetworkManager 0.5.0
+
 * Mon Oct 10 2005 Dan Williams <dcbw@redaht.com> - 0.4.1-5.cvs20051010
 - Fix automatic wireless connections
 - Remove usage of NMLoadModules callout, no longer needed
