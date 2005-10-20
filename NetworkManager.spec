@@ -12,7 +12,7 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.5.0
+Version: 0.5.1
 Release: 2%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
@@ -21,7 +21,7 @@ Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
-Requires: wireless-tools >= 27
+Requires: wireless-tools >= 28.0-pre9
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
@@ -29,11 +29,11 @@ Requires: iproute openssl
 Requires: bind caching-nameserver
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
-Requires: bind >= 9.3.1-18
+Requires: bind >= 9.3.1-20
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
-BuildRequires: wireless-tools >= 28
+BuildRequires: wireless-tools >= 28-0.pre9
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
@@ -43,7 +43,6 @@ BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
-BuildRequires: automake17
 BuildRequires: dhcdbd
 
 %description
@@ -96,9 +95,6 @@ functionality from applications that use glib.
 
 %prep
 %setup -q
-
-chmod +ox initscript/RedHat/NetworkManagerDispatcher
-automake-1.7
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
@@ -157,7 +153,6 @@ fi
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
-%config %{_datadir}/%{name}/named.conf
 %{_bindir}/%{name}
 %{_bindir}/NetworkManagerDispatcher
 %{_bindir}/nm-tool
@@ -186,6 +181,9 @@ fi
 
 
 %changelog
+* Wed Oct 20 2005 Christopher Aillon <caillon@redhat.com> - 0.5.1-2
+- NetworkManager 0.5.1
+
 * Mon Oct 17 2005 Christopher Aillon <caillon@redhat.com> - 0.5.0-2
 - NetworkManager 0.5.0
 
