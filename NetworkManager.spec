@@ -5,6 +5,8 @@ ExcludeArch: s390 s390x
 %define hal_version		0.5.0
 %define dbus_version	0.4
 %define gtk2_version	2.6.0
+%define wireless_tools_version 1:28-0pre9
+%define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
 %define nm_cvs_version	.cvs20051010
@@ -13,27 +15,27 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 2%{?nm_cvs_version}
+Release: 3%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
-URL: http://people.redhat.com/dcbw/NetworkManager/
+URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
-Requires: wireless-tools >= 28.0-pre9
+Requires: wireless-tools >= %{wireless_tools_version}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
-Requires: bind caching-nameserver
+Requires: caching-nameserver
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
-Requires: bind >= 9.3.1-20
+Requires: bind >= %{bind_version}
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
-BuildRequires: wireless-tools >= 28-0.pre9
+BuildRequires: wireless-tools >= %{wireless_tools_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
@@ -82,15 +84,27 @@ from applications.
 
 
 %package glib
-Summary: Libraries and headers for adding NetworkManager support to applications that use glib.
+Summary: Libraries for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 
 %description glib
-This package contains the headers and libraries that make it easier to use some Network Manager
+This package contains the libraries that make it easier to use some NetworkManager
 functionality from applications that use glib.
+
+
+%package glib-devel
+Summary: Header files for adding NetworkManager support to applications that use glib.
+Group: Development/Libraries
+Requires: %{name}-devel = %{version}-%{release}
+Requires: %{name}-glib = %{version}-%{release}
+Requires: glib2-devel
+
+%description glib-devel
+This package contains the header and pkg-config files for development applications using
+NetworkManager functionality from applications that use glib.
 
 
 %prep
@@ -102,17 +116,17 @@ make
 
 
 %install
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 %find_lang %{name}
-rm -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
-rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
-cp test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
+%{__rm} -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
+%{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf $RPM_BUILD_ROOT
 
 
 %post
@@ -176,12 +190,19 @@ fi
 %files glib
 %defattr(-,root,root,0755)
 %{_libdir}/libnm_glib.so*
+
+%files glib-devel
 %{_includedir}/%{name}/libnm_glib.h
 %{_libdir}/pkgconfig/libnm_glib.pc
 
 
 %changelog
-* Wed Oct 20 2005 Christopher Aillon <caillon@redhat.com> - 0.5.1-2
+* Fri Oct 21 2005 Christopher Aillon <caillon@redhat.com> - 0.5.1-3
+- Split out the -glib subpackage to have a -glib-devel package as well
+- Add epoch to version requirements for bind and wireless-tools
+- Update URL of project
+
+* Wed Oct 19 2005 Christopher Aillon <caillon@redhat.com> - 0.5.1-2
 - NetworkManager 0.5.1
 
 * Mon Oct 17 2005 Christopher Aillon <caillon@redhat.com> - 0.5.0-2
