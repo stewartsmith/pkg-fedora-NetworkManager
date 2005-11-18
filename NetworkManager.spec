@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 3%{?nm_cvs_version}
+Release: 4%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -130,8 +130,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 
 %post
-/sbin/chkconfig --add NetworkManager
-/sbin/chkconfig --add NetworkManagerDispatcher
+if [ "$1" == "1" ]; then
+	/sbin/chkconfig --add NetworkManager
+	/sbin/chkconfig --add NetworkManagerDispatcher
+fi
 
 %preun
 if [ $1 -eq 0 ]; then
@@ -140,13 +142,6 @@ if [ $1 -eq 0 ]; then
 
     /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManagerDispatcher
-fi
-
-
-%postun
-if [ $1 -ge 1 ]; then
-    /sbin/service NetworkManager condrestart >/dev/null 2>&1
-    /sbin/service NetworkManagerDispatcher condrestart >/dev/null 2>&1
 fi
 
 %post gnome
@@ -197,6 +192,9 @@ fi
 
 
 %changelog
+* Fri Nov 18 2005 Peter Jones <pjones@redhat.com> - 0.5.1-4
+- Don't kill the network connection when you upgrade the package.
+
 * Fri Oct 21 2005 Christopher Aillon <caillon@redhat.com> - 0.5.1-3
 - Split out the -glib subpackage to have a -glib-devel package as well
 - Add epoch to version requirements for bind and wireless-tools
