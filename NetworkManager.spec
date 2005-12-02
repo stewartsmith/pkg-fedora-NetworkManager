@@ -110,7 +110,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 .b .dbus-api
+%patch0 -p1 -b .dbus-api
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
