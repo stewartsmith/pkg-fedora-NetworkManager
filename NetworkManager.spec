@@ -3,7 +3,7 @@ ExcludeArch: s390 s390x
 %define cvs_snapshot 0
 
 %define hal_version		0.5.0
-%define dbus_version	0.4
+%define dbus_version	0.60
 %define gtk2_version	2.6.0
 %define wireless_tools_version 1:28-0pre9
 %define bind_version 24:9.3.1-20
@@ -15,11 +15,12 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 4%{?nm_cvs_version}
+Release: 5%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
+Patch0: NetworkManager-0.5.1-dbus-api.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -109,6 +110,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
+%patch0 -p1 .b .dbus-api
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
@@ -192,6 +194,9 @@ fi
 
 
 %changelog
+* Thu Dec 01 2005 John (J5) Palmieri <johnp@redhat.com> - 0.5.1-5
+- rebuild for new dbus
+
 * Fri Nov 18 2005 Peter Jones <pjones@redhat.com> - 0.5.1-4
 - Don't kill the network connection when you upgrade the package.
 
