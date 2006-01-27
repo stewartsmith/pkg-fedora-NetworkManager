@@ -163,8 +163,8 @@ fi
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
-%{_bindir}/%{name}
-%{_bindir}/NetworkManagerDispatcher
+%{_sbindir}/%{name}
+%{_sbindir}/NetworkManagerDispatcher
 %{_bindir}/nm-tool
 
 %files gnome
