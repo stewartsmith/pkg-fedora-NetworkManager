@@ -168,7 +168,7 @@ fi
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
 %{_bindir}/nm-tool
-%{_libdir}/libnm_util.so*
+%{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
 
