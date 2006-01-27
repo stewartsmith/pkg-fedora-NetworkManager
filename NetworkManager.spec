@@ -123,8 +123,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_util.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_util.a
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.la
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.a
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 
