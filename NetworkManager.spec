@@ -123,6 +123,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_util.la
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_util.a
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 
@@ -166,6 +168,9 @@ fi
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
 %{_bindir}/nm-tool
+%{_libdir}/libnm_glib.so*
+%{_mandir}/man1/NetworkManager.1.gz
+%{_mandir}/man1/NetworkManagerDispatcher.1.gz
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -179,9 +184,9 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
-%{_includedir}/%{name}/%{name}.h
-%{_includedir}/%{name}/nm-vpn-ui-interface.h
+%{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/%{name}.pc
+%{_libdir}/pkgconfig/libnm-util.pc
 
 %files glib
 %defattr(-,root,root,0755)
