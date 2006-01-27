@@ -1,6 +1,6 @@
 ExcludeArch: s390 s390x
 
-%define cvs_snapshot 0
+%define cvs_snapshot 1
 
 %define hal_version		0.5.0
 %define dbus_version	0.60
@@ -9,18 +9,17 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20051010
+%define nm_cvs_version	.cvs20060127
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 5%{?nm_cvs_version}.1
+Release: 6%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
-Patch0: NetworkManager-0.5.1-dbus-api.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -33,6 +32,7 @@ Requires: caching-nameserver
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
 Requires: bind >= %{bind_version}
+Requires: wpa_supplicant
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
@@ -110,7 +110,6 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 -b .dbus-api
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
@@ -194,6 +193,10 @@ fi
 
 
 %changelog
+* Fri Jan 27 2006 Dan Williams <dcbw@redhat.com> 0.5.1-6.cvs20060127
+- Snapshot from CVS
+- WPA Support!  Woohoo!
+
 * Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
 - rebuilt
 
