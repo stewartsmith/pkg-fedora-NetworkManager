@@ -47,6 +47,7 @@ BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: dhcdbd
+BuildRequires: wpa_supplicant
 
 %description
 NetworkManager attempts to keep an active network connection available at all
