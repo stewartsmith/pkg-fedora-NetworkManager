@@ -9,13 +9,13 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060127
+%define nm_cvs_version	.cvs20060131
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 6%{?nm_cvs_version}
+Release: 7%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -198,6 +198,11 @@ fi
 
 
 %changelog
+* Tue Jan 31 2006 Dan Williams <dcbw@redhat.com> 0.5.1-7.cvs20060131
+- Longer association timeout
+- Fix some SELinux issues
+- General bug and cosmetic fixes
+
 * Fri Jan 27 2006 Dan Williams <dcbw@redhat.com> 0.5.1-6.cvs20060127
 - Snapshot from CVS
 - WPA Support!  Woohoo!
