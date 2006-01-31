@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 7%{?nm_cvs_version}
+Release: 8%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -128,6 +128,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.a
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
+%{__cp} nm-applet.desktop $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
+
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -182,6 +185,7 @@ fi
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
+%{_sysconfdir}/xdg/autostart/nm-applet.desktop
 
 %files devel
 %defattr(-,root,root,0755)
@@ -199,6 +203,11 @@ fi
 
 
 %changelog
+* Tue Jan 31 2006 Dan Williams <dcbw@redhat.com> 0.5.1-8.cvs20060131
+- Switch to autostarting the applet instead of having it be session-managed
+- Work better with non-broadcasting access points
+- Add more manufacturer default SSIDs to the blacklist
+
 * Tue Jan 31 2006 Dan Williams <dcbw@redhat.com> 0.5.1-7.cvs20060131
 - Longer association timeout
 - Fix some SELinux issues
