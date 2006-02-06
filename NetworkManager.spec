@@ -9,18 +9,20 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060131
+%define nm_cvs_version	.cvs20060205
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 8%{?nm_cvs_version}
+Release: 10%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
+
+Patch0: special-case-madwifi.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -111,6 +113,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
+%patch0 -p0 -b .madwifi
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
@@ -130,6 +133,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
 %{__cp} nm-applet.desktop $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
+%{__rm} -rf $RPM_BUILD_ROOT%{_datadir}/autostart
 
 
 %clean
@@ -175,6 +179,8 @@ fi
 %{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
+%{_mandir}/man1/nm-tool.1.gz
+%{_localstatedir}/run/%{name}
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -203,6 +209,14 @@ fi
 
 
 %changelog
+* Sun Feb  5 2006 Dan Williams <dcbw@redhat.com> 0.5.1-10.cvs20060205
+- Workarounds for madwifi/Atheros cards
+- Do better with non-SSID-broadcasting access points
+- Fix hangs when access points change settings
+
+* Thu Feb  2 2006 Dan Williams <dcbw@redhat.com> 0.5.1-9.cvs20060202
+- Own /var/run/NetworkManager, fix SELinux issues
+
 * Tue Jan 31 2006 Dan Williams <dcbw@redhat.com> 0.5.1-8.cvs20060131
 - Switch to autostarting the applet instead of having it be session-managed
 - Work better with non-broadcasting access points
