@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 10%{?nm_cvs_version}.1
+Release: 11%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -209,7 +209,10 @@ fi
 
 
 %changelog
-* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 0.5.1-10.cvs20060205.1
+* Sun Feb 12 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-11.cvs20060205
+- Rebuild
+
+* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> 0.5.1-10.cvs20060205.1
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
 * Sun Feb  5 2006 Dan Williams <dcbw@redhat.com> 0.5.1-10.cvs20060205
