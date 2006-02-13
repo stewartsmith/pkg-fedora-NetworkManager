@@ -9,13 +9,13 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060205
+%define nm_cvs_version	.cvs20060213
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 11%{?nm_cvs_version}
+Release: 12%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -209,12 +209,17 @@ fi
 
 
 %changelog
+* Mon Feb 13 2006 Dan Williams <dcbw@redhat.com> 0.5.1-12.cvs20060213
+- Minor bug fixes
+- Update to VPN dbus API for passing user-defined routes to vpn service
+
 * Sun Feb 12 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-11.cvs20060205
 - Rebuild
 
 * Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> 0.5.1-10.cvs20060205.1
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
+>>>>>>> 1.88
 * Sun Feb  5 2006 Dan Williams <dcbw@redhat.com> 0.5.1-10.cvs20060205
 - Workarounds for madwifi/Atheros cards
 - Do better with non-SSID-broadcasting access points
