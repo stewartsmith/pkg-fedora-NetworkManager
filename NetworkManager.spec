@@ -9,13 +9,13 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060213
+%define nm_cvs_version	.cvs20060221
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 12%{?nm_cvs_version}
+Release: 13%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -35,6 +35,7 @@ Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
 Requires: bind >= %{bind_version}
 Requires: wpa_supplicant
+Requires: libnotify >= 0.3
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
@@ -50,6 +51,8 @@ BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: dhcdbd
 BuildRequires: wpa_supplicant
+BuildRequires: libnl-devel
+BuildRequires: libnotify-devel >= 0.3
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -116,7 +119,7 @@ NetworkManager functionality from applications that use glib.
 %patch0 -p0 -b .madwifi
 
 %build
-%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named
+%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
 make
 
 
@@ -209,6 +212,13 @@ fi
 
 
 %changelog
+* Tue Feb 21 2006 Dan Williams <dcbw@redhat.com> 0.5.1-13.cvs20060221
+- Add BuildRequires: libnl-devel (#rh179438#)
+- Fix libnm_glib to not clobber an application's existing dbus connection
+	(#rh177546#, gnome.org #326572)
+- libnotify support
+- AP compatibility fixes
+
 * Mon Feb 13 2006 Dan Williams <dcbw@redhat.com> 0.5.1-12.cvs20060213
 - Minor bug fixes
 - Update to VPN dbus API for passing user-defined routes to vpn service
@@ -219,7 +229,6 @@ fi
 * Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> 0.5.1-10.cvs20060205.1
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
->>>>>>> 1.88
 * Sun Feb  5 2006 Dan Williams <dcbw@redhat.com> 0.5.1-10.cvs20060205
 - Workarounds for madwifi/Atheros cards
 - Do better with non-SSID-broadcasting access points
