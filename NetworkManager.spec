@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 13%{?nm_cvs_version}
+Release: 14%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -35,7 +35,6 @@ Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
 Requires: bind >= %{bind_version}
 Requires: wpa_supplicant
-Requires: libnotify >= 0.3
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: hal-devel >= %{hal_version}
@@ -71,6 +70,7 @@ Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
+Requires: libnotify >= 0.3
 PreReq:  gtk2 >= %{gtk2_version}
 
 %description gnome
@@ -212,6 +212,9 @@ fi
 
 
 %changelog
+* Fri Feb 24 2006 Dan Williams <dcbw@redhat.coM> 0.5.1-14.cvs20060221
+- Move libnotify requires to NetworkManager-gnome, not core NM package
+
 * Tue Feb 21 2006 Dan Williams <dcbw@redhat.com> 0.5.1-13.cvs20060221
 - Add BuildRequires: libnl-devel (#rh179438#)
 - Fix libnm_glib to not clobber an application's existing dbus connection
