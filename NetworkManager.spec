@@ -9,13 +9,13 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060221
+%define nm_cvs_version	.cvs20060227
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 14%{?nm_cvs_version}
+Release: 15%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -184,6 +184,8 @@ fi
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
 %{_mandir}/man1/nm-tool.1.gz
 %{_localstatedir}/run/%{name}
+%{_prefix}/libexec/nm-crash-logger
+%{_datadir}/NetworkManager/gdb-cmd
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -212,6 +214,9 @@ fi
 
 
 %changelog
+* Mon Feb 27 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-15.cvs20060227
+- Update snapshot, which fixes up the libnotify stuff.
+
 * Fri Feb 24 2006 Dan Williams <dcbw@redhat.coM> 0.5.1-14.cvs20060221
 - Move libnotify requires to NetworkManager-gnome, not core NM package
 
