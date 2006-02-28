@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 15%{?nm_cvs_version}
+Release: 16%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -23,6 +23,7 @@ Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Patch0: special-case-madwifi.patch
+Patch1: three-scan-prune.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -117,6 +118,7 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p0 -b .madwifi
+%patch1 -p0 -b .three-scan-prune
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
@@ -214,6 +216,9 @@ fi
 
 
 %changelog
+* Mon Feb 27 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-16.cvs20060227
+- Don't prune networks until they've gone MIA for three scans, not one.
+
 * Mon Feb 27 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-15.cvs20060227
 - Update snapshot, which fixes up the libnotify stuff.
 
