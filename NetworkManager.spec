@@ -9,13 +9,13 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060227
+%define nm_cvs_version	.cvs20060301
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.5.1
-Release: 17%{?nm_cvs_version}
+Release: 18%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -23,7 +23,6 @@ Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Patch0: special-case-madwifi.patch
-Patch1: three-scan-prune.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -118,7 +117,6 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p0 -b .madwifi
-%patch1 -p0 -b .three-scan-prune
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
@@ -216,6 +214,11 @@ fi
 
 
 %changelog
+* Wed Mar  1 2006 Dan Williams <dcbw@redhat.com> 0.5.1-18.cvs20060301
+- Fix VPN-related crash
+- Fix issue where NM would refuse to activate a VPN connection once it had timed out
+- Log wpa_supplicant output for better debugging
+
 * Tue Feb 28 2006 Christopher Aillon <caillon@redhat.com> 0.5.1-17.cvs20060228
 - Tweak three-scan-prune.patch
 
