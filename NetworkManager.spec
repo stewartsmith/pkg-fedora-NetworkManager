@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060301
+%define nm_cvs_version	.cvs20060302
 %endif
 
 Name: NetworkManager
@@ -215,6 +215,9 @@ fi
 
 
 %changelog
+* Thu Mar  2 2006 Jeremy Katz <katzj@redhat.com> - 0.5.1-18.cvs20060302
+- updated cvs snapshot.  seems to make airo much less spastic
+
 * Thu Mar  2 2006 Christopher Aillon <caillon@redhat.com>
 - Move the unversioned libnm_glib.so to the -devel package
 
