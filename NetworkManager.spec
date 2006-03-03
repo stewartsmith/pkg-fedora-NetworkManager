@@ -206,14 +206,18 @@ fi
 
 %files glib
 %defattr(-,root,root,0755)
-%{_libdir}/libnm_glib.so*
+%{_libdir}/libnm_glib.so.*
 
 %files glib-devel
 %{_includedir}/%{name}/libnm_glib.h
 %{_libdir}/pkgconfig/libnm_glib.pc
+%{_libdir}/libnm_glib.so
 
 
 %changelog
+* Thu Mar  2 2006 Christopher Aillon <caillon@redhat.com>
+- Move the unversioned libnm_glib.so to the -devel package
+
 * Wed Mar  1 2006 Dan Williams <dcbw@redhat.com> 0.5.1-18.cvs20060301
 - Fix VPN-related crash
 - Fix issue where NM would refuse to activate a VPN connection once it had timed out
