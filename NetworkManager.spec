@@ -138,6 +138,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__cp} nm-applet.desktop $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
 %{__rm} -rf $RPM_BUILD_ROOT%{_datadir}/autostart
 
+# eventually, we probably want this location instead.  but not this late :)
+%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/gnome/autostart/nm-applet.desktop
+
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
