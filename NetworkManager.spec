@@ -1,6 +1,6 @@
 ExcludeArch: s390 s390x
 
-%define cvs_snapshot 1
+%define cvs_snapshot 0
 
 %define hal_version		0.5.0
 %define dbus_version	0.60
@@ -14,8 +14,8 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.5.1
-Release: 18%{?nm_cvs_version}
+Version: 0.6.0
+Release: 1%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -134,14 +134,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.a
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
-%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
-%{__cp} nm-applet.desktop $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/
-%{__rm} -rf $RPM_BUILD_ROOT%{_datadir}/autostart
-
-# eventually, we probably want this location instead.  but not this late :)
-%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/gnome/autostart/nm-applet.desktop
-
-
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -181,12 +173,13 @@ fi
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
+%dir %{_sysconfdir}/NetworkManager/
 %{_bindir}/nm-tool
 %{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
 %{_mandir}/man1/nm-tool.1.gz
-%{_localstatedir}/run/%{name}
+%dir %{_localstatedir}/run/%{name}
 %{_prefix}/libexec/nm-crash-logger
 %{_datadir}/NetworkManager/gdb-cmd
 
@@ -199,7 +192,7 @@ fi
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
-%{_sysconfdir}/xdg/autostart/nm-applet.desktop
+%{_datadir}/gnome/autostart/nm-applet.desktop
 
 %files devel
 %defattr(-,root,root,0755)
@@ -218,6 +211,10 @@ fi
 
 
 %changelog
+* Mon Mar  6 2006 Dan Williams <dcbw@redhat.com> 0.6.0-1
+- Update to 0.6.0 release
+- Move autostart file to /usr/share/gnome/autostart
+
 * Thu Mar  2 2006 Jeremy Katz <katzj@redhat.com> - 0.5.1-18.cvs20060302
 - updated cvs snapshot.  seems to make airo much less spastic
 
