@@ -14,16 +14,15 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.6.0
-Release: 3%{?nm_cvs_version}
+Version: 0.6.1
+Release: 1%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
+Source: %{name}-%{version}%{?nm_cvs_version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Patch0: special-case-madwifi.patch
-Patch1: no-wpa-no-scan1.patch
 Patch2: NetworkManager-0.6.0-device-up.patch
 
 PreReq:   chkconfig
@@ -119,7 +118,6 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p0 -b .madwifi
-%patch1 -p0 -b .no-wpa-no-scan1
 %patch2 -p1 -b .device-up
 
 %build
@@ -215,6 +213,9 @@ fi
 
 
 %changelog
+* Thu Mar 16 2006 Christopher Aillon <caillon@redhat.com> 0.6.1-1
+- Update to 0.6.1 release
+
 * Tue Mar 14 2006 Peter Jones <pjones@redhat.com> - 0.6.0-3
 - Fix device bringup on resume
 
