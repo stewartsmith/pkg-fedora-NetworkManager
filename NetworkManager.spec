@@ -14,16 +14,16 @@ ExcludeArch: s390 s390x
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.6.1
-Release: 1%{?nm_cvs_version}
+Version: 0.6.2
+Release: 1%{?nm_cvs_version}.fc6
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}%{?nm_cvs_version}.tar.bz2
+Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Patch0: special-case-madwifi.patch
-Patch2: NetworkManager-0.6.0-device-up.patch
+Patch1: service-startup.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -118,7 +118,7 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p0 -b .madwifi
-%patch2 -p1 -b .device-up
+%patch1 -p1 -b .service-startup
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
@@ -213,8 +213,16 @@ fi
 
 
 %changelog
-* Thu Mar 16 2006 Christopher Aillon <caillon@redhat.com> 0.6.1-1
-- Update to 0.6.1 release
+* Thu Mar 30 2006 Dan Williams <dcbw@redhat.com> - 0.6.2-1
+- Update to 0.6.2:
+    * Fix various WPA-related bugs
+    * Clean up leaks
+    * Increased DHCP timeout to account for slow DHCP servers, or STP-enabled
+        switches
+    * Allow applet to reconnect on dbus restarts
+    * Add "Dynamic WEP" support
+    * Allow hiding of password/key entry text
+    * More responsive connection switching
 
 * Tue Mar 14 2006 Peter Jones <pjones@redhat.com> - 0.6.0-3
 - Fix device bringup on resume
