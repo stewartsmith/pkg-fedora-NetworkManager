@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.6.2
-Release: 1%{?nm_cvs_version}.fc6
+Release: 2%{?nm_cvs_version}.fc6
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -24,6 +24,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Patch0: special-case-madwifi.patch
 Patch1: service-startup.patch
+Patch2: nm-hal-devtype.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -119,6 +120,7 @@ NetworkManager functionality from applications that use glib.
 %setup -q
 %patch0 -p0 -b .madwifi
 %patch1 -p1 -b .service-startup
+%patch2 -p0 -b .haltype
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
@@ -213,6 +215,10 @@ fi
 
 
 %changelog
+* Thu Apr 27 2006 Jeremy Katz <katzj@redhat.com> - 0.6.2-2.fc6
+- use the hal device type instead of poking via ioctl so that wireless 
+  devices are properly detected even if the kill switch has been used
+
 * Thu Mar 30 2006 Dan Williams <dcbw@redhat.com> - 0.6.2-1
 - Update to 0.6.2:
     * Fix various WPA-related bugs
