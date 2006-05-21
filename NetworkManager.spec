@@ -1,6 +1,6 @@
 ExcludeArch: s390 s390x
 
-%define cvs_snapshot 0
+%define cvs_snapshot 1
 
 %define hal_version		0.5.0
 %define dbus_version	0.60
@@ -9,21 +9,18 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060302
+%define nm_cvs_version	.cvs20060521
 %endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.6.2
-Release: 3%{?nm_cvs_version}.fc6
+Version: 0.7.0
+Release: 0%{?nm_cvs_version}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-
-Patch0: special-case-madwifi.patch
-Patch1: service-startup.patch
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -117,8 +114,6 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p0 -b .madwifi
-%patch1 -p1 -b .service-startup
 
 %build
 %configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
@@ -213,6 +208,10 @@ fi
 
 
 %changelog
+* Sun May 21 2006 Dan Williams <dcbw@redhat.com> - 0.7.0-0.cvs20050621
+- Update to latest CVS
+- Drop special-case-madwifi.patch, since WEXT code is in madwifi-ng trunk now
+
 * Fri May 19 2006 Bill Nottingham <notting@redhat.com> - 0.6.2-3.fc6
 - use the same 0.6.2 tarball as FC5, so we have the same VPN interface
   (did he fire ten args, or only nine?)
