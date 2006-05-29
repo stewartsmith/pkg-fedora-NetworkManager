@@ -242,7 +242,7 @@ fi
 - Move autostart file to /usr/share/gnome/autostart
 
 * Thu Mar  2 2006 Jeremy Katz <katzj@redhat.com> - 0.5.1-18.cvs20060302
-- updated cvs snapshot.  seems to make airo much less spastic
+- updated cvs snapshot.  seems to make airo much less neurotic
 
 * Thu Mar  2 2006 Christopher Aillon <caillon@redhat.com>
 - Move the unversioned libnm_glib.so to the -devel package
