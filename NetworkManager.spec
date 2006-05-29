@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define bind_version 24:9.3.1-20
 
 %if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060521
+%define nm_cvs_version	.cvs20060529
 %endif
 
 Name: NetworkManager
@@ -91,7 +91,6 @@ from applications.
 %package glib
 Summary: Libraries for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_version}
 
@@ -116,7 +115,12 @@ NetworkManager functionality from applications that use glib.
 %setup -q
 
 %build
-%configure --with-named=/usr/sbin/named --with-named-dir=/var/named/data --with-named-user=named --enable-notify=yes
+%configure \
+	--disable-static \
+	--enable-notify=yes \
+	--with-named=/usr/sbin/named \
+	--with-named-dir=/var/named/data \
+	--with-named-user=named
 make
 
 
@@ -124,11 +128,7 @@ make
 %{__rm} -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 %find_lang %{name}
-%{__rm} -f $RPM_BUILD_ROOT%{_bindir}/NMLoadModules
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm_glib.a
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-util.a
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 %clean
@@ -149,6 +149,9 @@ if [ $1 -eq 0 ]; then
     /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManagerDispatcher
 fi
+
+%post   glib -p /sbin/ldconfig
+%postun glib -p /sbin/ldconfig
 
 %post gnome
 touch --no-create %{_datadir}/icons/hicolor
@@ -208,7 +211,21 @@ fi
 
 
 %changelog
-* Sun May 21 2006 Dan Williams <dcbw@redhat.com> - 0.7.0-0.cvs20050621
+* Mon May 29 2006 Dan Williams <dcbw@redhat.com> - 0.7.0-0.cvs20060529
+- Update to latest CVS
+	o Gnome.org #333420: dialog do not have window icons
+	o Gnome.org #336913: HIG tweaks for vpn properties pages
+	o Gnome.org #336846: HIG tweaks for nm-vpn-properties
+	o Gnome.org #336847: some bugs in nm-vpn-properties args parsing
+	o Gnome.org #341306: nm-vpn-properties crashes on startup
+	o Gnome.org #341263: Version 0.6.2-0ubuntu5 crashes on nm_device_802_11_wireless_get_type
+	o Gnome.org #341297: displays repeated keyring dialogs on resume from suspend
+	o Gnome.org #342400: Building libnm-util --without-gcrypt results in linker error
+	o Gnome.org #342398: Eleminate Gnome dependency for NetworkManager
+	o Gnome.org #336532: declaration of 'link' shadows a global declaration
+- Specfile fixes (#rh187489#)
+
+* Sun May 21 2006 Dan Williams <dcbw@redhat.com> - 0.7.0-0.cvs20060521
 - Update to latest CVS
 - Drop special-case-madwifi.patch, since WEXT code is in madwifi-ng trunk now
 
