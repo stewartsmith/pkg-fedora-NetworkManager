@@ -70,6 +70,7 @@ Requires: dbus-glib >= %{dbus_version}
 Requires: hal >= %{hal_version}
 Requires: libnotify >= 0.3
 PreReq:  gtk2 >= %{gtk2_version}
+Requires: gnome-keyring
 
 %description gnome
 This package contains GNOME utilities and applications for use with
