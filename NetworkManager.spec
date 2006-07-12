@@ -15,7 +15,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.1
+Release: 0%{?nm_cvs_version}.1.1
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -212,6 +212,9 @@ fi
 
 
 %changelog
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 0.7.0-0.cvs20060529.1.1
+- rebuild
+
 * Mon May 29 2006 Dan Williams <dcbw@redhat.com> - 0.7.0-0.cvs20060529
 - Update to latest CVS
 	o Gnome.org #333420: dialog do not have window icons
