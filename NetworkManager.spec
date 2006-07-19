@@ -117,7 +117,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 .dbus-deprecated
+%patch0 -p1 -b .dbus-deprecated
 
 %build
 %configure \
