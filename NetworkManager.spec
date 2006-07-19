@@ -16,11 +16,12 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.2
+Release: 0%{?nm_cvs_version}.3
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
+Patch0: NetworkManager-0.7.0-dbus-deprecated.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -116,6 +117,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
+%patch0 -p1 .dbus-deprecated
 
 %build
 %configure \
@@ -214,6 +216,9 @@ fi
 
 
 %changelog
+* Wed Jul 19 2006 John (J5) Palmieri <johnp@redhat.com> - 0.7.0-0.cvs20060529.3
+- Add patch to fix deprecated dbus functions
+
 * Tue Jul 18 2006 John (J5) Palmieri <johnp@redhat.com> - 0.7.0-0.cvs20060529.2
 - Add BR for dbus-glib-devel
 
