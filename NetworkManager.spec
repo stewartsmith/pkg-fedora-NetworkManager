@@ -2,8 +2,9 @@ ExcludeArch: s390 s390x
 
 %define cvs_snapshot 1
 
-%define hal_version		0.5.0
-%define dbus_version	0.60
+%define hal_version	0.5.0
+%define dbus_version	0.90
+%define dbus_glib_version 0.70
 %define gtk2_version	2.6.0
 %define wireless_tools_version 1:28-0pre9
 %define bind_version 24:9.3.1-20
@@ -15,7 +16,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.1.1
+Release: 0%{?nm_cvs_version}.2
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -25,7 +26,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
 Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: caching-nameserver
@@ -35,6 +36,7 @@ Requires: bind >= %{bind_version}
 Requires: wpa_supplicant
 
 BuildRequires: dbus-devel >= %{dbus_version}
+BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: wireless-tools >= %{wireless_tools_version}
 BuildRequires: glib2-devel gtk2-devel
@@ -66,7 +68,7 @@ Group: Applications/Internet
 Requires: %{name} = %{version}-%{release}
 Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: libnotify >= 0.3
 PreReq:  gtk2 >= %{gtk2_version}
@@ -82,7 +84,7 @@ Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
 
 %description devel
 This package contains various headers accessing some NetworkManager functionality
@@ -93,7 +95,7 @@ from applications.
 Summary: Libraries for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
 
 %description glib
 This package contains the libraries that make it easier to use some NetworkManager
@@ -212,6 +214,9 @@ fi
 
 
 %changelog
+* Tue Jul 18 2006 John (J5) Palmieri <johnp@redhat.com> - 0.7.0-0.cvs20060529.2
+- Add BR for dbus-glib-devel
+
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 0.7.0-0.cvs20060529.1.1
 - rebuild
 
