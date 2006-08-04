@@ -16,7 +16,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.3
+Release: 0%{?nm_cvs_version}.4
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -216,6 +216,9 @@ fi
 
 
 %changelog
+* Fri Aug  4 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.4
+- Don't ever elect inactive wired devices (bug 194124).
+
 * Wed Jul 19 2006 John (J5) Palmieri <johnp@redhat.com> - 0.7.0-0.cvs20060529.3
 - Add patch to fix deprecated dbus functions
 
