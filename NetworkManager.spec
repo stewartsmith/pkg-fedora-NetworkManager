@@ -22,6 +22,7 @@ License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 Patch0: NetworkManager-0.7.0-dbus-deprecated.patch
+Patch1: NetworkManager-0.7.0-dont-choose-inactive-wired-device.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -118,6 +119,7 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p1 -b .dbus-deprecated
+%patch1 -p1 -b .dont-choose-inactive-wired-device
 
 %build
 %configure \
@@ -216,6 +218,9 @@ fi
 
 
 %changelog
+* Wed Aug  9 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.5
+- actually make the patch in 0.7.0-0.cvs20060529.4 apply
+
 * Fri Aug  4 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.4
 - Don't ever elect inactive wired devices (bug 194124).
 
