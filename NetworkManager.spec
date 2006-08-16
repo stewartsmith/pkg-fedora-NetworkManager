@@ -16,13 +16,14 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.5
+Release: 0%{?nm_cvs_version}.6
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 Patch0: NetworkManager-0.7.0-dbus-deprecated.patch
 Patch1: NetworkManager-0.7.0-dont-choose-inactive-wired-device.patch
+Patch2: NetworkManager-0.7.0-shhh.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 PreReq:   chkconfig
@@ -120,6 +121,7 @@ NetworkManager functionality from applications that use glib.
 %setup -q
 %patch0 -p1 -b .dbus-deprecated
 %patch1 -p1 -b .dont-choose-inactive-wired-device
+%patch2 -p1 -b .shhhh
 
 %build
 %configure \
@@ -218,6 +220,9 @@ fi
 
 
 %changelog
+* Wed Aug 16 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.6
+- add patch to make networkmanager less verbose (bug 202832)
+
 * Wed Aug  9 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.5
 - actually make the patch in 0.7.0-0.cvs20060529.4 apply
 
