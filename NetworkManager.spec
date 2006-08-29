@@ -55,6 +55,7 @@ BuildRequires: dhcdbd
 BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
+BuildRequires: perl-XML-Parser
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -221,7 +222,7 @@ fi
 
 %changelog
 * Tue Aug 29 2006 Christopher Aillon <caillon@redhat.com> - 0.7.0-0.cvs20060529.7
-- BuildRequire wireless-tools-devel
+- BuildRequire wireless-tools-devel and perl-XML-Parser
 - Update the BuildRoot tag
 
 * Wed Aug 16 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.6
