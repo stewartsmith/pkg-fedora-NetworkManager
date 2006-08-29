@@ -16,7 +16,7 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Version: 0.7.0
-Release: 0%{?nm_cvs_version}.6
+Release: 0%{?nm_cvs_version}.7
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -24,7 +24,7 @@ Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
 Patch0: NetworkManager-0.7.0-dbus-deprecated.patch
 Patch1: NetworkManager-0.7.0-dont-choose-inactive-wired-device.patch
 Patch2: NetworkManager-0.7.0-shhh.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
@@ -41,7 +41,7 @@ Requires: wpa_supplicant
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: hal-devel >= %{hal_version}
-BuildRequires: wireless-tools >= %{wireless_tools_version}
+BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
@@ -220,6 +220,10 @@ fi
 
 
 %changelog
+* Tue Aug 29 2006 Christopher Aillon <caillon@redhat.com> - 0.7.0-0.cvs20060529.7
+- BuildRequire wireless-tools-devel
+- Update the BuildRoot tag
+
 * Wed Aug 16 2006 Ray Strode <rstrode@redhat.com> - 0.7.0-0.cvs20060529.6
 - add patch to make networkmanager less verbose (bug 202832)
 
