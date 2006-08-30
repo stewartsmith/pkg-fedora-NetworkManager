@@ -1,29 +1,32 @@
 ExcludeArch: s390 s390x
 
-%define cvs_snapshot 1
-
 %define hal_version	0.5.0
+
+%if "%fedora" == "5"
+%define dbus_version 0.61
+%define dbus_glib_version 0.61
+%endif
+
+%if "%fedora" == "6"
 %define dbus_version	0.90
 %define dbus_glib_version 0.70
+%endif
+
 %define gtk2_version	2.6.0
 %define wireless_tools_version 1:28-0pre9
-%define bind_version 24:9.3.1-20
-
-%if %{cvs_snapshot}
-%define nm_cvs_version	.cvs20060529
-%endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Version: 0.7.0
-Release: 0%{?nm_cvs_version}.7
+Epoch: 1
+Version: 0.6.4
+Release: 2%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}%{?nm_cvs_version}.tar.gz
-Patch0: NetworkManager-0.7.0-dbus-deprecated.patch
-Patch1: NetworkManager-0.7.0-dont-choose-inactive-wired-device.patch
-Patch2: NetworkManager-0.7.0-shhh.patch
+Source: %{name}-%{version}.cvs20060829.tar.gz
+Patch0: NetworkManager-0.6.4-old-dbus.patch
+Patch1: NetworkManager-0.6.4-fc5-specialcase-madwifi.patch
+Patch2: NetworkManager-0.6.4-startup-dhcdbd.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -32,10 +35,8 @@ Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
-Requires: caching-nameserver
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
-Requires: bind >= %{bind_version}
 Requires: wpa_supplicant
 
 BuildRequires: dbus-devel >= %{dbus_version}
@@ -120,11 +121,16 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 -b .dbus-deprecated
-%patch1 -p1 -b .dont-choose-inactive-wired-device
-%patch2 -p1 -b .shhhh
+%if "%fedora" == "5"
+%patch0 -p1 -b .old-dbus
+# Preserve compat with older FC5 versions of NM
+%patch1 -p1 -b .specialcase-madwifi
+%endif
+%patch2 -p1 -b .startup-dhcdbd
 
 %build
+# Even though we don't require named, we still build with it
+# so that if the user installs it, NM will use it automatically
 %configure \
 	--disable-static \
 	--enable-notify=yes \
@@ -221,6 +227,11 @@ fi
 
 
 %changelog
+* Wed Aug 30 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.4-2
+- Revert FC6 to latest stable NM
+- Update to stable snapshot
+- Remove bind/caching-nameserver hard requirement
+
 * Tue Aug 29 2006 Christopher Aillon <caillon@redhat.com> - 0.7.0-0.cvs20060529.7
 - BuildRequire wireless-tools-devel and perl-XML-Parser
 - Update the BuildRoot tag
