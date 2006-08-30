@@ -27,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -100,7 +100,7 @@ NetworkManager, including a panel applet for wireless networks.
 %package devel
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 
@@ -123,7 +123,7 @@ functionality from applications that use glib.
 %package glib-devel
 Summary: Header files for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
-Requires: %{name}-devel = %{version}-%{release}
+Requires: %{name}-devel = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{version}-%{release}
 Requires: glib2-devel
 
@@ -240,6 +240,9 @@ fi
 
 
 %changelog
+* Wed Aug 30 2006 Bill Nottingham <notting@redhat.com> - 1:0.6.4-4
+- add epochs in requirements
+
 * Wed Aug 30 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.4-3
 - Fix FC-5 buildreqs
 
