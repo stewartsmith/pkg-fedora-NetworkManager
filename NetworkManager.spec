@@ -83,7 +83,7 @@ from a DHCP server, and change nameservers whenever it sees fit.
 %package gnome
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
@@ -124,7 +124,7 @@ functionality from applications that use glib.
 Summary: Header files for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
 Requires: %{name}-devel = %{epoch}:%{version}-%{release}
-Requires: %{name}-glib = %{version}-%{release}
+Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 
 %description glib-devel
