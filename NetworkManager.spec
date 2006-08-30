@@ -3,13 +3,21 @@ ExcludeArch: s390 s390x
 %define hal_version	0.5.0
 
 %if "%fedora" == "5"
-%define dbus_version 0.61
-%define dbus_glib_version 0.61
+%define fc6_or_later 0
+%endif
+%if "%fedora" >= "6"
+%define fc6_or_later 1
+%endif
+%if "%rhel" >= "5"
+%define fc6_or_later 1
 %endif
 
-%if "%fedora" == "6"
+%if %{fc6_or_later}
 %define dbus_version	0.90
 %define dbus_glib_version 0.70
+%else
+%define dbus_version 0.61
+%define dbus_glib_version 0.61
 %endif
 
 %define gtk2_version	2.6.0
@@ -19,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -40,9 +48,14 @@ Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant
 
 BuildRequires: dbus-devel >= %{dbus_version}
+%if %{fc6_or_later}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
-BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
+%else
+BuildRequires: wireless-tools >= %{wireless_tools_version}
+BuildRequires: dbus-glib >= %{dbus_glib_version}
+%endif
+BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
@@ -227,6 +240,9 @@ fi
 
 
 %changelog
+* Wed Aug 30 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.4-3
+- Fix FC-5 buildreqs
+
 * Wed Aug 30 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.4-2
 - Revert FC6 to latest stable NM
 - Update to stable snapshot
