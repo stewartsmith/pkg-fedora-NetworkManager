@@ -27,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -35,6 +35,7 @@ Source: %{name}-%{version}.cvs20060829.tar.gz
 Patch0: NetworkManager-0.6.4-old-dbus.patch
 Patch1: NetworkManager-0.6.4-fc5-specialcase-madwifi.patch
 Patch2: NetworkManager-0.6.4-startup-dhcdbd.patch
+Patch3: NetworkManager-0.6.4-applet-redraw.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -140,6 +141,7 @@ NetworkManager functionality from applications that use glib.
 %patch1 -p1 -b .specialcase-madwifi
 %endif
 %patch2 -p1 -b .startup-dhcdbd
+%patch3 -p1 -b .applet-redraw
 
 %build
 # Even though we don't require named, we still build with it
@@ -240,6 +242,9 @@ fi
 
 
 %changelog
+* Mon Sep  4 2006 Christopher Aillon <caillon@redhat.com> - 1:0.6.4-5
+- Don't wake up to redraw if NM is inactive (#204850)
+
 * Wed Aug 30 2006 Bill Nottingham <notting@redhat.com> - 1:0.6.4-4
 - add epochs in requirements
 
