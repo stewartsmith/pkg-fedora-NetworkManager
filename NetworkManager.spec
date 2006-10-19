@@ -27,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.4
-Release: 5%{?dist}
+Release: 6%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -199,12 +199,12 @@ fi
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
+%dir %{_sysconfdir}/NetworkManager/
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
-%dir %{_sysconfdir}/NetworkManager/
 %{_bindir}/nm-tool
 %{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
@@ -212,7 +212,8 @@ fi
 %{_mandir}/man1/nm-tool.1.gz
 %dir %{_localstatedir}/run/%{name}
 %{_prefix}/libexec/nm-crash-logger
-%{_datadir}/NetworkManager/gdb-cmd
+%dir %{_datadir}/%{name}
+%{_datadir}/%{name}/gdb-cmd
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -227,6 +228,7 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
+%dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/pkgconfig/libnm-util.pc
@@ -242,6 +244,9 @@ fi
 
 
 %changelog
+* Thu Oct 19 2006 Christopher Aillon <caillon@redhat.com> - 1:0.6.4-6
+- Own /usr/share/NetworkManager and /usr/include/NetworkManager
+
 * Mon Sep  4 2006 Christopher Aillon <caillon@redhat.com> - 1:0.6.4-5
 - Don't wake up to redraw if NM is inactive (#204850)
 
