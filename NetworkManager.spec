@@ -26,16 +26,12 @@ ExcludeArch: s390 s390x
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.6.4
-Release: 6%{?dist}
+Version: 0.6.5
+Release: 0.cvs20061025%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}.cvs20060829.tar.gz
-Patch0: NetworkManager-0.6.4-old-dbus.patch
-Patch1: NetworkManager-0.6.4-fc5-specialcase-madwifi.patch
-Patch2: NetworkManager-0.6.4-startup-dhcdbd.patch
-Patch3: NetworkManager-0.6.4-applet-redraw.patch
+Source: %{name}-%{version}.cvs20061025.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -134,14 +130,7 @@ NetworkManager functionality from applications that use glib.
 
 
 %prep
-%setup -q
-%if "%fedora" == "5"
-%patch0 -p1 -b .old-dbus
-# Preserve compat with older FC5 versions of NM
-%patch1 -p1 -b .specialcase-madwifi
-%endif
-%patch2 -p1 -b .startup-dhcdbd
-%patch3 -p1 -b .applet-redraw
+%setup -q -n %{name}-0.6.4
 
 %build
 # Even though we don't require named, we still build with it
@@ -244,6 +233,17 @@ fi
 
 
 %changelog
+* Wed Oct 25 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.cvs20061025
+- Update to a stable branch snapshot
+    - Gnome applet timeout/redraw suppression when idle
+    - Backport of LEAP patch from HEAD (from Thiago Bauermann)
+    - Backport of asynchronous scanning patch from HEAD
+    - Make renaming of VPN connections work (from Tambet Ingo)
+    - Dial down wpa_supplicant debug spew
+    - Cleanup of key/passphrase request scenarios (from Valentine Sinitsyn)
+    - Shut down VPN connections on logout (from Robert Love)
+    - Fix WPA passphrase hashing on PPC
+
 * Thu Oct 19 2006 Christopher Aillon <caillon@redhat.com> - 1:0.6.4-6
 - Own /usr/share/NetworkManager and /usr/include/NetworkManager
 
