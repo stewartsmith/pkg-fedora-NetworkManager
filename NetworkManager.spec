@@ -27,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.cvs20061025%{?dist}
+Release: 0.cvs20061025%{?dist}.1
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -100,6 +100,7 @@ Group: Development/Libraries
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
+Requires: pkgconfig
 
 %description devel
 This package contains various headers accessing some NetworkManager functionality
@@ -123,6 +124,7 @@ Group: Development/Libraries
 Requires: %{name}-devel = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
+Requires: pkgconfig
 
 %description glib-devel
 This package contains the header and pkg-config files for development applications using
@@ -189,6 +191,7 @@ fi
 %defattr(-,root,root,0755)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %dir %{_sysconfdir}/NetworkManager/
+%dir %{_sysconfdir}/NetworkManager/dispatcher.d/
 %config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config %{_sysconfdir}/rc.d/init.d/%{name}
 %config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
@@ -233,6 +236,10 @@ fi
 
 
 %changelog
+* Sat Nov 25 2006 Matthias Clasen <mclasen@redhat.com> 
+- Own the /etc/NetworkManager/dispatcher.d directory
+- Require pkgconfig for the -devel packages
+
 * Wed Oct 25 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.cvs20061025
 - Update to a stable branch snapshot
     - Gnome applet timeout/redraw suppression when idle
