@@ -32,6 +32,7 @@ Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.cvs20061025.tar.gz
+Patch0: dbus1.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -133,6 +134,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q -n %{name}-0.6.4
+%patch0 -p1 -b .dbus1
 
 %build
 # Even though we don't require named, we still build with it
@@ -239,6 +241,7 @@ fi
 * Sat Nov 25 2006 Matthias Clasen <mclasen@redhat.com> 
 - Own the /etc/NetworkManager/dispatcher.d directory
 - Require pkgconfig for the -devel packages
+- Fix compilation with dbus 1.0
 
 * Wed Oct 25 2006 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.cvs20061025
 - Update to a stable branch snapshot
