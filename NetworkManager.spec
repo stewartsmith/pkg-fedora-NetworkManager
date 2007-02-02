@@ -27,7 +27,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.cvs20061025%{?dist}.1
+Release: 0.2.cvs20061025%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -200,7 +200,7 @@ fi
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
 %{_bindir}/nm-tool
-%{_libdir}/libnm-util.so*
+%{_libdir}/libnm-util.so.*
 %{_mandir}/man1/NetworkManager.1.gz
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
 %{_mandir}/man1/nm-tool.1.gz
@@ -226,6 +226,7 @@ fi
 %{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/pkgconfig/libnm-util.pc
+%{_libdir}/libnm-util.so
 
 %files glib
 %defattr(-,root,root,0755)
@@ -238,6 +239,9 @@ fi
 
 
 %changelog
+* Fri Feb  2 2007 Christopher Aillon <caillon@redhat.com> - 1:0.6.5-0.2.cvs20061025
+- Move .so file to -devel package
+
 * Sat Nov 25 2006 Matthias Clasen <mclasen@redhat.com> 
 - Own the /etc/NetworkManager/dispatcher.d directory
 - Require pkgconfig for the -devel packages
