@@ -27,12 +27,13 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.2.cvs20061025%{?dist}
+Release: 0.3.cvs20061025%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.cvs20061025.tar.gz
 Patch0: dbus1.patch
+Patch1: NetworkManager-0.6.4-DbusLimitExceeded.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -135,6 +136,7 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q -n %{name}-0.6.4
 %patch0 -p1 -b .dbus1
+%patch1 -p1 -b .DbusLimitExceeded
 
 %build
 # Even though we don't require named, we still build with it
@@ -239,6 +241,9 @@ fi
 
 
 %changelog
+* Thu Feb  8 2007 Christopher Aillon <caillon@redhat.com> - 1:0.6.5-0.3.cvs20061025
+- Guard against D-Bus LimitExceeded messages
+
 * Fri Feb  2 2007 Christopher Aillon <caillon@redhat.com> - 1:0.6.5-0.2.cvs20061025
 - Move .so file to -devel package
 
