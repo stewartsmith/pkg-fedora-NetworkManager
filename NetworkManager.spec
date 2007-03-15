@@ -24,7 +24,7 @@ PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: hal >= %{hal_version}
+Requires: hal >= 0.5
 Requires: iproute openssl
 Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
