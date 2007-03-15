@@ -133,6 +133,7 @@ make
 
 # build the applet
 pushd nm-applet-0.6.5
+  aclocal
   automake
   autoconf
   %configure \
