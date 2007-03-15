@@ -133,10 +133,8 @@ make
 
 # build the applet
 pushd nm-applet-0.6.5
-  intltoolize
-  aclocal
-  automake
-  autoconf
+  autoreconf -i
+  intltoolize --force
   %configure \
 	--disable-static \
     --with-notify \
