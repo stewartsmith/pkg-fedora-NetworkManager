@@ -48,7 +48,7 @@ BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl-XML-Parser
-BuildRequires: automake autoconf
+BuildRequires: automake autoconf libtool
 
 %description
 NetworkManager attempts to keep an active network connection available at all
