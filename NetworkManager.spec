@@ -48,7 +48,7 @@ BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl-XML-Parser
-BuildRequires: automake autoconf libtool
+BuildRequires: automake autoconf intltool
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -133,6 +133,7 @@ make
 
 # build the applet
 pushd nm-applet-0.6.5
+  intltoolize
   aclocal
   automake
   autoconf
