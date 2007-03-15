@@ -1,5 +1,5 @@
 --- NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am.buildfix	2007-02-02 10:53:26.000000000 -0500
-+++ NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am	2007-02-09 14:13:47.000000000 -0500
++++ NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am	2007-03-15 14:20:32.000000000 -0400
 @@ -2,6 +2,9 @@
  
  bin_PROGRAMS = nm-applet
@@ -27,8 +27,23 @@
  	$(NULL)
  
  if WITH_NOTIFY
---- NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac.buildfix	2007-02-02 16:47:00.000000000 -0500
-+++ NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac	2007-02-09 14:06:09.000000000 -0500
+--- NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac.buildfix	2007-03-15 11:51:49.000000000 -0400
++++ NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac	2007-03-15 16:33:34.000000000 -0400
+@@ -18,10 +18,10 @@
+ dnl This doesn't depend on gnome support, only on gnome-common, autogen already
+ dnl uses gnome-autogen
+ dnl
+-GNOME_COMMON_INIT
+-GNOME_DEBUG_CHECK
+-GNOME_COMPILE_WARNINGS([maximum])
+-GNOME_MAINTAINER_MODE_DEFINES
++dnl GNOME_COMMON_INIT
++dnl GNOME_DEBUG_CHECK
++dnl GNOME_COMPILE_WARNINGS([maximum])
++dnl GNOME_MAINTAINER_MODE_DEFINES
+ 
+ dnl
+ dnl Required headers
 @@ -112,10 +112,6 @@
  AC_SUBST(GOBJECT_CFLAGS)
  AC_SUBST(GOBJECT_LIBS)
