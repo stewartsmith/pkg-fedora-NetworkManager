@@ -1,24 +1,7 @@
 ExcludeArch: s390 s390x
 
-%define hal_version	0.5.0
-
-%if "%fedora" == "5"
-%define fc6_or_later 0
-%endif
-%if "%fedora" >= "6"
-%define fc6_or_later 1
-%endif
-%if "%rhel" >= "5"
-%define fc6_or_later 1
-%endif
-
-%if %{fc6_or_later}
 %define dbus_version	0.90
 %define dbus_glib_version 0.70
-%else
-%define dbus_version 0.61
-%define dbus_glib_version 0.61
-%endif
 
 %define gtk2_version	2.6.0
 %define wireless_tools_version 1:28-0pre9
@@ -27,13 +10,14 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.3.cvs20061025%{?dist}
+Release: 0.4.svn2474%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}.cvs20061025.tar.gz
-Patch0: dbus1.patch
-Patch1: NetworkManager-0.6.4-DbusLimitExceeded.patch
+Source: %{name}-%{version}.svn2474.tar.gz
+Source1: nm-applet-0.6.5.svn63.tar.gz
+Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
+Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -47,13 +31,8 @@ Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant
 
 BuildRequires: dbus-devel >= %{dbus_version}
-%if %{fc6_or_later}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
-%else
-BuildRequires: wireless-tools >= %{wireless_tools_version}
-BuildRequires: dbus-glib >= %{dbus_glib_version}
-%endif
 BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
@@ -69,6 +48,7 @@ BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl-XML-Parser
+BuildRequires: automake autoconf
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -134,26 +114,50 @@ NetworkManager functionality from applications that use glib.
 
 
 %prep
-%setup -q -n %{name}-0.6.4
-%patch0 -p1 -b .dbus1
-%patch1 -p1 -b .DbusLimitExceeded
+%setup -q
+%patch0 -p1 -b .startup-dhcdbd
+
+# unpack the applet
+tar -xzf %{SOURCE1}
+%patch1 -p1 -b .buildfix
 
 %build
 # Even though we don't require named, we still build with it
 # so that if the user installs it, NM will use it automatically
 %configure \
 	--disable-static \
-	--enable-notify=yes \
 	--with-named=/usr/sbin/named \
 	--with-named-dir=/var/named/data \
 	--with-named-user=named
 make
 
-
+# build the applet
+pushd nm-applet-0.6.5
+  automake
+  autoconf
+  %configure \
+	--disable-static \
+    --with-notify \
+	--with-named=/usr/sbin/named \
+	--with-named-dir=/var/named/data \
+	--with-named-user=named
+  make
+popd
+ 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
+
+# install NM
 make install DESTDIR=$RPM_BUILD_ROOT
+
+# install the applet
+pushd nm-applet-0.6.5
+  make install DESTDIR=$RPM_BUILD_ROOT
+popd
+
 %find_lang %{name}
+%find_lang nm-applet
+cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
@@ -194,22 +198,20 @@ fi
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
-%dir %{_sysconfdir}/NetworkManager/
-%dir %{_sysconfdir}/NetworkManager/dispatcher.d/
-%config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%config %{_sysconfdir}/rc.d/init.d/%{name}
-%config %{_sysconfdir}/rc.d/init.d/%{name}Dispatcher
+%config %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
+%config %{_sysconfdir}/rc.d/init.d/NetworkManager
+%config %{_sysconfdir}/rc.d/init.d/NetworkManagerDispatcher
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
+%dir %{_sysconfdir}/NetworkManager/
 %{_bindir}/nm-tool
-%{_libdir}/libnm-util.so.*
+%{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
 %{_mandir}/man1/NetworkManagerDispatcher.1.gz
 %{_mandir}/man1/nm-tool.1.gz
-%dir %{_localstatedir}/run/%{name}
+%dir %{_localstatedir}/run/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/gdb-cmd
+%{_datadir}/NetworkManager/gdb-cmd
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -224,7 +226,6 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
-%dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/pkgconfig/libnm-util.pc
@@ -241,6 +242,9 @@ fi
 
 
 %changelog
+* Thu Mar 15 2007 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.4.svn2474
+- Update to pre-0.6.5 snapshot
+
 * Thu Feb  8 2007 Christopher Aillon <caillon@redhat.com> - 1:0.6.5-0.3.cvs20061025
 - Guard against D-Bus LimitExceeded messages
 

@@ -1,0 +1,42 @@
+--- NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am.buildfix	2007-02-02 10:53:26.000000000 -0500
++++ NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am	2007-02-09 14:13:47.000000000 -0500
+@@ -2,6 +2,9 @@
+ 
+ bin_PROGRAMS = nm-applet
+ 
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util
++
+ nm_applet_CPPFLAGS =									\
+ 	$(DBUS_CFLAGS)										\
+ 	$(GTHREAD_CFLAGS)									\
+@@ -12,7 +15,6 @@
+ 	$(GCONF_CFLAGS)									\
+ 	$(LIBGNOMEUI_CFLAGS)								\
+ 	$(GNOME_KEYRING_CFLAGS)								\
+-	$(NM_CFLAGS)									\
+ 	-DICONDIR=\""$(datadir)/icons"\"						\
+ 	-DGLADEDIR=\""$(gladedir)"\"							\
+ 	-DBINDIR=\""$(bindir)"\"								\
+@@ -112,7 +114,7 @@
+ 	$(GCONF_LIBS)						\
+ 	$(LIBGNOMEUI_LIBS)					\
+ 	$(GNOME_KEYRING_LIBS)				\
+-	$(NM_LIBS) \
++	-L${top_srcdir}/../libnm-util  $(top_builddir)/../libnm-util/libnm-util.la \
+ 	$(NULL)
+ 
+ if WITH_NOTIFY
+--- NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac.buildfix	2007-02-02 16:47:00.000000000 -0500
++++ NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac	2007-02-09 14:06:09.000000000 -0500
+@@ -112,10 +112,6 @@
+ AC_SUBST(GOBJECT_CFLAGS)
+ AC_SUBST(GOBJECT_LIBS)
+ 
+-PKG_CHECK_MODULES(NM, NetworkManager)
+-AC_SUBST(NM_CFLAGS)
+-AC_SUBST(NM_LIBS)
+-
+ AC_ARG_WITH(notify, AC_HELP_STRING([--with-notify], [Use libnotify]), enable_notify=$withval, enable_notify=auto)
+ 
+ PKG_CHECK_MODULES(GTK, gtk+-2.0)
