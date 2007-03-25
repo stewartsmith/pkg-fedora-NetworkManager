@@ -10,7 +10,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.4.svn2474%{?dist}
+Release: 0.5.svn2474%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -47,7 +47,7 @@ BuildRequires: dhcdbd
 BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
-BuildRequires: perl-XML-Parser
+BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 
 %description
@@ -211,6 +211,7 @@ fi
 %{_mandir}/man1/nm-tool.1.gz
 %dir %{_localstatedir}/run/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
+%dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
 
 %files gnome
@@ -226,6 +227,7 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
+%dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/pkgconfig/libnm-util.pc
@@ -242,6 +244,9 @@ fi
 
 
 %changelog
+* Sun Mar 25 2007 Matthias Clasen <mclasen@redhat.com> 1:0.6.5-0.5.svn2474
+- Fix a directory ownership issue.  (#233763)
+
 * Thu Mar 15 2007 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.4.svn2474
 - Update to pre-0.6.5 snapshot
 
