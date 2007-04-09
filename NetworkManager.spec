@@ -10,15 +10,15 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.6.svn2474%{?dist}
+Release: 0.7.svn2547%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}.svn2474.tar.gz
-Source1: nm-applet-0.6.5.svn63.tar.gz
+Source: %{name}-%{version}.svn2547.tar.gz
+Source1: nm-applet-0.6.5.svn71.tar.gz
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: NetworkManager-0.6.5-dbus-connection-close.patch
+Patch2: NetworkManager-0.6.5-wpa_supplicant-debug.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -117,12 +117,11 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p1 -b .startup-dhcdbd
+%patch2 -p1 -b .wpas-debug
 
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-
-%patch2 -p1 -b .dbus-connection-close
 
 %build
 # Even though we don't require named, we still build with it
@@ -247,6 +246,13 @@ fi
 
 
 %changelog
+* Mon Apr  9 2007 Dan Williams  <dcbw@redhat.com> - 1:0.6.5-0.7.svn2547
+- Update from trunk
+    - Updated translations
+    - Cleaned-up VPN properties dialogs
+    - Fix 64-bit kernel leakage issues in WEXT
+    - Don't capture and redirect wpa_supplicant log output
+
 * Wed Mar 28 2007 Matthew Barnes  <mbarnes@redhat.com> 1:0.6.5-0.6.svn2474
 - Close private D-Bus connections. (#232691)
 
