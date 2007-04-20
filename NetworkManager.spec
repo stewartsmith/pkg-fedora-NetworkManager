@@ -10,12 +10,12 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 0.7.svn2547%{?dist}
+Release: 1%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}.svn2547.tar.gz
-Source1: nm-applet-0.6.5.svn71.tar.gz
+Source: %{name}-%{version}.tar.bz2
+Source1: network-manager-applet-%{version}.tar.bz2
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: NetworkManager-0.6.5-wpa_supplicant-debug.patch
@@ -246,6 +246,10 @@ fi
 
 
 %changelog
+* Thu Apr 19 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-1
+- Update to 0.6.5 final
+- Don't lose scanned security information
+
 * Mon Apr  9 2007 Dan Williams  <dcbw@redhat.com> - 1:0.6.5-0.7.svn2547
 - Update from trunk
     - Updated translations
