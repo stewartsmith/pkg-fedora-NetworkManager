@@ -120,7 +120,7 @@ NetworkManager functionality from applications that use glib.
 %patch2 -p1 -b .wpas-debug
 
 # unpack the applet
-tar -xzf %{SOURCE1}
+tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 
 %build
