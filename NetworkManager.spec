@@ -2,6 +2,7 @@ ExcludeArch: s390 s390x
 
 %define dbus_version	0.90
 %define dbus_glib_version 0.70
+%define hal_version 0.5.0
 
 %define gtk2_version	2.6.0
 %define wireless_tools_version 1:28-0pre9
@@ -10,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -246,6 +247,9 @@ fi
 
 
 %changelog
+* Wed Apr 25 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-2
+- Fix requires macro (237806)
+
 * Thu Apr 19 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-1
 - Update to 0.6.5 final
 - Don't lose scanned security information
