@@ -11,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -247,6 +247,9 @@ fi
 
 
 %changelog
+* Wed May 23 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-3
+- Rebuild
+
 * Wed Apr 25 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-2
 - Fix requires macro (237806)
 
