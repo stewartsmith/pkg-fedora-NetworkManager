@@ -11,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 3%{?dist}
+Release: 4%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -19,7 +19,6 @@ Source: %{name}-%{version}.tar.bz2
 Source1: network-manager-applet-%{version}.tar.bz2
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: NetworkManager-0.6.5-wpa_supplicant-debug.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -118,7 +117,6 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p1 -b .startup-dhcdbd
-%patch2 -p1 -b .wpas-debug
 
 # unpack the applet
 tar -xjf %{SOURCE1}
@@ -247,6 +245,9 @@ fi
 
 
 %changelog
+* Mon Jun  4 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-4
+- Don't spawn wpa_supplicant with -o
+
 * Wed May 23 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-3
 - Rebuild
 
