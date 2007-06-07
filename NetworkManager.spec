@@ -11,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -19,6 +19,9 @@ Source: %{name}-%{version}.tar.bz2
 Source1: network-manager-applet-%{version}.tar.bz2
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
+Patch2: NetworkManager-0.6.5-fix-ethernet-link-detection.patch
+Patch3: NetworkManager-0.6.5-wait-for-wireless.patch
+Patch4: network-manager-applet-0.6.5-fix-eap-key-request.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -117,10 +120,13 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p1 -b .startup-dhcdbd
+%patch2 -p0 -b .fix-ethernet-link-detection
+%patch3 -p0 -b .wait-for-wireless
 
 # unpack the applet
 tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
+%patch4 -p1 -b .fix-eap-key-request
 
 %build
 # Even though we don't require named, we still build with it
@@ -245,6 +251,11 @@ fi
 
 
 %changelog
+* Thu Jun  7 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-5
+- Fix ethernet link detection (gnome #354565, rh #194124)
+- Fix perpetual credentials request with private key passwords in the applet
+- Sleep a bit before activating wireless cards to work around driver bugs
+
 * Mon Jun  4 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-4
 - Don't spawn wpa_supplicant with -o
 
