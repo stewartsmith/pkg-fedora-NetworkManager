@@ -1,0 +1,53 @@
+--- NetworkManager-0.6.5/src/nm-netlink-monitor.c.linkdebug	2007-06-10 13:07:22.000000000 -0400
++++ NetworkManager-0.6.5/src/nm-netlink-monitor.c	2007-06-10 13:12:07.000000000 -0400
+@@ -721,6 +721,7 @@
+ 
+ 					if ((dev = nm_get_device_by_iface_locked (monitor->priv->app_data, iface)))
+ 					{
++nm_info ("%s - %s (%d) netlink reports device %s link now %d", __FILE__, __func__, __LINE__, iface, is_connected);
+ 						if (is_connected) {
+ 							g_signal_emit (G_OBJECT (monitor), 
+ 								       nm_netlink_monitor_signals[INTERFACE_CONNECTED],
+--- NetworkManager-0.6.5/src/nm-device.c.linkdebug	2007-06-10 13:07:29.000000000 -0400
++++ NetworkManager-0.6.5/src/nm-device.c	2007-06-10 13:12:34.000000000 -0400
+@@ -593,6 +593,7 @@
+ 		return;
+ 
+ 	self->priv->link_active = link_active;
++nm_info ("%s - %s (%d) device %s link state set to %d", __FILE__, __func__, __LINE__, nm_device_get_iface (self), self->priv->link_active);
+ 
+ 	/* Deactivate a currently active device */
+ 	if (!link_active && req)
+--- NetworkManager-0.6.5/src/nm-device-802-3-ethernet.c.linkdebug	2007-06-10 13:07:37.000000000 -0400
++++ NetworkManager-0.6.5/src/nm-device-802-3-ethernet.c	2007-06-10 13:11:29.000000000 -0400
+@@ -99,6 +99,7 @@
+ static gboolean
+ link_activated_helper (NMDevice8023Ethernet *self)
+ {
++nm_info ("%s - %s (%d) device %s will set active link to TRUE", __FILE__, __func__, __LINE__, nm_device_get_iface (NM_DEVICE (self)));
+ 	nm_device_set_active_link (NM_DEVICE (self), TRUE);
+ 	return FALSE;
+ }
+@@ -118,12 +119,14 @@
+ 	g_source_set_callback (source, (GSourceFunc) link_activated_helper, self, NULL);
+ 	g_source_attach (source, nm_device_get_main_context (NM_DEVICE (self)));
+ 	g_source_unref (source);
++nm_info ("%s - %s (%d) device %s scheduled link_activated_helper", __FILE__, __func__, __LINE__, nm_device_get_iface (NM_DEVICE (self)));
+ }
+ 
+ 
+ static gboolean
+ link_deactivated_helper (NMDevice8023Ethernet *self)
+ {
++nm_info ("%s - %s (%d) device %s will set active link to FALSE", __FILE__, __func__, __LINE__, nm_device_get_iface (NM_DEVICE (self)));
+ 	nm_device_set_active_link (NM_DEVICE (self), FALSE);
+ 	return FALSE;
+ }
+@@ -143,6 +146,7 @@
+ 	g_source_set_callback (source, (GSourceFunc) link_deactivated_helper, self, NULL);
+ 	g_source_attach (source, nm_device_get_main_context (NM_DEVICE (self)));
+ 	g_source_unref (source);
++nm_info ("%s - %s (%d) device %s scheduled link_deactivated_helper", __FILE__, __func__, __LINE__, nm_device_get_iface (NM_DEVICE (self)));
+ }
+ 
+ static void

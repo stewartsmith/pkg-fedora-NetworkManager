@@ -1,0 +1,25 @@
+Index: NetworkManager-0.6.5/nm-applet-0.6.5/src/wireless-security-option.c
+===================================================================
+--- NetworkManager-0.6.5/nm-applet-0.6.5/src/wireless-security-option.c	(revision 79)
++++ NetworkManager-0.6.5/nm-applet-0.6.5/src/wireless-security-option.c	(working copy)
+@@ -274,7 +274,7 @@
+ 	gtk_list_store_set (model, &iter, WPA_KEY_TYPE_NAME_COL, name,
+ 					WPA_KEY_TYPE_CIPHER_COL, NM_PHASE2_AUTH_GTC, -1);
+ 
+-	*num_added = 4;
++	*num_added = 5;
+ 	return GTK_TREE_MODEL (model);
+ }
+ 
+Index: NetworkManager-0.6.5/nm-applet-0.6.5/src/wso-private.h
+===================================================================
+--- NetworkManager-0.6.5/nm-applet-0.6.5/src/wso-private.h	(revision 79)
++++ NetworkManager-0.6.5/nm-applet-0.6.5/src/wso-private.h	(working copy)
+@@ -80,6 +80,7 @@
+ #define WPA_KEY_TYPE_CIPHER_COL	1
+ 
+ GtkTreeModel *	wso_wpa_create_key_type_model (int capabilities, gboolean wpa_eap, int *num_added);
++GtkTreeModel *	wso_wpa_create_phase2_type_model (int capabilities, gboolean wpa_eap, int *num_added);
+ 
+ 
+ #endif	/* WIRELESS_SECURITY_OPTION_PRIVATE_H */
