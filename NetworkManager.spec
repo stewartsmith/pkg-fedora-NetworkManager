@@ -11,19 +11,15 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 6%{?dist}
+Release: 6.1%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.tar.bz2
-Source1: network-manager-applet-%{version}.tar.bz2
+Source1: nm-applet-%{version}.tar.bz2
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: NetworkManager-0.6.5-fix-ethernet-link-detection.patch
-Patch3: NetworkManager-0.6.5-wait-for-wireless.patch
-Patch4: network-manager-applet-0.6.5-fix-eap-key-request.patch
-Patch5: network-manager-applet-0.6.5-wso-eap-64bit-fix.patch
-Patch6: linkdebug.patch
+Patch2: linkdebug.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -122,15 +118,11 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch0 -p1 -b .startup-dhcdbd
-%patch2 -p0 -b .fix-ethernet-link-detection
-%patch3 -p0 -b .wait-for-wireless
-%patch6 -p1 -b .linkdebug
+%patch2 -p1 -b .linkdebug
 
 # unpack the applet
 tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch4 -p1 -b .fix-eap-key-request
-%patch5 -p1 -b .wso-eap-64bit-fix
 
 %build
 # Even though we don't require named, we still build with it
@@ -255,21 +247,23 @@ fi
 
 
 %changelog
+* Thu Jun 21 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-6
+- Update to stable branch snapshot:
+    - More fixes for ethernet link detection (gnome #354565, rh #194124)
+    - Support for HAL-detected rfkill switches
+
 * Sun Jun 10 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-5
 - Fix applet crash on 64-bit platforms when choosing
     "Connect to other wireless network..." (gnome.org #435036)
 - Add debug output for ethernet device link changes
 
-* Thu Jun  7 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-5
+* Thu Jun  7 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-4
 - Fix ethernet link detection (gnome #354565, rh #194124)
 - Fix perpetual credentials request with private key passwords in the applet
 - Sleep a bit before activating wireless cards to work around driver bugs
 
-* Mon Jun  4 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-4
+* Mon Jun  4 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-3
 - Don't spawn wpa_supplicant with -o
-
-* Wed May 23 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-3
-- Rebuild
 
 * Wed Apr 25 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-2
 - Fix requires macro (237806)
