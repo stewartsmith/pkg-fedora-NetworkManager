@@ -11,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 6.1%{?dist}
+Release: 7%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -20,6 +20,7 @@ Source1: nm-applet-%{version}.tar.bz2
 Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: linkdebug.patch
+Patch3: NetworkManager-0.6.5-no-killswitch-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -119,6 +120,7 @@ NetworkManager functionality from applications that use glib.
 %setup -q
 %patch0 -p1 -b .startup-dhcdbd
 %patch2 -p1 -b .linkdebug
+%patch3 -p1 -b .no-killswitch-fix
 
 # unpack the applet
 tar -xjf %{SOURCE1}
@@ -247,6 +249,9 @@ fi
 
 
 %changelog
+* Wed Jun 27 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-7
+- Fix Wireless Enabled checkbox when no killswitches are present
+
 * Thu Jun 21 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-6
 - Update to stable branch snapshot:
     - More fixes for ethernet link detection (gnome #354565, rh #194124)
