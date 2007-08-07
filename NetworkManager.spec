@@ -21,6 +21,7 @@ Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: linkdebug.patch
 Patch3: NetworkManager-0.6.5-no-killswitch-fix.patch
+Patch4: NetworkManager-0.6.5-deprecated.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -121,6 +122,7 @@ NetworkManager functionality from applications that use glib.
 %patch0 -p1 -b .startup-dhcdbd
 %patch2 -p1 -b .linkdebug
 %patch3 -p1 -b .no-killswitch-fix
+%patch4 -p1 -b .deprecated
 
 # unpack the applet
 tar -xjf %{SOURCE1}
@@ -159,6 +161,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 pushd nm-applet-0.6.5
   make install DESTDIR=$RPM_BUILD_ROOT
 popd
+
+# create a VPN directory
+%{__mkdir_p} $RPM_BUILD_ROOT%{sysconfdir}/NetworkManager/VPN
 
 %find_lang %{name}
 %find_lang nm-applet
