@@ -163,7 +163,7 @@ pushd nm-applet-0.6.5
 popd
 
 # create a VPN directory
-%{__mkdir_p} $RPM_BUILD_ROOT%{sysconfdir}/NetworkManager/VPN
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
 
 %find_lang %{name}
 %find_lang nm-applet
