@@ -11,7 +11,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 7%{?dist}
+Release: 8%{?dist}
 Group: System Environment/Base
 License: GPL
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -209,6 +209,8 @@ fi
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
 %dir %{_sysconfdir}/NetworkManager/
+%dir %{_sysconfdir}/NetworkManager/dispatcher.d
+%dir %{_sysconfdir}/NetworkManager/VPN
 %{_bindir}/nm-tool
 %{_libdir}/libnm-util.so*
 %{_mandir}/man1/NetworkManager.1.gz
@@ -249,6 +251,9 @@ fi
 
 
 %changelog
+* Tue Aug  8 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-8
+- Own /etc/NetworkManager/dispatcher.d and /etc/NetworkManager/VPN (#234004)
+
 * Wed Jun 27 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-7
 - Fix Wireless Enabled checkbox when no killswitches are present
 
