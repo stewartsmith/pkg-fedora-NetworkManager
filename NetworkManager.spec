@@ -11,9 +11,9 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.6.5
-Release: 8%{?dist}
+Release: 9%{?dist}
 Group: System Environment/Base
-License: GPL
+License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.tar.bz2
 Source1: nm-applet-%{version}.tar.bz2
@@ -256,6 +256,9 @@ fi
 
 
 %changelog
+* Mon Aug 13 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-9
+- Update the license tag
+
 * Tue Aug  8 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-8
 - Own /etc/NetworkManager/dispatcher.d and /etc/NetworkManager/VPN (#234004)
 
