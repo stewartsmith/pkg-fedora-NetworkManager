@@ -20,7 +20,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.svn129.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch4: NetworkManager-0.6.5-deprecated.patch
+Patch2: NetworkManager-0.7.0-include-signal-h.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -118,7 +118,7 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-#%patch4 -p1 -b .deprecated
+%patch2 -p1 -b .include-signal-h
 
 # unpack the applet
 tar -xzf %{SOURCE1}
