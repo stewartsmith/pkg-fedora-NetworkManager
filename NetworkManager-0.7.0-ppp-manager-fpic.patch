@@ -1,0 +1,11 @@
+--- NetworkManager-0.7.0/src/ppp-manager/Makefile.am.fpic	2007-08-30 19:41:49.000000000 -0400
++++ NetworkManager-0.7.0/src/ppp-manager/Makefile.am	2007-08-30 19:42:00.000000000 -0400
+@@ -33,7 +33,7 @@ nm_pppd_plugin_so_SOURCES = \
+ 	nm-pppd-plugin.h	\
+ 	nm-ppp-status.h
+ 
+-nm_pppd_plugin_so_CPPFLAGS = $(DBUS_CFLAGS)	$(GLIB_CFLAGS)
++nm_pppd_plugin_so_CPPFLAGS = $(DBUS_CFLAGS)	$(GLIB_CFLAGS) -fPIC
+ 
+ nm_pppd_plugin_so_LDFLAGS =	-shared
+ nm_pppd_plugin_so_LDADD = \
