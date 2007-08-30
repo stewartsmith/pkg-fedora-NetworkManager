@@ -1,26 +1,25 @@
 ExcludeArch: s390 s390x
 
-%define dbus_version	0.90
-%define dbus_glib_version 0.70
+%define dbus_version	1.0.2
+%define dbus_glib_version 0.73
 %define hal_version 0.5.0
 
-%define gtk2_version	2.6.0
+%define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
+
+%define snapshot svn2736
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.6.5
-Release: 9%{?dist}
+Version: 0.7.0
+Release: 0.1.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
-Source: %{name}-%{version}.tar.bz2
-Source1: nm-applet-%{version}.tar.bz2
-Patch0: NetworkManager-0.6.4-startup-dhcdbd.patch
+Source: %{name}-%{version}.%{snapshot}.tar.gz
+Source1: nm-applet-%{version}.svn129.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: linkdebug.patch
-Patch3: NetworkManager-0.6.5-no-killswitch-fix.patch
 Patch4: NetworkManager-0.6.5-deprecated.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -28,11 +27,10 @@ PreReq:   chkconfig
 Requires: wireless-tools >= %{wireless_tools_version}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: hal >= 0.5.0
+Requires: hal >= %{hal_version}
 Requires: iproute openssl
-Requires: dhcdbd
 Requires: dhclient >= 3.0.2-12
-Requires: wpa_supplicant
+Requires: wpa_supplicant >= 0.5.7-7
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -119,13 +117,10 @@ NetworkManager functionality from applications that use glib.
 
 %prep
 %setup -q
-%patch0 -p1 -b .startup-dhcdbd
-%patch2 -p1 -b .linkdebug
-%patch3 -p1 -b .no-killswitch-fix
-%patch4 -p1 -b .deprecated
+#%patch4 -p1 -b .deprecated
 
 # unpack the applet
-tar -xjf %{SOURCE1}
+tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 
 %build
@@ -139,7 +134,7 @@ tar -xjf %{SOURCE1}
 make
 
 # build the applet
-pushd nm-applet-0.6.5
+pushd nm-applet-0.7.0
   autoreconf -i
   intltoolize --force
   %configure \
@@ -158,7 +153,7 @@ popd
 make install DESTDIR=$RPM_BUILD_ROOT
 
 # install the applet
-pushd nm-applet-0.6.5
+pushd nm-applet-0.7.0
   make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -208,7 +203,8 @@ fi
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
-%config %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
+%{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
+%{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %config %{_sysconfdir}/rc.d/init.d/NetworkManagerDispatcher
 %{_sbindir}/%{name}
@@ -217,10 +213,11 @@ fi
 %dir %{_sysconfdir}/NetworkManager/dispatcher.d
 %dir %{_sysconfdir}/NetworkManager/VPN
 %{_bindir}/nm-tool
+%{_libexecdir}/nm-dhcp-client.action
 %{_libdir}/libnm-util.so*
-%{_mandir}/man1/NetworkManager.1.gz
-%{_mandir}/man1/NetworkManagerDispatcher.1.gz
-%{_mandir}/man1/nm-tool.1.gz
+%{_libdir}/nm-pppd-plugin.so
+%{_mandir}/man1/*
+%{_mandir}/man8/*
 %dir %{_localstatedir}/run/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
@@ -250,12 +247,15 @@ fi
 %{_libdir}/libnm_glib.so.*
 
 %files glib-devel
-%{_includedir}/%{name}/libnm_glib.h
+%{_includedir}/libnm-glib/*.h
 %{_libdir}/pkgconfig/libnm_glib.pc
 %{_libdir}/libnm_glib.so
 
 
 %changelog
+* Thu Aug 30 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.1.svn2736
+- Update to SVN snapshot of 0.7
+
 * Mon Aug 13 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-9
 - Update the license tag
 

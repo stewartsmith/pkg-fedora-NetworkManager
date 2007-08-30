@@ -1,35 +1,6 @@
---- NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am.buildfix	2007-02-02 10:53:26.000000000 -0500
-+++ NetworkManager-0.6.5/nm-applet-0.6.5/src/Makefile.am	2007-03-15 14:20:32.000000000 -0400
-@@ -2,6 +2,9 @@
- 
- bin_PROGRAMS = nm-applet
- 
-+INCLUDES = -I${top_srcdir}/../include \
-+           -I${top_srcdir}/../libnm-util
-+
- nm_applet_CPPFLAGS =									\
- 	$(DBUS_CFLAGS)										\
- 	$(GTHREAD_CFLAGS)									\
-@@ -12,7 +15,6 @@
- 	$(GCONF_CFLAGS)									\
- 	$(LIBGNOMEUI_CFLAGS)								\
- 	$(GNOME_KEYRING_CFLAGS)								\
--	$(NM_CFLAGS)									\
- 	-DICONDIR=\""$(datadir)/icons"\"						\
- 	-DGLADEDIR=\""$(gladedir)"\"							\
- 	-DBINDIR=\""$(bindir)"\"								\
-@@ -112,7 +114,7 @@
- 	$(GCONF_LIBS)						\
- 	$(LIBGNOMEUI_LIBS)					\
- 	$(GNOME_KEYRING_LIBS)				\
--	$(NM_LIBS) \
-+	-L${top_srcdir}/../libnm-util  $(top_builddir)/../libnm-util/libnm-util.la \
- 	$(NULL)
- 
- if WITH_NOTIFY
---- NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac.buildfix	2007-03-15 11:51:49.000000000 -0400
-+++ NetworkManager-0.6.5/nm-applet-0.6.5/configure.ac	2007-03-15 16:33:34.000000000 -0400
-@@ -18,10 +18,10 @@
+--- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2007-08-30 15:04:50.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2007-08-30 15:19:48.000000000 -0400
+@@ -18,10 +18,10 @@ dnl
  dnl This doesn't depend on gnome support, only on gnome-common, autogen already
  dnl uses gnome-autogen
  dnl
@@ -44,14 +15,35 @@
  
  dnl
  dnl Required headers
-@@ -112,10 +112,6 @@
- AC_SUBST(GOBJECT_CFLAGS)
- AC_SUBST(GOBJECT_LIBS)
+@@ -62,7 +62,6 @@ AC_CHECK_LIB(nm-util, ieee_802_11_cipher
+ PKG_CHECK_MODULES(NMA,
+ 		[dbus-glib-1 >= 0.72
+ 		 glib-2.0 >= 2.10
+-		 NetworkManager >= 0.7.0
+ 		 libnm_glib
+ 		 gtk+-2.0 >= 2.6
+ 		 libglade-2.0
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix	2007-08-30 15:02:27.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am	2007-08-30 15:24:08.000000000 -0400
+@@ -4,6 +4,10 @@ NULL=
  
--PKG_CHECK_MODULES(NM, NetworkManager)
--AC_SUBST(NM_CFLAGS)
--AC_SUBST(NM_LIBS)
--
- AC_ARG_WITH(notify, AC_HELP_STRING([--with-notify], [Use libnotify]), enable_notify=$withval, enable_notify=auto)
+ bin_PROGRAMS = nm-applet
  
- PKG_CHECK_MODULES(GTK, gtk+-2.0)
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util \
++           -I${top_srcdir}/../libnm-glib
++
+ nm_applet_CPPFLAGS =									\
+ 	$(NMA_CFLAGS)										\
+ 	-DICONDIR=\""$(datadir)/icons"\"						\
+@@ -89,7 +93,9 @@ if WITH_NOTIFY
+ nm_applet_SOURCES += applet-notifications.c applet-notifications.h
+ endif
+ 
+-nm_applet_LDADD = $(NMA_LIBS)
++nm_applet_LDADD = $(NMA_LIBS) \
++	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
++	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
+ 
+ if WITH_NOTIFY
+ nm_applet_LDADD += $(NOTIFY_LIBS)
