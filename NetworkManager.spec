@@ -51,6 +51,7 @@ BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
+BuildRequires: ppp >= 2.4.4
 
 %description
 NetworkManager attempts to keep an active network connection available at all
