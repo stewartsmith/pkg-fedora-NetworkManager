@@ -54,6 +54,7 @@ BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp >= 2.4.4
+BuildRequires: gnome-common
 
 %description
 NetworkManager attempts to keep an active network connection available at all
