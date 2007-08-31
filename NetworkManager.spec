@@ -22,6 +22,7 @@ Source1: nm-applet-%{version}.svn129.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: NetworkManager-0.7.0-missing-includes.patch
 Patch3: NetworkManager-0.7.0-ppp-manager-fpic.patch
+Patch4: nm-applet-0.7.0-fixes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -125,6 +126,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
+%patch4 -p1 -b .fixes
 
 %build
 # Even though we don't require named, we still build with it
