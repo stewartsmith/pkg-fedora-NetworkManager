@@ -131,6 +131,7 @@ tar -xzf %{SOURCE1}
 %build
 # Even though we don't require named, we still build with it
 # so that if the user installs it, NM will use it automatically
+autoreconf -i
 %configure \
 	--disable-static \
 	--with-named=/usr/sbin/named \
