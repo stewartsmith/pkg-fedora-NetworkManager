@@ -7,22 +7,20 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2736
+%define snapshot svn2833
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.1.%{snapshot}%{?dist}
+Release: 0.2.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn129.tar.gz
+Source1: nm-applet-%{version}.svn186.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: NetworkManager-0.7.0-missing-includes.patch
-Patch3: NetworkManager-0.7.0-ppp-manager-fpic.patch
-Patch4: nm-applet-0.7.0-fixes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -122,12 +120,10 @@ NetworkManager functionality from applications that use glib.
 %prep
 %setup -q
 %patch2 -p1 -b .missing-includes
-%patch3 -p1 -b .fpic
 
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch4 -p1 -b .fixes
 
 %build
 # Even though we don't require named, we still build with it
@@ -232,9 +228,10 @@ fi
 
 %files gnome
 %defattr(-,root,root,0755)
-%config %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
+%{_sysconfdir}/dbus-1/system.d/nm-applet.conf
 %{_bindir}/nm-applet
 %{_bindir}/nm-vpn-properties
+%{_bindir}/nm-connection-editor
 %{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
@@ -252,14 +249,19 @@ fi
 %files glib
 %defattr(-,root,root,0755)
 %{_libdir}/libnm_glib.so.*
+%{_libdir}/libnm_glib_vpn.so.*
 
 %files glib-devel
 %{_includedir}/libnm-glib/*.h
 %{_libdir}/pkgconfig/libnm_glib.pc
 %{_libdir}/libnm_glib.so
+%{_libdir}/libnm_glib_vpn.so
 
 
 %changelog
+* Thu Sep 20 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.2.svn2833
+- New SVN snapshot of 0.7 that sucks less
+
 * Thu Aug 30 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.1.svn2736
 - Update to SVN snapshot of 0.7
 
