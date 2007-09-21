@@ -7,18 +7,18 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2833
+%define snapshot svn2844
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.2.%{snapshot}%{?dist}
+Release: 0.3.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn186.tar.gz
+Source1: nm-applet-%{version}.svn190.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: NetworkManager-0.7.0-missing-includes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -259,6 +259,9 @@ fi
 
 
 %changelog
+* Fri Sep 21 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2844
+- New snapshot
+
 * Thu Sep 20 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.2.svn2833
 - New SVN snapshot of 0.7 that sucks less
 
