@@ -45,7 +45,6 @@ BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
-BuildRequires: dhcdbd
 BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel
 BuildRequires: libnotify-devel >= 0.3
