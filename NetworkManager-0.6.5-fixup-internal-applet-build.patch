@@ -1,6 +1,6 @@
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac
---- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2007-09-19 22:10:17.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2007-09-20 08:11:45.000000000 -0400
+--- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2007-09-24 11:02:11.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2007-09-25 03:27:22.000000000 -0400
 @@ -18,10 +18,10 @@ dnl
  dnl This doesn't depend on gnome support, only on gnome-common, autogen already
  dnl uses gnome-autogen
@@ -25,9 +25,34 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManag
  		 gtk+-2.0 >= 2.6
  		 libglade-2.0
  		 gconf-2.0
+diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am.buildfix	2007-09-25 03:33:31.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am	2007-09-25 03:34:10.000000000 -0400
+@@ -1,6 +1,10 @@
+ 
+ bin_PROGRAMS = nm-vpn-properties
+ 
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util \
++           -I${top_srcdir}/../libnm-glib
++
+ nm_vpn_propertiesdir=$(includedir)/NetworkManager
+ 
+ nm_vpn_properties_HEADERS = 					\
+@@ -28,7 +32,9 @@ nm_vpn_properties_CFLAGS = \
+ 
+ nm_vpn_properties_LDADD = \
+ 	$(NMA_LIBS) \
+-	${top_builddir}/src/gconf-helpers/libgconf-helpers.la
++	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
++	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
+ 
+ CLEANFILES = $(server_DATA) *.bak *.gladep *~
+ 
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buildfix	2007-09-19 22:53:14.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am	2007-09-20 08:15:42.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am	2007-09-25 03:27:22.000000000 -0400
 @@ -1,8 +1,15 @@
 +INCLUDES = -I${top_srcdir}/../include \
 +           -I${top_srcdir}/../libnm-util \
@@ -47,7 +72,7 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buil
  
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix	2007-09-20 07:40:37.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am	2007-09-20 08:16:10.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am	2007-09-25 03:27:22.000000000 -0400
 @@ -2,6 +2,10 @@ NULL=
  
  bin_PROGRAMS = nm-connection-editor
@@ -72,7 +97,7 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.
  glade_DATA = nm-connection-editor.glade
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix	2007-09-20 07:43:02.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am	2007-09-20 08:11:45.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am	2007-09-25 03:27:22.000000000 -0400
 @@ -4,6 +4,10 @@ NULL=
  
  bin_PROGRAMS = nm-applet

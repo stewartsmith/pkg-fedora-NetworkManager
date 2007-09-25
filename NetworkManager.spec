@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2852
+%define snapshot svn2880
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,8 +18,9 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn191.tar.gz
+Source1: nm-applet-%{version}.svn199.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
+Patch2: nm-applet-0.7.0-no-connection-editor.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -122,6 +123,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
+%patch2 -p1 -b .no-connection-editor
 
 %build
 # Even though we don't require named, we still build with it
@@ -257,6 +259,19 @@ fi
 
 
 %changelog
+* Tue Sep 25 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2880
+- New snapshot
+	- Fix applet icon sizing on start (mclasen)
+	- Fix nm-tool installation (mclasen)
+	- Fix 'state' method call return (#303271)
+	- Fix 40-bit WEP keys (again)
+	- Fix loop when secrets were wrong/invalid
+	- Fix applet crash when clicking Cancel in the password dialog
+	- Ensure NM doesn't get stuck waiting for the supplicant to re-appear
+		if it crashes or goes away
+	- Make VPN properties applet work again
+	- Increase timeout for network password entry
+
 * Fri Sep 21 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2852
 - New snapshot (fix unencrypted & 40 bit WEP)
 
