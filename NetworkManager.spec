@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2880
+%define snapshot svn2886
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,9 +18,9 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn199.tar.gz
+Source1: nm-applet-%{version}.svn200.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: nm-applet-0.7.0-no-connection-editor.patch
+Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -123,7 +123,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch2 -p1 -b .no-connection-editor
+%patch2 -p1 -b .disable-stuff
 
 %build
 # Even though we don't require named, we still build with it
@@ -259,6 +259,13 @@ fi
 
 
 %changelog
+* Tue Sep 25 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2886
+- New snapshot
+	- Make wired device carrier state work in the applet
+	- Fix handling of errors with unencrypted APs
+	- Fix "frozen" applet icon by reporting NM state better
+	- Fix output of AP frequency in nm-tool
+
 * Tue Sep 25 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2880
 - New snapshot
 	- Fix applet icon sizing on start (mclasen)
