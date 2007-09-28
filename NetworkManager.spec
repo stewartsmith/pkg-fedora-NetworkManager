@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2886
+%define snapshot svn2907
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +18,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn200.tar.gz
+Source1: nm-applet-%{version}.svn202.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -31,6 +31,7 @@ Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant >= 0.5.7-7
+Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Obsoletes: dhcdbd
 
 BuildRequires: dbus-devel >= %{dbus_version}
@@ -67,6 +68,7 @@ from a DHCP server, and change nameservers whenever it sees fit.
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
 Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
@@ -258,6 +260,10 @@ fi
 
 
 %changelog
+* Thu Sep 27 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2907
+- New snapshot
+	- VPN support (only vpnc plugin ported at this time)
+
 * Tue Sep 25 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2886
 - New snapshot
 	- Make wired device carrier state work in the applet
