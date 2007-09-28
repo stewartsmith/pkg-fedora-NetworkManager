@@ -167,7 +167,6 @@ popd
 %find_lang nm-applet
 cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
-%{__cp} test/nm-tool $RPM_BUILD_ROOT%{_bindir}/
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
