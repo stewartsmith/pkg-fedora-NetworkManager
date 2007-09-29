@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2907
+%define snapshot svn2914
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +18,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn202.tar.gz
+Source1: nm-applet-%{version}.svn207.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -260,6 +260,13 @@ fi
 
 
 %changelog
+* Fri Sep 28 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2914
+- New snapshot
+	- Add WPA passphrase support to password dialog
+	- Applet now reflects actual VPN behavior of one active connection
+	- Applet now notices VPN active connections on startup
+	- Fix connections with some WPA and WEP keys
+
 * Thu Sep 27 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2907
 - New snapshot
 	- VPN support (only vpnc plugin ported at this time)
