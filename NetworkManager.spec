@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2914
+%define snapshot svn2961
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +18,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn207.tar.gz
+Source1: nm-applet-%{version}.svn237.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -237,7 +237,7 @@ fi
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
-%{_datadir}/gnome/autostart/nm-applet.desktop
+%{_sysconfdir}/xdg/autostart/nm-applet.desktop
 
 %files devel
 %defattr(-,root,root,0755)
@@ -260,6 +260,18 @@ fi
 
 
 %changelog
+* Tue Oct  9 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2961
+- New snapshot
+	- Add timestamps to networks to connect to last used wireless network
+	- Turn autoconnect on in the applet
+	- Hidden SSID support
+	- Invalidate failed or cancelled connections again
+	- Fix issues with reactivation of the same device
+	- Handle connection updates in the applet (ex. find new VPN connections)
+	- Fix vertical sizing of menu items
+	- Fix AP list on wireless devices other than the first device in the applet
+	- Fix matching of current AP with the right menu item
+
 * Fri Sep 28 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2914
 - New snapshot
 	- Add WPA passphrase support to password dialog
