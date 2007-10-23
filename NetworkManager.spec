@@ -13,7 +13,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.3.%{snapshot}%{?dist}
+Release: 0.4.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -260,6 +260,9 @@ fi
 
 
 %changelog
+* Tue Oct 23 2007 Matthias Clasen <mclasen@redhat.com> - 1:0.7.0-0.4.svn2983
+- Rebuild against new dbus-glib
+
 * Tue Oct 16 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2983
 - Add rfkill functionality
 - Fix applet crash when choosing wired networks from the menu
