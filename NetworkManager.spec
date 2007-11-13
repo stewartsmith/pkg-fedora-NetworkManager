@@ -7,20 +7,21 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn2983
+%define snapshot svn3030
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.4.%{snapshot}%{?dist}
+Release: 0.7.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn261.tar.gz
+Source1: nm-applet-%{version}.svn302.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
+Patch3: nm-applet-0.7.0-applet-usb-vendor-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -30,7 +31,7 @@ Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: dhclient >= 3.0.2-12
-Requires: wpa_supplicant >= 0.5.7-7
+Requires: wpa_supplicant >= 0.5.7-13
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Obsoletes: dhcdbd
 
@@ -126,6 +127,7 @@ NetworkManager functionality from applications that use glib.
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .disable-stuff
+%patch3 -p1 -b .applet-usb-vendor-fix
 
 %build
 # Even though we don't require named, we still build with it
@@ -260,8 +262,56 @@ fi
 
 
 %changelog
-* Tue Oct 23 2007 Matthias Clasen <mclasen@redhat.com> - 1:0.7.0-0.4.svn2983
-- Rebuild against new dbus-glib
+* Tue Nov 13 2007 Jeremy Katz <katzj@redhat.com> - 1:0.7.0-0.7.svn3030
+- sync with what was in F-8; rebuild against new dbus-glib
+
+* Thu Nov  1 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.1.svn3030
+- Fix applet crash with USB devices that don't advertise a product or vendor
+    (rh #337191)
+
+* Sat Oct 27 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.5.svn3030
+- Fix crash when getting WPA secrets (rh #355041)
+
+* Fri Oct 26 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.4.svn3030
+- Bring up ethernet devices by default if no connections are defined (rh #339201)
+- Fix crash when switching networks or bringing up secrets dialog (rh #353091)
+- Fix crash when editing VPN connection properties a second time
+- Fix crash when cancelling the secrets dialog if another connection was
+    activated in the mean time
+- Fix disembodied notification bubbles (rh #333391)
+
+* Thu Oct 25 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.4.svn3020
+- Handle PEM certificates
+- Hide WPA-PSK Type combo since it's as yet unused
+- Fix applet crash when AP security options changed and old secrets are still
+    in the keyring
+- Fix applet crash connecting to unencrypted APs via the other network dialog
+
+* Wed Oct 24 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn3020
+- Fix WPA Enterprise connections that use certificates
+- Better display of SSIDs in the menu
+
+* Wed Oct 24 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn3016
+- Fix getting current access point
+- Fix WPA Enterprise connections
+- Wireless dialog now defaults to sensible choices based on the connection
+- Tell nscd to restart if needed, don't silently kill it
+
+* Tue Oct 23 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn3014
+- Suppress excessive GConf updates which sometimes caused secrets to be cleared
+    at the wrong times, causing connections to fail
+- Various EAP and LEAP related fixes
+
+* Tue Oct 23 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn3008
+- Make WPA-EAP and Dynamic WEP options connect successfully
+- Static IPs are now handled correctly in NM itself
+
+* Mon Oct 22 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2995
+- Add Dynamic WEP as a supported authentication/security option
+
+* Sun Oct 21 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2994
+- Re-enable "Connect to other network"
+- Switch to new GUI bits for wireless security config and password entry
 
 * Tue Oct 16 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.3.svn2983
 - Add rfkill functionality

@@ -1,14 +1,6 @@
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/applet.c.no-connection-editor NetworkManager-0.7.0/nm-applet-0.7.0/src/applet.c
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/applet.c.no-connection-editor	2007-09-25 13:01:18.000000000 -0400
 +++ NetworkManager-0.7.0/nm-applet-0.7.0/src/applet.c	2007-09-25 14:43:31.000000000 -0400
-@@ -1146,6 +1146,7 @@ static void nma_menu_add_custom_essid_it
- 	label = gtk_label_new_with_mnemonic (_("_Connect to Other Wireless Network..."));
- 	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
- 	gtk_container_add (GTK_CONTAINER (menu_item), label);
-+	gtk_widget_set_sensitive (menu_item, FALSE);
- 	gtk_widget_show_all (menu_item);
- 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
- 	g_signal_connect (menu_item, "activate", G_CALLBACK (custom_essid_item_selected), applet);
 @@ -1167,6 +1168,7 @@ nma_menu_add_create_network_item (GtkWid
  	label = gtk_label_new_with_mnemonic (_("Create _New Wireless Network..."));
  	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
