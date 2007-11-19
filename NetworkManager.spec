@@ -7,21 +7,20 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn3030
+%define snapshot svn3096
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.7.%{snapshot}%{?dist}
+Release: 0.6.3.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn302.tar.gz
+Source1: nm-applet-%{version}.svn360.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
-Patch3: nm-applet-0.7.0-applet-usb-vendor-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -31,7 +30,7 @@ Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: dhclient >= 3.0.2-12
-Requires: wpa_supplicant >= 0.5.7-13
+Requires: wpa_supplicant >= 0.5.7-16
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Obsoletes: dhcdbd
 
@@ -55,6 +54,7 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp >= 2.4.4
 BuildRequires: gnome-common
+BuildRequires: nss-devel >= 3.11.7
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -77,6 +77,7 @@ Requires: hal >= %{hal_version}
 Requires: libnotify >= 0.3
 PreReq:  gtk2 >= %{gtk2_version}
 Requires: gnome-keyring
+Requires: nss >= 3.11.7
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -127,7 +128,6 @@ NetworkManager functionality from applications that use glib.
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .disable-stuff
-%patch3 -p1 -b .applet-usb-vendor-fix
 
 %build
 # Even though we don't require named, we still build with it
@@ -147,9 +147,8 @@ pushd nm-applet-0.7.0
   %configure \
 	--disable-static \
     --with-notify \
-	--with-named=/usr/sbin/named \
-	--with-named-dir=/var/named/data \
-	--with-named-user=named
+    --with-nss=yes \
+    --with-gnutls=no
   make
 popd
  
@@ -262,8 +261,20 @@ fi
 
 
 %changelog
-* Tue Nov 13 2007 Jeremy Katz <katzj@redhat.com> - 1:0.7.0-0.7.svn3030
-- sync with what was in F-8; rebuild against new dbus-glib
+* Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.3.svn3096
+- Fix connections when picking a WPA Enterprise AP from the menu
+- Fix issue where applet would provide multiple same connections to NM
+
+* Thu Nov 15 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.3.svn3094
+- Add support for EAP-PEAP (rh #362251)
+- Fix EAP-TLS private key handling
+
+* Tue Nov 13 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.2.svn3080
+- Clarify naming of WPA & WPA2 Personal encryption options (rh #374861, rh #373831)
+- Don't require a CA certificate for applicable EAP methods (rh #359001)
+- Fix certificate and private key handling for EAP-TTLS and EAP-TLS (rh #323371)
+- Fix applet crash with USB devices (rh #337191)
+- Support upgrades from NM 0.6.x GConf settings
 
 * Thu Nov  1 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.1.svn3030
 - Fix applet crash with USB devices that don't advertise a product or vendor
