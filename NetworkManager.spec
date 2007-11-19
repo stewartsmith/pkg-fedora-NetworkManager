@@ -13,12 +13,12 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.6.4.%{snapshot}%{?dist}
+Release: 0.6.5.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn362.tar.gz
+Source1: nm-applet-%{version}.svn363.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -261,6 +261,9 @@ fi
 
 
 %changelog
+* Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.5.svn3096
+- Fix crash and potential infinite nag dialog loop when ignoring CA certificates
+
 * Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.4.svn3096
 - Fix crash when ignoring CA certificate for EAP-TLS, EAP-TTLS, and EAP-PEAP
 
