@@ -13,12 +13,12 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.6.3.%{snapshot}%{?dist}
+Release: 0.6.4.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn360.tar.gz
+Source1: nm-applet-%{version}.svn362.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -261,6 +261,9 @@ fi
 
 
 %changelog
+* Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.4.svn3096
+- Fix crash when ignoring CA certificate for EAP-TLS, EAP-TTLS, and EAP-PEAP
+
 * Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.3.svn3096
 - Fix connections when picking a WPA Enterprise AP from the menu
 - Fix issue where applet would provide multiple same connections to NM
