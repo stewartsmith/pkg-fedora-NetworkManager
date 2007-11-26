@@ -7,18 +7,18 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.10.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn3096
+%define snapshot svn3109
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.6.5.%{snapshot}%{?dist}
+Release: 0.6.6.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn363.tar.gz
+Source1: nm-applet-%{version}.svn368.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -171,6 +171,11 @@ popd
 cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
+# Remove system settings daemon for now
+%{__rm} -f $RPM_BUILD_ROOT%{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-settings-plugin*
+%{__rm} -f $RPM_BUILD_ROOT%{_sbindir}/nm-system-settings
+
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -261,6 +266,12 @@ fi
 
 
 %changelog
+* Mon Nov 26 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.6.svn3109
+- Fix device descriptions shown in applet menu
+
+* Mon Nov 26 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.5.svn3109
+- Fix crash when deactivating VPN connections
+
 * Mon Nov 19 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.5.svn3096
 - Fix crash and potential infinite nag dialog loop when ignoring CA certificates
 
