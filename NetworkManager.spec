@@ -13,7 +13,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.6.6.%{snapshot}%{?dist}
+Release: 0.8.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -266,6 +266,9 @@ fi
 
 
 %changelog
+* Tue Nov 27 2007 Jeremy Katz <katzj@redhat.com> - 1:0.7.0-0.8.svn3109
+- Fix upgrading from an earlier rawhide snap
+
 * Mon Nov 26 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.6.6.svn3109
 - Fix device descriptions shown in applet menu
 
