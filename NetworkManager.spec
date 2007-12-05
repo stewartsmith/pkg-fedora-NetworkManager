@@ -1,13 +1,13 @@
 ExcludeArch: s390 s390x
 
-%define dbus_version	1.0.2
+%define dbus_version	1.1
 %define dbus_glib_version 0.73
 %define hal_version 0.5.0
 
-%define gtk2_version	2.10.0
+%define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn3109
+%define snapshot svn3138
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +18,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn368.tar.gz
+Source1: nm-applet-%{version}.svn383.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -169,11 +169,14 @@ popd
 %find_lang %{name}
 %find_lang nm-applet
 cat nm-applet.lang >> %{name}.lang
+
+%{__mv} $RPM_BUILD_ROOT%{_libdir}/NetworkManager/nm-pppd-plugin.* $RPM_BUILD_ROOT%{_libdir}/
+
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
 # Remove system settings daemon for now
 %{__rm} -f $RPM_BUILD_ROOT%{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/libnm-settings-plugin*
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/libnm-settings-plugin*
 %{__rm} -f $RPM_BUILD_ROOT%{_sbindir}/nm-system-settings
 
 %clean
@@ -266,6 +269,20 @@ fi
 
 
 %changelog
+* Wed Dec  5 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3138
+- Fix applet connection comparison which failed to send connection updated
+    signals to NM in some cases
+- Make VPN connection applet more robust against plugin failures
+
+* Tue Dec  4 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3134
+- 64-bit -Wall compile fixes
+
+* Tue Dec  4 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3133
+- Fix applet crash when choosing to ignore the CA certificate (rh #359001)
+- Fix applet crash when editing VPN properties and VPN connection failures (rh #409351)
+- Add file filter name in certificate file picker dialog (rh #410201)
+- No longer start named when starting NM (rh #381571)
+
 * Tue Nov 27 2007 Jeremy Katz <katzj@redhat.com> - 1:0.7.0-0.8.svn3109
 - Fix upgrading from an earlier rawhide snap
 
