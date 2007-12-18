@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn3180
+%define snapshot svn3181
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -269,6 +269,9 @@ fi
 
 
 %changelog
+* Tue Dec 18 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3181
+- Fixes to work better with new libnl (rh #401761)
+
 * Tue Dec 18 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3180
 - Fix WPA/WPA2 Enterprise Phase2 connections (rh #388471)
 
