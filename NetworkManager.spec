@@ -32,7 +32,7 @@ Requires: iproute openssl
 Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant >= 0.5.7-16
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
-Requires: libnl >= 1.0-0.13.pre8.git20071217
+Requires: libnl >= 1.0-0.15.pre8.git20071218
 Obsoletes: dhcdbd
 
 BuildRequires: dbus-devel >= %{dbus_version}
