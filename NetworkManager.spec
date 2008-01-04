@@ -7,7 +7,7 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 
-%define snapshot svn3181
+%define snapshot svn3204
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +18,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn405.tar.gz
+Source1: nm-applet-%{version}.svn429.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -228,13 +228,13 @@ fi
 %{_bindir}/nm-tool
 %{_libexecdir}/nm-dhcp-client.action
 %{_libdir}/libnm-util.so*
-%{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_mandir}/man1/*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/run/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
+%{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -269,6 +269,9 @@ fi
 
 
 %changelog
+* Fri Jan  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3204
+- Fix WPA passphrase hashing on big endian (PPC, Sparc, etc) (rh #426233)
+
 * Tue Dec 18 2007 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3181
 - Fixes to work better with new libnl (rh #401761)
 
