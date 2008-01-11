@@ -1,13 +1,15 @@
 ExcludeArch: s390 s390x
 
-%define dbus_version	1.1
+%define dbus_version 1.1
 %define dbus_glib_version 0.73
 %define hal_version 0.5.0
 
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
+%define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3204
+%define snapshot svn3235
+%define applet_snapshot svn438
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -18,7 +20,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.svn429.tar.gz
+Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -30,9 +32,9 @@ Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute openssl
 Requires: dhclient >= 3.0.2-12
-Requires: wpa_supplicant >= 0.5.7-16
+Requires: wpa_supplicant >= 0.5.7-21
+Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
-Requires: libnl >= 1.0-0.15.pre8.git20071218
 Obsoletes: dhcdbd
 
 BuildRequires: dbus-devel >= %{dbus_version}
@@ -49,7 +51,7 @@ BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
-BuildRequires: libnl-devel
+BuildRequires: libnl-devel >= %{libnl_version}
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
@@ -269,6 +271,14 @@ fi
 
 
 %changelog
+* Fri Jan 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3235
+- Fix crash when activating a mobile broadband connection
+- Better handling of non-SSID-broadcasting APs on kernels that support it
+    (gnome.org #464215) (rh #373841)
+- Honor DHCP-server provided MTU if present (gnome.org #332953)
+- Use previous DNS settings if the VPN concentrator doesn't provide any
+    (gnome.org #346833)
+
 * Fri Jan  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3204
 - Fix WPA passphrase hashing on big endian (PPC, Sparc, etc) (rh #426233)
 
