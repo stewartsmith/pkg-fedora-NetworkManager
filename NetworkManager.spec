@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3235
-%define applet_snapshot svn438
+%define snapshot svn3261
+%define applet_snapshot svn468
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -22,7 +22,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: nm-applet-0.7.0-disable-stuff.patch
+Patch2: nm-applet-0.7.0-disable-connection-editor-changes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -130,7 +130,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch2 -p1 -b .disable-stuff
+%patch2 -p1 -b .nochange
 
 %build
 # Even though we don't require named, we still build with it
@@ -271,6 +271,11 @@ fi
 
 
 %changelog
+* Mon Jan 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3261
+- Add CDMA mobile broadband support (if supported by HAL)
+- Rework applet connection and icon handling
+- Enable connection editor (only for deleting connections)
+
 * Fri Jan 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3235
 - Fix crash when activating a mobile broadband connection
 - Better handling of non-SSID-broadcasting APs on kernels that support it

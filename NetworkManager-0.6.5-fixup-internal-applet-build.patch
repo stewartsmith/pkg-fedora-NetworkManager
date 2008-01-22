@@ -23,9 +23,9 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManag
 -		 NetworkManager >= 0.7.0
 -		 libnm_glib
 -		 libnm-util
- 		 gtk+-2.0 >= 2.6
+ 		 gtk+-2.0 >= 2.10
  		 libglade-2.0
- 		 gconf-2.0
+ 		 gmodule-export-2.0
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am.buildfix	2007-09-22 22:54:27.000000000 -0400
 +++ NetworkManager-0.7.0/nm-applet-0.7.0/src/vpn-properties/Makefile.am	2007-11-13 15:14:13.000000000 -0500
@@ -160,11 +160,11 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.
 +           -I${top_srcdir}/../libnm-util \
 +           -I${top_srcdir}/../libnm-glib
 +
- nm_applet_CPPFLAGS =									\
- 	$(NMA_CFLAGS)										\
- 	-DICONDIR=\""$(datadir)/icons"\"						\
+ nm_applet_CPPFLAGS = \
+ 	$(NMA_CFLAGS) \
+ 	-DICONDIR=\""$(datadir)/icons"\" \
 @@ -58,7 +62,9 @@ nm_applet_LDADD = \
- 	$(NMA_LIBS) \
+ 	$(NOTIFY_LIBS) \
  	${top_builddir}/src/utils/libutils.la \
  	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
 -	${top_builddir}/src/wireless-security/libwireless-security.la
@@ -172,5 +172,6 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.
 +	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
  
- if WITH_NOTIFY
- nm_applet_LDADD += $(NOTIFY_LIBS)
+ applet-marshal.h: Makefile.am applet-marshal.list
+ 	$(GLIB_GENMARSHAL) --prefix=applet_marshal $(srcdir)/applet-marshal.list --header > \
+
