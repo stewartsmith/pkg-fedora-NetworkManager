@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3261
-%define applet_snapshot svn468
+%define snapshot svn3302
+%define applet_snapshot svn516
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -21,8 +21,9 @@ License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
+Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: nm-applet-0.7.0-disable-connection-editor-changes.patch
+Patch2: nm-applet-0.7.0-disable-stuff.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -130,7 +131,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch2 -p1 -b .nochange
+%patch2 -p1 -b .disable-stuff
 
 %build
 # Even though we don't require named, we still build with it
@@ -161,6 +162,8 @@ popd
 # install NM
 make install DESTDIR=$RPM_BUILD_ROOT
 
+%{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/
+
 # install the applet
 pushd nm-applet-0.7.0
   make install DESTDIR=$RPM_BUILD_ROOT
@@ -175,11 +178,7 @@ cat nm-applet.lang >> %{name}.lang
 
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/2.4.4/*.la
-
-# Remove system settings daemon for now
-%{__rm} -f $RPM_BUILD_ROOT%{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/libnm-settings-plugin*
-%{__rm} -f $RPM_BUILD_ROOT%{_sbindir}/nm-system-settings
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -220,22 +219,28 @@ fi
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
+%{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %config %{_sysconfdir}/rc.d/init.d/NetworkManagerDispatcher
 %{_sbindir}/%{name}
 %{_sbindir}/NetworkManagerDispatcher
+%{_sbindir}/nm-system-settings
+%{_sysconfdir}/nm-system-settings.conf
 %dir %{_sysconfdir}/NetworkManager/
 %dir %{_sysconfdir}/NetworkManager/dispatcher.d
 %dir %{_sysconfdir}/NetworkManager/VPN
 %{_bindir}/nm-tool
 %{_libexecdir}/nm-dhcp-client.action
 %{_libdir}/libnm-util.so*
+%dir %{_libdir}/NetworkManager
+%{_libdir}/NetworkManager/*.so*
 %{_mandir}/man1/*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/run/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
+%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManagerSystemSettings.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 
 %files gnome
@@ -271,6 +276,14 @@ fi
 
 
 %changelog
+* Thu Feb  7 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3302
+- Enable system settings service
+- Allow explicit disconnection of mobile broadband devices
+- Fix applet memory leaks (rh #430178)
+- Applet Connection Information dialog tweaks (gnome.org #505899)
+- Filter input characters to passphrase/key entry (gnome.org #332951)
+- Fix applet focus stealing prevention behavior
+
 * Mon Jan 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3261
 - Add CDMA mobile broadband support (if supported by HAL)
 - Rework applet connection and icon handling
