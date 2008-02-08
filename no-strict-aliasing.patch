@@ -7,7 +7,7 @@ diff -up NetworkManager-0.7.0/configure.in.foo NetworkManager-0.7.0/configure.in
  		      -Wdeclaration-after-statement -Wstrict-prototypes \
 -		      -Wfloat-equal -Wno-unused-parameter -Wno-sign-compare; do
 +		      -Wfloat-equal -Wno-unused-parameter -Wno-sign-compare \
-+		      -Wno-strict-aliasing; do
++		      -fno-strict-aliasing; do
  		SAVE_CFLAGS="$CFLAGS"
  		CFLAGS="$CFLAGS $option"
  		AC_MSG_CHECKING([whether gcc understands $option])
