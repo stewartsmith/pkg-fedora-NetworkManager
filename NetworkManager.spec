@@ -24,6 +24,7 @@ Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: nm-applet-0.7.0-disable-stuff.patch
+Patch3: no-strict-aliasing.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -132,6 +133,7 @@ NetworkManager functionality from applications that use glib.
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .disable-stuff
+%patch3 -p1 -b .no-strict-aliasing
 
 %build
 # Even though we don't require named, we still build with it
