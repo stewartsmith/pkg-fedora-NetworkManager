@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3302
-%define applet_snapshot svn516
+%define snapshot svn3319
+%define applet_snapshot svn526
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -278,6 +278,13 @@ fi
 
 
 %changelog
+* Thu Feb 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3319
+- Rework connection editor connection list
+
+* Tue Feb 12 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3312
+- Better handling of changes in the profile directory by the system settings
+	serivce
+
 * Thu Feb  7 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3302
 - Enable system settings service
 - Allow explicit disconnection of mobile broadband devices

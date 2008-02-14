@@ -174,15 +174,4 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.
  
  if WITH_NOTIFY
  nm_applet_LDADD += $(NOTIFY_LIBS)
-diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/applet-dialogs.c.fix NetworkManager-0.7.0/nm-applet-0.7.0/src/applet-dialogs.c
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/applet-dialogs.c.fix	2008-02-07 18:23:50.000000000 -0500
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/applet-dialogs.c	2008-02-07 18:23:56.000000000 -0500
-@@ -259,7 +259,7 @@ applet_info_dialog_show (NMApplet *apple
- {
- 	GtkWidget *dialog;
- 	NMDevice *device;
--	NMConnection *connection;
-+	NMConnection *connection = NULL;
- 
- 	device = applet_get_first_active_device (applet);
- 	if (device)
+
