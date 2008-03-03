@@ -1,15 +1,15 @@
 ExcludeArch: s390 s390x
 
 %define dbus_version 1.1
-%define dbus_glib_version 0.73
+%define dbus_glib_version 0.73-6
 %define hal_version 0.5.0
 
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3369
-%define applet_snapshot svn568
+%define snapshot svn3370
+%define applet_snapshot svn571
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -60,6 +60,7 @@ BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp >= 2.4.4
 BuildRequires: gnome-common
 BuildRequires: nss-devel >= 3.11.7
+Requires: gnome-icon-theme
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -278,6 +279,11 @@ fi
 
 
 %changelog
+* Sun Mar  2 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3370
+- Fix crash of nm-system-settings on malformed ifcfg files (rh #434919)
+- Require gnome-icon-theme to pick up lock.png (rh #435344)
+- Fix applet segfault after connection removal via connection editor or GConf
+
 * Fri Feb 29 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3369
 - Don't create multiple connections for hidden access points
 - Fix scanning behavior
