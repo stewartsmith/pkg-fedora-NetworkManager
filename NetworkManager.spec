@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3370
-%define applet_snapshot svn571
+%define snapshot svn3417
+%define applet_snapshot svn585
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -279,6 +279,13 @@ fi
 
 
 %changelog
+* Mon Mar 10 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3417
+- Honor DHCP rebinds
+- Multiple active device support
+- Better error handling of mobile broadband connection failures
+- Allow use of interface-specific dhclient config files
+- Recognize system settings which have no TYPE item
+
 * Sun Mar  2 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3370
 - Fix crash of nm-system-settings on malformed ifcfg files (rh #434919)
 - Require gnome-icon-theme to pick up lock.png (rh #435344)
