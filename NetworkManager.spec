@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.8.%{snapshot}%{?dist}
+Release: 0.9.1.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -60,7 +60,6 @@ BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp >= 2.4.4
 BuildRequires: gnome-common
 BuildRequires: nss-devel >= 3.11.7
-Requires: gnome-icon-theme
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -84,6 +83,7 @@ Requires: libnotify >= 0.3
 PreReq:  gtk2 >= %{gtk2_version}
 Requires: gnome-keyring
 Requires: nss >= 3.11.7
+Requires: gnome-icon-theme
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -279,6 +279,9 @@ fi
 
 
 %changelog
+* Mon Mar 10 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3417
+- Fix gnome-icon-theme Requires, should be on gnome subpackage
+
 * Mon Mar 10 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.8.svn3417
 - Honor DHCP rebinds
 - Multiple active device support
