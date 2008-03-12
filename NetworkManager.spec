@@ -37,6 +37,7 @@ Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant >= 0.5.7-21
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
+Requires: ppp >= 2.4.4
 Obsoletes: dhcdbd
 
 BuildRequires: dbus-devel >= %{dbus_version}
@@ -57,7 +58,7 @@ BuildRequires: libnl-devel >= %{libnl_version}
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
-BuildRequires: ppp >= 2.4.4
+BuildRequires: ppp-devel >= 2.4.4
 BuildRequires: nss-devel >= 3.11.7
 
 %description
