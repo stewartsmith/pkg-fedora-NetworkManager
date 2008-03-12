@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3417
-%define applet_snapshot svn585
+%define snapshot svn3437
+%define applet_snapshot svn591
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -58,7 +58,6 @@ BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp >= 2.4.4
-BuildRequires: gnome-common
 BuildRequires: nss-devel >= 3.11.7
 
 %description
@@ -279,6 +278,10 @@ fi
 
 
 %changelog
+* Wed Mar 12 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3432
+- Fix DHCP rebind behavior
+- Preliminary PPPoE support
+
 * Mon Mar 10 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3417
 - Fix gnome-icon-theme Requires, should be on gnome subpackage
 
