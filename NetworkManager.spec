@@ -8,8 +8,8 @@ ExcludeArch: s390 s390x
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
 
-%define snapshot svn3437
-%define applet_snapshot svn591
+%define snapshot svn3440
+%define applet_snapshot svn592
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -278,7 +278,7 @@ fi
 
 
 %changelog
-* Wed Mar 12 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3432
+* Wed Mar 12 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3440
 - Fix DHCP rebind behavior
 - Preliminary PPPoE support
 

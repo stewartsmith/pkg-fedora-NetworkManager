@@ -1,21 +1,6 @@
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac
 --- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2007-11-13 09:53:39.000000000 -0500
 +++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2007-11-13 15:14:13.000000000 -0500
-@@ -18,10 +18,10 @@ dnl
- dnl This doesn't depend on gnome support, only on gnome-common, autogen already
- dnl uses gnome-autogen
- dnl
--GNOME_COMMON_INIT
--GNOME_DEBUG_CHECK
--GNOME_COMPILE_WARNINGS([maximum])
--GNOME_MAINTAINER_MODE_DEFINES
-+dnl GNOME_COMMON_INIT
-+dnl GNOME_DEBUG_CHECK
-+dnl GNOME_COMPILE_WARNINGS([maximum])
-+dnl GNOME_MAINTAINER_MODE_DEFINES
- 
- dnl
- dnl Required headers
 @@ -60,9 +60,6 @@ AC_C_BIGENDIAN
  PKG_CHECK_MODULES(NMA,
  		[dbus-glib-1 >= 0.72
