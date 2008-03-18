@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3472
-%define applet_snapshot svn603
+%define snapshot svn3473
+%define applet_snapshot svn604
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -279,6 +279,9 @@ fi
 
 
 %changelog
+* Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3473
+- Fix crashes when returning VPN secrets from the applet to NM
+
 * Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3472
 - Fix crashes on suspend/resume and exit (rh #437426)
 - Ensure there's always an option to chose the wired device
