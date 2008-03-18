@@ -7,9 +7,10 @@ ExcludeArch: s390 s390x
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.0-0.15.pre8.git20071218
+%define ppp_version 2.2.4
 
-%define snapshot svn3440
-%define applet_snapshot svn592
+%define snapshot svn3472
+%define applet_snapshot svn603
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -28,7 +29,6 @@ Patch3: no-strict-aliasing.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
-Requires: wireless-tools >= %{wireless_tools_version}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
@@ -37,7 +37,7 @@ Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant >= 0.5.7-21
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
-Requires: ppp >= 2.4.4
+Requires: ppp >= %{ppp_version}
 Obsoletes: dhcdbd
 
 BuildRequires: dbus-devel >= %{dbus_version}
@@ -58,7 +58,7 @@ BuildRequires: libnl-devel >= %{libnl_version}
 BuildRequires: libnotify-devel >= 0.3
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
-BuildRequires: ppp-devel >= 2.4.4
+BuildRequires: ppp-devel >= %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 
 %description
@@ -279,6 +279,11 @@ fi
 
 
 %changelog
+* Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3472
+- Fix crashes on suspend/resume and exit (rh #437426)
+- Ensure there's always an option to chose the wired device
+- Never set default route via an IPv4 link-local addressed device (rh #437338)
+
 * Wed Mar 12 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3440
 - Fix DHCP rebind behavior
 - Preliminary PPPoE support
