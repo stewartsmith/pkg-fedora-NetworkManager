@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3473
-%define applet_snapshot svn604
+%define snapshot svn3476
+%define applet_snapshot svn606
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -279,6 +279,9 @@ fi
 
 
 %changelog
+* Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3476
+- Grab system settings from /etc/sysconfig/network-scripts, not from profiles
+
 * Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3473
 - Fix crashes when returning VPN secrets from the applet to NM
 
