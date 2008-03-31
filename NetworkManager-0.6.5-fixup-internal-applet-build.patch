@@ -47,15 +47,14 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buil
  noinst_LTLIBRARIES = libgconf-helpers.la
  
  libgconf_helpers_la_SOURCES =	\
-@@ -8,5 +12,8 @@ libgconf_helpers_la_SOURCES =	\
+@@ -13,5 +17,7 @@ libgconf_helpers_la_CPPFLAGS = \
  
- libgconf_helpers_la_CPPFLAGS = $(NMA_CFLAGS)
- 
--libgconf_helpers_la_LIBADD = $(NMA_LIBS)
-+libgconf_helpers_la_LIBADD = $(NMA_LIBS) \
+ libgconf_helpers_la_LIBADD = \
+ 	$(NMA_LIBS) \
+-	${top_builddir}/src/utils/libutils.la
++	${top_builddir}/src/utils/libutils.la \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
-+
  
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am
 --- NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix	2007-11-13 15:41:01.000000000 -0500
@@ -101,12 +100,12 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am.
  libwireless_security_la_SOURCES = \
  	wireless-security.h \
  	wireless-security.c \
-@@ -35,5 +39,7 @@ libwireless_security_la_CPPFLAGS = \
- 
+@@ -36,5 +40,7 @@ libwireless_security_la_CPPFLAGS = \
  libwireless_security_la_LIBADD = \
  	$(NMA_LIBS) \
--	${top_builddir}/src/utils/libutils.la
-+	${top_builddir}/src/utils/libutils.la \
+ 	${top_builddir}/src/utils/libutils.la \
+-	${top_builddir}/src/gconf-helpers/libgconf-helpers.la
++	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
 +	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
  

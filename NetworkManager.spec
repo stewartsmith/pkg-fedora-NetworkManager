@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3476
-%define applet_snapshot svn606
+%define snapshot svn3521
+%define applet_snapshot svn636
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -279,6 +279,12 @@ fi
 
 
 %changelog
+* Mon Mar 31 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3521
+- Show VPN failures
+- Support Static WEP key indexes
+- Fix parsing of WEP keys from ifcfg files
+- Pre-fill wireless security UI bits in connection editor and applet
+
 * Tue Mar 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3476
 - Grab system settings from /etc/sysconfig/network-scripts, not from profiles
 
