@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3521
-%define applet_snapshot svn636
+%define snapshot svn3527
+%define applet_snapshot svn645
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -279,6 +279,9 @@ fi
 
 
 %changelog
+* Wed Apr  2 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3527
+- Honor MAC address locking for wired & wireless devices
+
 * Mon Mar 31 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3521
 - Show VPN failures
 - Support Static WEP key indexes

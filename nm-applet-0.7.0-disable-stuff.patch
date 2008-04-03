@@ -8,26 +8,26 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/nm-connectio
 +if (FALSE) {
  	g_signal_connect (G_OBJECT (clist),
  	                  "row-activated", G_CALLBACK (connection_double_clicked_cb),
- 	                  NULL);
+ 	                  list);
 +}
  
  	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (clist),
  	                                             -1, "Name", gtk_cell_renderer_text_new (),
 @@ -444,15 +446,19 @@ new_connection_list (NMConnectionList *l
- 	g_object_set_data (G_OBJECT (button), "nm-connection-list", list);
+ 	g_object_set_data (G_OBJECT (button), CONNECTION_LIST_TAG, list);
  	g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (add_connection_cb), clist);
  	g_free (name);
 +	gtk_widget_set_sensitive (button, FALSE);
  
  	name = g_strdup_printf ("%s_edit", prefix);
  	button = glade_xml_get_widget (list->gui, name);
- 	g_object_set_data (G_OBJECT (button), "nm-connection-list", list);
+ 	g_object_set_data (G_OBJECT (button), CONNECTION_LIST_TAG, list);
  	g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (edit_connection_cb), clist);
-+#if 0
++if (FALSE) {
  	g_signal_connect (G_OBJECT (select),
  	                  "changed", G_CALLBACK (list_selection_changed_cb),
  	                  button);
-+#endif
++}
  	g_free (name);
 +	gtk_widget_set_sensitive (button, FALSE);
  
