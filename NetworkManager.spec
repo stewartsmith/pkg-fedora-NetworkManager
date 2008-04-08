@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3527
-%define applet_snapshot svn645
+%define snapshot svn3547
+%define applet_snapshot svn657
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -254,6 +254,7 @@ fi
 %{_bindir}/nm-connection-editor
 %{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 %{_datadir}/nm-applet/
+%{_datadir}/icons/hicolor/16x16/apps/*.png
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
@@ -279,6 +280,14 @@ fi
 
 
 %changelog
+* Tue Apr  8 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3547
+- Fix WEP key index handling in UI
+- Fix handling of NM_CONTROLLED in ifcfg files
+- Show device managed state in applet menu
+- Show wireless enabled state in applet menu
+- Better handling of default DHCP connections for wired devices
+- Fix loading of connection editor on KDE (rh #435344)
+
 * Wed Apr  2 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3527
 - Honor MAC address locking for wired & wireless devices
 
