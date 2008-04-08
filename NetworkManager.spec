@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3547
+%define snapshot svn3548
 %define applet_snapshot svn657
 
 Name: NetworkManager
@@ -280,6 +280,9 @@ fi
 
 
 %changelog
+* Tue Apr  8 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3548
+- Fix builds due to glib2 breakage of GStaticMutex with gcc 4.3
+
 * Tue Apr  8 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3547
 - Fix WEP key index handling in UI
 - Fix handling of NM_CONTROLLED in ifcfg files
