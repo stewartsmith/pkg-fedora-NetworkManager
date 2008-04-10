@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3548
-%define applet_snapshot svn657
+%define snapshot svn3549
+%define applet_snapshot svn662
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -39,6 +39,10 @@ Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
 Obsoletes: dhcdbd
+
+# Due to VPN auth-dialog changes in applet r662
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.7.7.svn3549
+Conflicts: NetworkManager-openvpn < 1:0.7.0-9.svn3549
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -183,6 +187,8 @@ cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/2.4.4/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
 
+install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
+
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -233,6 +239,7 @@ fi
 %dir %{_sysconfdir}/NetworkManager/dispatcher.d
 %dir %{_sysconfdir}/NetworkManager/VPN
 %{_bindir}/nm-tool
+%{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
 %{_libdir}/libnm-util.so*
 %dir %{_libdir}/NetworkManager
@@ -280,6 +287,9 @@ fi
 
 
 %changelog
+* Wed Apr  9 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3549
+- Fix issues with VPN passwords not getting found
+
 * Tue Apr  8 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3548
 - Fix builds due to glib2 breakage of GStaticMutex with gcc 4.3
 
