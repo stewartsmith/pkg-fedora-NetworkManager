@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.9.1.%{snapshot}%{?dist}
+Release: 0.9.2.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -25,6 +25,7 @@ Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: no-strict-aliasing.patch
+Patch3: optionally-wait-for-network.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -137,6 +138,7 @@ NetworkManager functionality from applications that use glib.
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .no-strict-aliasing
+%patch3 -p1 -b .wait-for-network
 
 %build
 # Even though we don't require named, we still build with it
@@ -285,6 +287,9 @@ fi
 
 
 %changelog
+* Wed Apr 16 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3566
+- Honor options from /etc/sysconfig/network for blocking until network is up
+
 * Wed Apr 16 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.1.svn3566
 - Turn on Add/Edit in the connection editor
 - Don't flush or change IPv6 addresses or routes

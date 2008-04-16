@@ -1,0 +1,45 @@
+--- NetworkManager-0.7.0/initscript/RedHat/NetworkManager.in	2008-04-05 12:17:55.000000000 -0400
++++ NetworkManager-0.7.0/initscript/RedHat/NetworkManager.in	2008-04-16 13:10:41.000000000 -0400
+@@ -2,7 +2,7 @@
+ #
+ # NetworkManager:   NetworkManager daemon
+ #
+-# chkconfig: - 98 02
++# chkconfig: - 27 73
+ # description:  This is a daemon for automatically switching network \
+ #               connections to the best available connection.
+ #
+@@ -10,7 +10,7 @@
+ # pidfile: /var/run/NetworkManager/NetworkManager.pid
+ #
+ ### BEGIN INIT INFO
+-# Provides: network_manager
++# Provides: network_manager $network
+ # Required-Start: $local_fs messagebus haldaemon
+ # Required-Stop: $local_fs messagebus haldaemon
+ # Default-Start:  3 4 5
+@@ -34,6 +34,9 @@
+ # Source function library.
+ . /etc/rc.d/init.d/functions
+ 
++# Source network configuration
++. /etc/sysconfig/network
++
+ # so we can rearrange this easily
+ processname=NetworkManager
+ servicename=NetworkManager
+@@ -50,6 +53,14 @@
+ 	daemon --check $servicename $processname --pid-file=$pidfile
+ 	RETVAL=$?
+ 	echo
++	if [ -n "${NETWORKWAIT}" ]; then 
++		[ -z "${LINKDELAY}" ] && LINKDELAY=10
++		echo -n $"Waiting for network..."
++		nm-online -q --timeout=$LINKDELAY || nm-online -q -x --timeout=30
++		[ "$?" = "0" ] && success "network startup" || failure "network startup"
++		echo
++		[ -n "${NETWORKDELAY}" ] && /bin/sleep ${NETWORKDELAY}
++	fi
+ 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$servicename
+ }
+ 
