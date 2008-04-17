@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3566
-%define applet_snapshot svn679
+%define snapshot svn3570
+%define applet_snapshot svn682
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -26,6 +26,7 @@ Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: no-strict-aliasing.patch
 Patch3: optionally-wait-for-network.patch
+Patch4: serial-debug.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -139,6 +140,7 @@ tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .no-strict-aliasing
 %patch3 -p1 -b .wait-for-network
+%patch4 -p1 -b .serial-debug
 
 %build
 # Even though we don't require named, we still build with it
@@ -287,6 +289,10 @@ fi
 
 
 %changelog
+* Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3570
+- PPoE authentication fixes
+- More robust handing of mobile broadband device communications
+
 * Wed Apr 16 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3566
 - Honor options from /etc/sysconfig/network for blocking until network is up
 
