@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3570
+%define snapshot svn3571
 %define applet_snapshot svn682
 
 Name: NetworkManager
@@ -289,6 +289,9 @@ fi
 
 
 %changelog
+* Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3571
+- Fix build in pppd-plugin
+
 * Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3570
 - PPoE authentication fixes
 - More robust handing of mobile broadband device communications
