@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3571
-%define applet_snapshot svn682
+%define snapshot svn3578
+%define applet_snapshot svn689
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -126,6 +126,7 @@ Requires: %{name}-devel = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
+Requires: dbus-glib-devel >= %{dbus_glib_version}
 
 %description glib-devel
 This package contains the header and pkg-config files for development applications using
@@ -289,11 +290,17 @@ fi
 
 
 %changelog
+* Fri Apr 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3578
+- Add dbus-glib-devel BuildRequires for NetworkManager-glib-devel (rh #442978)
+- Add PPP settings page to connection editor
+- Fix a few crashes with PPPoE
+- Fix active connection state changes that confused clients 
+
 * Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3571
 - Fix build in pppd-plugin
 
 * Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3570
-- PPoE authentication fixes
+- PPPoE authentication fixes
 - More robust handing of mobile broadband device communications
 
 * Wed Apr 16 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3566
