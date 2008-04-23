@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3578
-%define applet_snapshot svn689
+%define snapshot svn3590
+%define applet_snapshot svn694
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -290,6 +290,12 @@ fi
 
 
 %changelog
+* Tue Apr 22 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3590
+- Don't select devices without a default gateway as the default route (rh #437338)
+- Fill in broadcast address if not specified (rh #443474)
+- Respect manual VPN IPv4 configuration options
+- Show Connection Information for the device with the default route only
+
 * Fri Apr 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3578
 - Add dbus-glib-devel BuildRequires for NetworkManager-glib-devel (rh #442978)
 - Add PPP settings page to connection editor
