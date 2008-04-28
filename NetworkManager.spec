@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3590
-%define applet_snapshot svn694
+%define snapshot svn3614
+%define applet_snapshot svn703
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -231,11 +231,10 @@ fi
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
+%{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
-%config %{_sysconfdir}/rc.d/init.d/NetworkManagerDispatcher
 %{_sbindir}/%{name}
-%{_sbindir}/NetworkManagerDispatcher
 %{_sbindir}/nm-system-settings
 %{_sysconfdir}/nm-system-settings.conf
 %dir %{_sysconfdir}/NetworkManager/
@@ -244,6 +243,7 @@ fi
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
+%{_libexecdir}/nm-dispatcher.action
 %{_libdir}/libnm-util.so*
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/*.so*
@@ -254,6 +254,7 @@ fi
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManagerSystemSettings.service
+%{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 
 %files gnome
@@ -290,6 +291,17 @@ fi
 
 
 %changelog
+* Sun Apr 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3614
+- Don't ask for wireless keys when the driver sends disconnect events during
+	association; wait until the entire assocation times out
+- Replace dispatcher daemon with D-Bus activated callout
+- Fix parsing of DNS2 and DNS3 ifcfg file items
+- Execute dispatcher scripts in alphabetical order
+- Be active at runlevel 2
+- Hook up MAC address widgets for wired & wireless; and BSSID widget for wireless
+- Pre-populate anonymous identity and phase2 widgets correctly
+- Clear out unused connection keys from GConf
+
 * Tue Apr 22 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3590
 - Don't select devices without a default gateway as the default route (rh #437338)
 - Fill in broadcast address if not specified (rh #443474)
