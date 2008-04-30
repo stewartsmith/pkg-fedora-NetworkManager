@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3614
-%define applet_snapshot svn703
+%define snapshot svn3623
+%define applet_snapshot svn709
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -27,6 +27,7 @@ Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch2: no-strict-aliasing.patch
 Patch3: optionally-wait-for-network.patch
 Patch4: serial-debug.patch
+Patch5: explain-dns1-dns2.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -142,6 +143,7 @@ tar -xzf %{SOURCE1}
 %patch2 -p1 -b .no-strict-aliasing
 %patch3 -p1 -b .wait-for-network
 %patch4 -p1 -b .serial-debug
+%patch5 -p1 -b .explain-dns1-dns2
 
 %build
 # Even though we don't require named, we still build with it
@@ -291,6 +293,24 @@ fi
 
 
 %changelog
+* Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3623
+- Fix asking applets for the GSM PIN/PUK
+
+* Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3622
+- Guess WEP key type in applet when asking for new keys
+- Correct OK button sensitivity in applet when asking for new WEP keys
+
+* Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3620
+- Fix issues with Mobile Broadband connections caused by device init race patch
+
+* Tue Apr 29 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3619
+- Fix device initialization race that caused ethernet devices to get stuck on
+    startup
+- Fix PPPoE connections not showing up in the applet
+- Fix disabled OK button in connection editor some wireless and IP4 settings
+- Don't exit if HAL isn't up yet; wait for it
+- Fix a suspend/resume crash
+
 * Sun Apr 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3614
 - Don't ask for wireless keys when the driver sends disconnect events during
 	association; wait until the entire assocation times out
