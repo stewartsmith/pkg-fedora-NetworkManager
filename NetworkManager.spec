@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.9.2.%{snapshot}%{?dist}
+Release: 0.9.3.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -201,17 +201,17 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %post
 if [ "$1" == "1" ]; then
 	/sbin/chkconfig --add NetworkManager
-	/sbin/chkconfig --add NetworkManagerDispatcher
 fi
 
 %preun
 if [ $1 -eq 0 ]; then
     /sbin/service NetworkManager stop >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
-
-    /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
-    /sbin/chkconfig --del NetworkManagerDispatcher
 fi
+
+%triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
+/sbin/chkconfig --del NetworkManagerDispatcher
+exit 0
 
 %post   glib -p /sbin/ldconfig
 %postun glib -p /sbin/ldconfig
@@ -293,6 +293,9 @@ fi
 
 
 %changelog
+* Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3623
+- Clean up the dispatcher now that it's service is gone (rh #444798)
+
 * Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3623
 - Fix asking applets for the GSM PIN/PUK
 
