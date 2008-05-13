@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3623
-%define applet_snapshot svn709
+%define snapshot svn3665
+%define applet_snapshot svn724
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -24,7 +24,6 @@ Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: no-strict-aliasing.patch
 Patch3: optionally-wait-for-network.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
@@ -66,6 +65,7 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp-devel >= %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
+BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -140,7 +140,6 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch2 -p1 -b .no-strict-aliasing
 %patch3 -p1 -b .wait-for-network
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
@@ -201,6 +200,7 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %post
 if [ "$1" == "1" ]; then
 	/sbin/chkconfig --add NetworkManager
+	/sbin/chkconfig messagebus resetpriorities
 fi
 
 %preun
@@ -258,6 +258,7 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManagerSystemSettings.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
+%{_datadir}/PolicyKit/policy/*.policy
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -293,6 +294,15 @@ fi
 
 
 %changelog
+* Tue May 13 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3665
+- Fix issues with the Fedora plugin not noticing changes made by
+    system-config-network (rh #444502)
+- Allow autoconnection of GSM and CDMA connections
+- Multiple IP address support for user connections
+- Fixes for Mobile Broadband cards that return line speed on connect
+- Implement PIN entry for GSM mobile broadband connections
+- Fix crash when editing unencrypted WiFi connections in the connection editor
+
 * Wed Apr 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3623
 - Clean up the dispatcher now that it's service is gone (rh #444798)
 

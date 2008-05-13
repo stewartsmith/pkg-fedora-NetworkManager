@@ -47,10 +47,11 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buil
  noinst_LTLIBRARIES = libgconf-helpers.la
  
  libgconf_helpers_la_SOURCES =	\
-@@ -13,5 +17,7 @@ libgconf_helpers_la_CPPFLAGS = \
+@@ -13,6 +17,8 @@ libgconf_helpers_la_CPPFLAGS = \
  
  libgconf_helpers_la_LIBADD = \
  	$(NMA_LIBS) \
+ 	${top_builddir}/src/marshallers/libmarshallers.la \
 -	${top_builddir}/src/utils/libutils.la
 +	${top_builddir}/src/utils/libutils.la \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
@@ -123,12 +124,13 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.
  nm_connection_editor_CPPFLAGS =			\
  	$(NMA_CFLAGS)				\
  	-DICONDIR=\""$(datadir)/icons"\"	\
-@@ -29,7 +33,9 @@ nm_connection_editor_LDADD = \
+@@ -29,8 +33,10 @@ nm_connection_editor_LDADD = \
  	$(top_builddir)/src/gconf-helpers/libgconf-helpers.la \
  	${top_builddir}/src/wireless-security/libwireless-security.la \
  	${top_builddir}/src/utils/libutils.la \
--	$(NMA_LIBS)
-+	$(NMA_LIBS) \
+	$(NMA_LIBS) \
+-	$(POLKIT_LIBS)
++	$(POLKIT_LIBS) \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
  
