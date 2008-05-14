@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3667
+%define snapshot svn3669
 %define applet_snapshot svn724
 
 Name: NetworkManager
@@ -294,6 +294,9 @@ fi
 
 
 %changelog
+* Tue May 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3669
+- Fix initial carrier state detection on devices that are already up (rh #134886)
+
 * Tue May 13 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3667
 - Restore behavior of marking wifi devices as "down" when disabling wireless
 - Fix a crash on resume when a VPN was active when going to sleep
