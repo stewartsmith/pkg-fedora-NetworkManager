@@ -9,7 +9,7 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3665
+%define snapshot svn3667
 %define applet_snapshot svn724
 
 Name: NetworkManager
@@ -294,6 +294,10 @@ fi
 
 
 %changelog
+* Tue May 13 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3667
+- Restore behavior of marking wifi devices as "down" when disabling wireless
+- Fix a crash on resume when a VPN was active when going to sleep
+
 * Tue May 13 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3665
 - Fix issues with the Fedora plugin not noticing changes made by
     system-config-network (rh #444502)
