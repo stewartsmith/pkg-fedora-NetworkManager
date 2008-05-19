@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3669
-%define applet_snapshot svn724
+%define snapshot svn3675
+%define applet_snapshot svn727
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -294,6 +294,10 @@ fi
 
 
 %changelog
+* Mon May 19 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3675
+- Read global gateway from /etc/sysconfig/network if missing (rh #446527)
+- nm-system-settings now terminates when dbus goes away (rh #444976)
+
 * Tue May 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3669
 - Fix initial carrier state detection on devices that are already up (rh #134886)
 

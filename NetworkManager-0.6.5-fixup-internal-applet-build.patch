@@ -68,23 +68,12 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix Net
  noinst_LTLIBRARIES = libutils.la
  
  libutils_la_SOURCES = \
-@@ -10,7 +14,9 @@ libutils_la_SOURCES = \
- 
- libutils_la_CPPFLAGS = $(NMA_CFLAGS)
+@@ -11,4 +15,7 @@ libutils_la_CPPFLAGS = \
+ 	-I${top_srcdir}/src/gconf-helpers \
+ 	-I${top_srcdir}/src
  
 -libutils_la_LIBADD = $(NMA_LIBS)
 +libutils_la_LIBADD = $(NMA_LIBS) \
-+	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
-+	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
- 
- if WITH_GNUTLS
- libutils_la_SOURCES += crypto_gnutls.c
-@@ -28,4 +34,7 @@ noinst_PROGRAMS = test-crypto
- 
- test_crypto_SOURCES = test-crypto.c
- test_crypto_CPPFLAGS = $(NMA_CFLAGS) -D_GNU_SOURCE
--test_crypto_LDADD = $(NMA_LIBS) ${top_builddir}/src/utils/libutils.la
-+test_crypto_LDADD = $(NMA_LIBS) ${top_builddir}/src/utils/libutils.la \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
 +
