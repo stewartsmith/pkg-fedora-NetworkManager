@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.9.3.%{snapshot}%{?dist}
+Release: 0.9.4.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -27,6 +27,7 @@ Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch3: optionally-wait-for-network.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
+Patch6: shutdown-later.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -76,6 +77,19 @@ NetworkManager is _intended_ to replace default routes, obtain IP addresses
 from a DHCP server, and change nameservers whenever it sees fit.
 
 
+%package devel
+Summary: Libraries and headers for adding NetworkManager support to applications
+Group: Development/Libraries
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: dbus-devel >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
+Requires: pkgconfig
+
+%description devel
+This package contains various headers accessing some NetworkManager functionality
+from applications.
+
+
 %package gnome
 Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
@@ -94,19 +108,6 @@ Requires: gnome-icon-theme
 %description gnome
 This package contains GNOME utilities and applications for use with
 NetworkManager, including a panel applet for wireless networks.
-
-
-%package devel
-Summary: Libraries and headers for adding NetworkManager support to applications
-Group: Development/Libraries
-Requires: %{name} = %{epoch}:%{version}-%{release}
-Requires: dbus-devel >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_glib_version}
-Requires: pkgconfig
-
-%description devel
-This package contains various headers accessing some NetworkManager functionality
-from applications.
 
 
 %package glib
@@ -143,6 +144,7 @@ tar -xzf %{SOURCE1}
 %patch3 -p1 -b .wait-for-network
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
+%patch6 -p1 -b .shutdown-later
 
 %build
 # Even though we don't require named, we still build with it
@@ -160,7 +162,7 @@ pushd nm-applet-0.7.0
   autoreconf -i
   intltoolize --force
   %configure \
-	--disable-static \
+    --disable-static \
     --with-notify \
     --with-nss=yes \
     --with-gnutls=no
@@ -200,7 +202,7 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %post
 if [ "$1" == "1" ]; then
 	/sbin/chkconfig --add NetworkManager
-	/sbin/chkconfig messagebus resetpriorities
+	/sbin/chkconfig NetworkManager resetpriorities
 fi
 
 %preun
@@ -246,7 +248,6 @@ fi
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
 %{_libexecdir}/nm-dispatcher.action
-%{_libdir}/libnm-util.so*
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/*.so*
 %{_mandir}/man1/*
@@ -259,6 +260,13 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_datadir}/PolicyKit/policy/*.policy
+
+%files devel
+%defattr(-,root,root,0755)
+%dir %{_includedir}/%{name}
+%{_includedir}/%{name}/%{name}.h
+%{_includedir}/%{name}/NetworkManagerVPN.h
+%{_libdir}/pkgconfig/%{name}.pc
 
 %files gnome
 %defattr(-,root,root,0755)
@@ -273,27 +281,26 @@ fi
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
 
-%files devel
-%defattr(-,root,root,0755)
-%dir %{_includedir}/%{name}
-%{_includedir}/%{name}/*.h
-%{_libdir}/pkgconfig/%{name}.pc
-%{_libdir}/pkgconfig/libnm-util.pc
-%{_libdir}/libnm-util.so
-
 %files glib
 %defattr(-,root,root,0755)
 %{_libdir}/libnm_glib.so.*
 %{_libdir}/libnm_glib_vpn.so.*
+%{_libdir}/libnm-util.so.*
 
 %files glib-devel
 %{_includedir}/libnm-glib/*.h
+%{_includedir}/NetworkManager/nm-*.h
 %{_libdir}/pkgconfig/libnm_glib.pc
+%{_libdir}/pkgconfig/libnm-util.pc
 %{_libdir}/libnm_glib.so
 %{_libdir}/libnm_glib_vpn.so
-
+%{_libdir}/libnm-util.so
 
 %changelog
+* Wed Jun  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.4.svn3675
+- Move NM later in the shutdown process (rh #449070)
+- Move libnm-util into a subpackage to allow NM to be removed more easily (rh #351101)
+
 * Mon May 19 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3675
 - Read global gateway from /etc/sysconfig/network if missing (rh #446527)
 - nm-system-settings now terminates when dbus goes away (rh #444976)
