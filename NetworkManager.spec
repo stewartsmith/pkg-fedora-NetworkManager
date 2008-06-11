@@ -9,14 +9,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3675
-%define applet_snapshot svn727
+%define snapshot svn3747
+%define applet_snapshot svn755
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.9.4.%{snapshot}%{?dist}
+Release: 0.10.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -24,10 +24,9 @@ Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch3: optionally-wait-for-network.patch
+Patch2: disable-editing-system-connections-for-now.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
-Patch6: shutdown-later.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -99,7 +98,7 @@ Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
-Requires: libnotify >= 0.3
+Requires: libnotify >= 0.4.3
 PreReq:  gtk2 >= %{gtk2_version}
 Requires: gnome-keyring
 Requires: nss >= 3.11.7
@@ -141,10 +140,9 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch3 -p1 -b .wait-for-network
+%patch2 -p1 -b .disable-system
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
-%patch6 -p1 -b .shutdown-later
 
 %build
 # Even though we don't require named, we still build with it
@@ -297,6 +295,11 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Wed Jun 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3747
+- Update to latest SVN
+- Enable connection sharing
+- Respect VPN-provided routes
+
 * Wed Jun  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.4.svn3675
 - Move NM later in the shutdown process (rh #449070)
 - Move libnm-util into a subpackage to allow NM to be removed more easily (rh #351101)
