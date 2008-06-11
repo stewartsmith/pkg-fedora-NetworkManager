@@ -24,7 +24,6 @@ Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch2: disable-editing-system-connections-for-now.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -140,7 +139,6 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch2 -p1 -b .disable-system
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
 
