@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3747
-%define applet_snapshot svn755
+%define snapshot svn3801
+%define applet_snapshot svn774
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -171,7 +171,7 @@ popd
 # install NM
 make install DESTDIR=$RPM_BUILD_ROOT
 
-%{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/
+%{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
 # install the applet
 pushd nm-applet-0.7.0
@@ -236,10 +236,10 @@ fi
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
 %{_sbindir}/nm-system-settings
-%{_sysconfdir}/nm-system-settings.conf
-%dir %{_sysconfdir}/NetworkManager/
-%dir %{_sysconfdir}/NetworkManager/dispatcher.d
-%dir %{_sysconfdir}/NetworkManager/VPN
+%dir %{_sysconfdir}/%{name}/
+%dir %{_sysconfdir}/%{name}/dispatcher.d
+%dir %{_sysconfdir}/%{name}/VPN
+%{_sysconfdir}/%{name}/nm-system-settings.conf
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
@@ -268,9 +268,7 @@ fi
 %defattr(-,root,root,0755)
 %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
 %{_bindir}/nm-applet
-%{_bindir}/nm-vpn-properties
 %{_bindir}/nm-connection-editor
-%{_datadir}/gnome-vpn-properties/nm-vpn-properties.glade
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/16x16/apps/*.png
 %{_datadir}/icons/hicolor/22x22/apps/*.png
@@ -287,12 +285,20 @@ fi
 %{_includedir}/libnm-glib/*.h
 %{_includedir}/NetworkManager/nm-*.h
 %{_libdir}/pkgconfig/libnm_glib.pc
+%{_libdir}/pkgconfig/libnm_glib_vpn.pc
 %{_libdir}/pkgconfig/libnm-util.pc
 %{_libdir}/libnm_glib.so
 %{_libdir}/libnm_glib_vpn.so
 %{_libdir}/libnm-util.so
 
 %changelog
+* Wed Jul 02 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3801
+- Move VPN configuration into connection editor
+- Fix mobile broadband username/password issues
+- Fix issues with broken rfkill setups (rh #448889)
+- Honor APN setting for GSM mobile broadband configurations
+- Fix adding CDMA connections in the connection editor
+
 * Wed Jun 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3747
 - Update to latest SVN
 - Enable connection sharing
