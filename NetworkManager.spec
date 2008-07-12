@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.10.%{snapshot}%{?dist}
+Release: 0.10.%{snapshot}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -96,7 +96,6 @@ Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: hal >= %{hal_version}
 Requires: libnotify >= 0.4.3
 PreReq:  gtk2 >= %{gtk2_version}
 Requires: gnome-keyring
@@ -292,6 +291,9 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Fri Jul 11 2008 Matthias Clasen <mclasen@redhat.com> - 1:0.7.0-0.10.svn3801
+- Drop explicit hal dep in -gnome
+
 * Wed Jul 02 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3801
 - Move VPN configuration into connection editor
 - Fix mobile broadband username/password issues
