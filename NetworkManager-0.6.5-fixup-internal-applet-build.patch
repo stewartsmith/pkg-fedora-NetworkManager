@@ -1,7 +1,7 @@
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac
---- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2007-11-13 09:53:39.000000000 -0500
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2007-11-13 15:14:13.000000000 -0500
-@@ -60,10 +60,6 @@ AC_C_BIGENDIAN
+--- NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix	2008-06-17 13:51:13.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac	2008-07-18 11:52:29.000000000 -0400
+@@ -68,10 +68,6 @@ PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
  PKG_CHECK_MODULES(NMA,
  		[dbus-glib-1 >= 0.72
  		 glib-2.0 >= 2.10
@@ -11,10 +11,36 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/configure.ac.buildfix NetworkManag
 -		 libnm_glib_vpn >= 0.7.0
  		 gtk+-2.0 >= 2.10
  		 libglade-2.0
- 		 gconf-2.0
+ 		 gmodule-export-2.0
+diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix	2008-07-03 07:08:55.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am	2008-07-18 11:52:29.000000000 -0400
+@@ -2,6 +2,10 @@ NULL=
+ 
+ bin_PROGRAMS = nm-connection-editor
+ 
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util \
++           -I${top_srcdir}/../libnm-glib
++
+ nm_connection_editor_CPPFLAGS =			\
+ 	$(NMA_CFLAGS)				\
+ 	-DICONDIR=\""$(datadir)/icons"\"	\
+@@ -60,7 +64,10 @@ nm_connection_editor_LDADD = \
+ 	${top_builddir}/src/wireless-security/libwireless-security.la \
+ 	${top_builddir}/src/utils/libutils.la \
+ 	$(NMA_LIBS) \
+-	$(POLKIT_LIBS)
++	$(POLKIT_LIBS) \
++	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la \
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib_vpn.la
+ 
+ gladedir = $(datadir)/nm-applet
+ glade_DATA = \
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buildfix	2007-10-27 18:23:56.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am	2007-11-13 15:14:13.000000000 -0500
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buildfix	2008-05-06 11:16:09.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am	2008-07-18 11:52:29.000000000 -0400
 @@ -1,3 +1,7 @@
 +INCLUDES = -I${top_srcdir}/../include \
 +           -I${top_srcdir}/../libnm-util \
@@ -23,8 +49,7 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buil
  noinst_LTLIBRARIES = libgconf-helpers.la
  
  libgconf_helpers_la_SOURCES =	\
-@@ -13,6 +17,8 @@ libgconf_helpers_la_CPPFLAGS = \
- 
+@@ -19,5 +23,7 @@ libgconf_helpers_la_CPPFLAGS = \
  libgconf_helpers_la_LIBADD = \
  	$(NMA_LIBS) \
  	${top_builddir}/src/marshallers/libmarshallers.la \
@@ -33,9 +58,34 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/gconf-helpers/Makefile.am.buil
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
  
+diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix	2008-07-03 08:48:24.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am	2008-07-18 11:52:29.000000000 -0400
+@@ -4,6 +4,10 @@ NULL=
+ 
+ bin_PROGRAMS = nm-applet
+ 
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util \
++           -I${top_srcdir}/../libnm-glib
++
+ nm_applet_CPPFLAGS = \
+ 	$(NMA_CFLAGS) \
+ 	$(NOTIFY_CFLAGS) \
+@@ -57,7 +61,9 @@ nm_applet_LDADD = \
+ 	${top_builddir}/src/marshallers/libmarshallers.la \
+ 	${top_builddir}/src/utils/libutils.la \
+ 	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
+-	${top_builddir}/src/wireless-security/libwireless-security.la
++	${top_builddir}/src/wireless-security/libwireless-security.la \
++	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
++	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
+ 
+ gladedir = $(datadir)/nm-applet
+ glade_DATA = applet.glade keyring.png
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix	2007-11-13 15:41:01.000000000 -0500
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am	2007-11-13 15:42:30.000000000 -0500
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix	2008-05-19 11:02:18.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am	2008-07-18 11:52:29.000000000 -0400
 @@ -1,3 +1,7 @@
 +INCLUDES = -I${top_srcdir}/../include \
 +           -I${top_srcdir}/../libnm-util \
@@ -54,8 +104,8 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/utils/Makefile.am.buildfix Net
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
 +
 diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am.buildfix	2007-11-07 12:12:16.000000000 -0500
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am	2007-11-13 15:14:13.000000000 -0500
+--- NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am.buildfix	2008-03-30 13:17:59.000000000 -0400
++++ NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am	2008-07-18 11:52:29.000000000 -0400
 @@ -1,5 +1,9 @@
  noinst_LTLIBRARIES = libwireless-security.la
  
@@ -75,54 +125,3 @@ diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/wireless-security/Makefile.am.
 +	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
  
-diff -up NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am.buildfix	2007-09-20 07:40:37.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/connection-editor/Makefile.am	2007-11-13 15:14:13.000000000 -0500
-@@ -2,6 +2,10 @@
- 
- bin_PROGRAMS = nm-connection-editor
- 
-+INCLUDES = -I${top_srcdir}/../include \
-+           -I${top_srcdir}/../libnm-util \
-+           -I${top_srcdir}/../libnm-glib
-+
- nm_connection_editor_CPPFLAGS =			\
- 	$(NMA_CFLAGS)				\
- 	-DICONDIR=\""$(datadir)/icons"\"	\
-@@ -59,7 +63,10 @@
- 	${top_builddir}/src/wireless-security/libwireless-security.la \
- 	${top_builddir}/src/utils/libutils.la \
- 	$(NMA_LIBS) \
--	$(POLKIT_LIBS)
-+	$(POLKIT_LIBS) \
-+	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
-+	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la \
-+	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib_vpn.la
- 
- gladedir = $(datadir)/nm-applet
- glade_DATA = \
---- NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am.buildfix	2007-10-27 18:11:31.000000000 -0400
-+++ NetworkManager-0.7.0/nm-applet-0.7.0/src/Makefile.am	2007-11-13 15:14:13.000000000 -0500
-@@ -4,6 +4,10 @@ NULL=
- 
- bin_PROGRAMS = nm-applet
- 
-+INCLUDES = -I${top_srcdir}/../include \
-+           -I${top_srcdir}/../libnm-util \
-+           -I${top_srcdir}/../libnm-glib
-+
- nm_applet_CPPFLAGS = \
- 	$(NMA_CFLAGS) \
- 	-DICONDIR=\""$(datadir)/icons"\"						\
-@@ -58,7 +62,9 @@ nm_applet_LDADD = \
- 	$(NMA_LIBS) \
- 	${top_builddir}/src/utils/libutils.la \
- 	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
--	${top_builddir}/src/wireless-security/libwireless-security.la
-+	${top_builddir}/src/wireless-security/libwireless-security.la \
-+	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
-+	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm_glib.la
- 
- if WITH_NOTIFY
- nm_applet_LDADD += $(NOTIFY_LIBS)
-
