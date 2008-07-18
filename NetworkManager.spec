@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.0-0.15.pre8.git20071218
 %define ppp_version 2.2.4
 
-%define snapshot svn3801
-%define applet_snapshot svn774
+%define snapshot svn3830
+%define applet_snapshot svn792
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -38,11 +38,14 @@ Requires: wpa_supplicant >= 0.5.7-21
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
+Requires: avahi-autoipd
+Requires: dnsmasq
 Obsoletes: dhcdbd
 
 # Due to VPN auth-dialog changes in applet r662
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.7.7.svn3549
-Conflicts: NetworkManager-openvpn < 1:0.7.0-9.svn3549
+# Due to using prefixes instead of netmasks in NM > r3812
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn3830
+Conflicts: NetworkManager-openvpn < 1:0.7.0-11.svn3830
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -142,25 +145,20 @@ tar -xzf %{SOURCE1}
 %patch5 -p1 -b .explain-dns1-dns2
 
 %build
-# Even though we don't require named, we still build with it
-# so that if the user installs it, NM will use it automatically
 autoreconf -i
 %configure \
 	--disable-static \
-	--with-named=/usr/sbin/named \
-	--with-named-dir=/var/named/data \
-	--with-named-user=named
+	--with-distro=redhat \
+	--with-dhcp-client=dhclient \
+	--with-crypto=nss \
+	--enable-more-warnings=yes
 make
 
 # build the applet
 pushd nm-applet-0.7.0
   autoreconf -i
   intltoolize --force
-  %configure \
-    --disable-static \
-    --with-notify \
-    --with-nss=yes \
-    --with-gnutls=no
+  %configure --disable-static
   make
 popd
  
@@ -203,10 +201,12 @@ fi
 %preun
 if [ $1 -eq 0 ]; then
     /sbin/service NetworkManager stop >/dev/null 2>&1
+    killall -TERM nm-system-settings >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
 fi
 
 %triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
+/sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
 /sbin/chkconfig --del NetworkManagerDispatcher
 exit 0
 
@@ -230,6 +230,7 @@ fi
 %doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
+%{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
@@ -242,6 +243,7 @@ fi
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
+%{_libexecdir}/nm-avahi-autoipd.action
 %{_libexecdir}/nm-dispatcher.action
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/*.so*
@@ -291,6 +293,15 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Fri Jul 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3830
+- Expose server-returned DHCP options via D-Bus
+- Use avahi-autoipd rather than old built-in IPv4LL implementation
+- Send hostname to DHCP server if provided (DHCP_HOSTNAME ifcfg option)
+- Support sending DHCP Client Identifier to DHCP server
+- Allow forcing 802.1x PEAP Label to '0'
+- Make connection sharing more robust
+- Show status for shared and Ad-Hoc connections if no other connection is active
+
 * Fri Jul 11 2008 Matthias Clasen <mclasen@redhat.com> - 1:0.7.0-0.10.svn3801
 - Drop explicit hal dep in -gnome
 
