@@ -68,6 +68,7 @@ BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp-devel >= %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
+BuildRequires: dhclient
 
 %description
 NetworkManager attempts to keep an active network connection available at all
