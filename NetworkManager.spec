@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.10.%{snapshot}%{?dist}.1
+Release: 0.11.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -293,7 +293,7 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
-* Fri Jul 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.10.svn3830
+* Fri Jul 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3830
 - Expose server-returned DHCP options via D-Bus
 - Use avahi-autoipd rather than old built-in IPv4LL implementation
 - Send hostname to DHCP server if provided (DHCP_HOSTNAME ifcfg option)
