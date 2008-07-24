@@ -6,11 +6,11 @@ ExcludeArch: s390 s390x
 
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
-%define libnl_version 1.0-0.15.pre8.git20071218
+%define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn3830
-%define applet_snapshot svn792
+%define snapshot svn3846
+%define applet_snapshot svn798
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -294,6 +294,12 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Thu Jul 24 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3846
+- Convert stored IPv4 static IP addresses to new prefix-based scheme automatically
+- Fix pppd connections to some 3G providers (rh #455348)
+- Make PPPoE "Show Password" option work
+- Hide IPv4 config options that don't make sense in certain configurations
+
 * Fri Jul 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3830
 - Expose server-returned DHCP options via D-Bus
 - Use avahi-autoipd rather than old built-in IPv4LL implementation
