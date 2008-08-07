@@ -284,8 +284,10 @@ fi
 %{_libdir}/libnm-util.so.*
 
 %files glib-devel
+%defattr(-,root,root,0755)
+%dir %{_includedir}/libnm-glib
 %{_includedir}/libnm-glib/*.h
-%{_includedir}/NetworkManager/nm-*.h
+%{_includedir}/%{name}/nm-*.h
 %{_libdir}/pkgconfig/libnm_glib.pc
 %{_libdir}/pkgconfig/libnm_glib_vpn.pc
 %{_libdir}/pkgconfig/libnm-util.pc
