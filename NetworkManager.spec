@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn3846
-%define applet_snapshot svn798
+%define snapshot svn3927
+%define applet_snapshot svn837
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -44,8 +44,9 @@ Obsoletes: dhcdbd
 
 # Due to VPN auth-dialog changes in applet r662
 # Due to using prefixes instead of netmasks in NM > r3812
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn3830
-Conflicts: NetworkManager-openvpn < 1:0.7.0-11.svn3830
+# Due to consolidation of vpn + vpn-properties settings in NM >= r3927
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn3927
+Conflicts: NetworkManager-openvpn < 1:0.7.0-15.svn3927
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -296,6 +297,16 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Mon Aug 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3927
+- Expose DHCP-returned options over D-Bus and to dispatcher scripts
+- Add support for customized static routes
+- Handle multiple concurrent 3G or PPPoE connections
+- Fix GSM/CDMA username and password issues
+- Better handling of unmanaged devices from ifcfg files
+- Fix timeout handling of errors during 3G connections
+- Fix some routing issues (rh #456685)
+- Fix applet crashes after removing a device (rh #457380)
+
 * Thu Jul 24 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3846
 - Convert stored IPv4 static IP addresses to new prefix-based scheme automatically
 - Fix pppd connections to some 3G providers (rh #455348)
