@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn3927
-%define applet_snapshot svn837
+%define snapshot svn3930
+%define applet_snapshot svn838
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -297,6 +297,9 @@ fi
 %{_libdir}/libnm-util.so
 
 %changelog
+* Mon Aug 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3930
+- Fix issue with mobile broadband connections that don't require authentication
+
 * Mon Aug 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3927
 - Expose DHCP-returned options over D-Bus and to dispatcher scripts
 - Add support for customized static routes
