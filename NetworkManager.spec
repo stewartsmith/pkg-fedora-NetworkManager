@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn3930
-%define applet_snapshot svn838
+%define snapshot svn4022
+%define applet_snapshot svn870
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -45,8 +45,9 @@ Obsoletes: dhcdbd
 # Due to VPN auth-dialog changes in applet r662
 # Due to using prefixes instead of netmasks in NM > r3812
 # Due to consolidation of vpn + vpn-properties settings in NM >= r3927
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn3927
-Conflicts: NetworkManager-openvpn < 1:0.7.0-15.svn3927
+# Due to UUID changes in NM >= 4013
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn4022
+Conflicts: NetworkManager-openvpn < 1:0.7.0-15.svn4022
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -295,8 +296,23 @@ fi
 %{_libdir}/libnm_glib.so
 %{_libdir}/libnm_glib_vpn.so
 %{_libdir}/libnm-util.so
+%dir %{_datadir}/gtk-doc/html/libnm-glib
+%{_datadir}/gtk-doc/html/libnm-glib/
 
 %changelog
+* Wed Aug 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022
+- Fix parsing of DOMAIN in ifcfg files (rh #459370)
+- Fix reconnection to mobile broadband networks after an auth failure
+- Fix recognition of timeouts of PPP during mobile broadband connection
+- More compatible connection sharing (rh #458625)
+- Fix DHCP in minimal environments without glibc locale information installed
+- Add support for Option mobile broadband devices (like iCON 225 and iCON 7.2)
+- Add IP4 config information to dispatcher script environment
+- Merge WEP ASCII and Hex key types for cleaner UI
+- Pre-fill PPPoE password when authentication fails
+- Fixed some changes not getting saved in the connection editor
+- Accept both prefix and netmask in the conection editor's IPv4 page
+
 * Mon Aug 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn3930
 - Fix issue with mobile broadband connections that don't require authentication
 
