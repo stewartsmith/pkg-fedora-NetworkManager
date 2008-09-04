@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}%{?dist}
+Release: 0.11.%{snapshot}.1%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -26,6 +26,7 @@ Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
+Patch6: wpa-adhoc-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -146,6 +147,7 @@ tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
+%patch6 -p1 -b .wpa-adhoc-fix
 
 %build
 autoreconf -i
@@ -300,6 +302,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/
 
 %changelog
+* Thu Sep  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.1
+- Fix WPA Ad-Hoc connections
+
 * Wed Aug 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022
 - Fix parsing of DOMAIN in ifcfg files (rh #459370)
 - Fix reconnection to mobile broadband networks after an auth failure
