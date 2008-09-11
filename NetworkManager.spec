@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}.1%{?dist}
+Release: 0.11.%{snapshot}.2%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -27,6 +27,7 @@ Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
 Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
 Patch6: wpa-adhoc-fix.patch
+Patch7: crypto-init.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -148,6 +149,7 @@ tar -xzf %{SOURCE1}
 %patch4 -p1 -b .serial-debug
 %patch5 -p1 -b .explain-dns1-dns2
 %patch6 -p1 -b .wpa-adhoc-fix
+%patch7 -p1 -b .crypto-init
 
 %build
 autoreconf -i
@@ -302,6 +304,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/
 
 %changelog
+* Thu Sep 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.2
+- Fix hang when reading system connections from ifcfg files
+
 * Thu Sep  4 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.1
 - Fix WPA Ad-Hoc connections
 
