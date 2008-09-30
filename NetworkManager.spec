@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}.2%{?dist}
+Release: 0.11.%{snapshot}.3%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Patch4: serial-debug.patch
 Patch5: explain-dns1-dns2.patch
 Patch6: wpa-adhoc-fix.patch
 Patch7: crypto-init.patch
+Patch8: nm-vpn-fixes-r900-r901.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -150,6 +151,7 @@ tar -xzf %{SOURCE1}
 %patch5 -p1 -b .explain-dns1-dns2
 %patch6 -p1 -b .wpa-adhoc-fix
 %patch7 -p1 -b .crypto-init
+%patch8 -p1 -b .vpn-fixes
 
 %build
 autoreconf -i
@@ -304,6 +306,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/
 
 %changelog
+* Tue Sep 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.3
+- Fix handling of VPN settings on upgrade (rh #460730, bgo #553465)
+
 * Thu Sep 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.2
 - Fix hang when reading system connections from ifcfg files
 
