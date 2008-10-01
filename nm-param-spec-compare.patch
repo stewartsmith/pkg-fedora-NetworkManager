@@ -1,0 +1,87 @@
+2008-10-01  Dan Williams  <dcbw@redhat.com>
+
+	Fix setting value comparison issue that caused some settings to look the
+	same when they were really different (rh #464417)
+
+	* libnm-util/nm-param-spec-specialized.c
+		- (type_is_fixed_size): return fundamental size of the fixed type too
+		- (nm_gvalues_compare_collection): use the fundamental fixed type size
+			in the comparison so that the _entire_ fixed type collection gets
+			compared rather than just the first 'len1' bytes
+
+diff -up NetworkManager-0.7.0/libnm-util/nm-param-spec-specialized.c.compare-fix NetworkManager-0.7.0/libnm-util/nm-param-spec-specialized.c
+--- NetworkManager-0.7.0/libnm-util/nm-param-spec-specialized.c.compare-fix	2008-10-01 17:41:41.000000000 -0400
++++ NetworkManager-0.7.0/libnm-util/nm-param-spec-specialized.c	2008-10-01 17:42:05.000000000 -0400
+@@ -39,20 +39,41 @@ struct _NMParamSpecSpecialized {
+ static gint nm_gvalues_compare (const GValue *value1, const GValue *value2);
+ 
+ static gboolean
+-type_is_fixed_size (GType type)
++type_is_fixed_size (GType type, gsize *tsize)
+ {
+ 	switch (type) {
+ 	case G_TYPE_CHAR:
++		if (tsize) *tsize = sizeof (char);
++		return TRUE;
+ 	case G_TYPE_UCHAR:
++		if (tsize) *tsize = sizeof (guchar);
++		return TRUE;
+ 	case G_TYPE_BOOLEAN:
++		if (tsize) *tsize = sizeof (gboolean);
++		return TRUE;
+ 	case G_TYPE_LONG:
++		if (tsize) *tsize = sizeof (glong);
++		return TRUE;
+ 	case G_TYPE_ULONG:
++		if (tsize) *tsize = sizeof (gulong);
++		return TRUE;
+ 	case G_TYPE_INT:
++		if (tsize) *tsize = sizeof (gint);
++		return TRUE;
+ 	case G_TYPE_UINT:
++		if (tsize) *tsize = sizeof (guint);
++		return TRUE;
+ 	case G_TYPE_INT64:
++		if (tsize) *tsize = sizeof (gint64);
++		return TRUE;
+ 	case G_TYPE_UINT64:
++		if (tsize) *tsize = sizeof (guint64);
++		return TRUE;
+ 	case G_TYPE_FLOAT:
++		if (tsize) *tsize = sizeof (gfloat);
++		return TRUE;
+ 	case G_TYPE_DOUBLE:
++		if (tsize) *tsize = sizeof (gdouble);
+ 		return TRUE;
+ 	default:
+ 		return FALSE;
+@@ -232,8 +253,9 @@ nm_gvalues_compare_collection (const GVa
+ 	guint len1;
+ 	guint len2;
+ 	GType value_type = dbus_g_type_get_collection_specialization (G_VALUE_TYPE (value1));
++	gsize element_size = 0;
+ 
+-	if (type_is_fixed_size (value_type)) {
++	if (type_is_fixed_size (value_type, &element_size)) {
+ 		gpointer data1 = NULL;
+ 		gpointer data2 = NULL;
+ 
+@@ -243,7 +265,7 @@ nm_gvalues_compare_collection (const GVa
+ 		if (len1 != len2)
+ 			ret = len1 < len2 ? -1 : len1 > len2;
+ 		else
+-			ret = memcmp (data1, data2, len1);
++			ret = memcmp (data1, data2, len1 * element_size);
+ 	} else {
+ 		GSList *list1 = NULL;
+ 		GSList *list2 = NULL;
+@@ -372,8 +394,7 @@ nm_gvalues_compare (const GValue *value1
+ 	if (type1 != type2)
+ 		return type1 < type2 ? -1 : type1 > type2;
+ 
+-
+-	if (type_is_fixed_size (type1))
++	if (type_is_fixed_size (type1, NULL))
+ 		ret = nm_gvalues_compare_fixed (value1, value2);
+ 	else if (type1 == G_TYPE_STRING) 
+ 		ret = nm_gvalues_compare_string (value1, value2);

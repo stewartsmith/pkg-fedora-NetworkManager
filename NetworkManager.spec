@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}.3%{?dist}
+Release: 0.11.%{snapshot}.4%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -29,6 +29,7 @@ Patch5: explain-dns1-dns2.patch
 Patch6: wpa-adhoc-fix.patch
 Patch7: crypto-init.patch
 Patch8: nm-vpn-fixes-r900-r901.patch
+Patch9: nm-param-spec-compare.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -152,6 +153,7 @@ tar -xzf %{SOURCE1}
 %patch6 -p1 -b .wpa-adhoc-fix
 %patch7 -p1 -b .crypto-init
 %patch8 -p1 -b .vpn-fixes
+%patch9 -p1 -b .paramspec-compare
 
 %build
 autoreconf -i
@@ -306,6 +308,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/
 
 %changelog
+* Wed Oct  1 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.4
+- Fix connection comparison that could cause changes to get overwritten (rh #464417)
+
 * Tue Sep 30 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.3
 - Fix handling of VPN settings on upgrade (rh #460730, bgo #553465)
 
