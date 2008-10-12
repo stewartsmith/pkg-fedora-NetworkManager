@@ -9,14 +9,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4022
-%define applet_snapshot svn870
+%define snapshot svn4174
+%define applet_snapshot svn939
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}.4%{?dist}
+Release: 0.11.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -24,12 +24,7 @@ Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
-Patch4: serial-debug.patch
-Patch5: explain-dns1-dns2.patch
-Patch6: wpa-adhoc-fix.patch
-Patch7: crypto-init.patch
-Patch8: nm-vpn-fixes-r900-r901.patch
-Patch9: nm-param-spec-compare.patch
+Patch2: explain-dns1-dns2.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -46,12 +41,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Obsoletes: dhcdbd
 
-# Due to VPN auth-dialog changes in applet r662
-# Due to using prefixes instead of netmasks in NM > r3812
-# Due to consolidation of vpn + vpn-properties settings in NM >= r3927
-# Due to UUID changes in NM >= 4013
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn4022
-Conflicts: NetworkManager-openvpn < 1:0.7.0-15.svn4022
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn4174
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn4174
+Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4174
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -148,12 +140,7 @@ NetworkManager functionality from applications that use glib.
 # unpack the applet
 tar -xzf %{SOURCE1}
 %patch1 -p1 -b .buildfix
-%patch4 -p1 -b .serial-debug
-%patch5 -p1 -b .explain-dns1-dns2
-%patch6 -p1 -b .wpa-adhoc-fix
-%patch7 -p1 -b .crypto-init
-%patch8 -p1 -b .vpn-fixes
-%patch9 -p1 -b .paramspec-compare
+%patch2 -p1 -b .explain-dns1-dns2
 
 %build
 autoreconf -i
@@ -281,6 +268,7 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-applet.conf
 %{_bindir}/nm-applet
 %{_bindir}/nm-connection-editor
+%{_datadir}/applications/*.desktop
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/16x16/apps/*.png
 %{_datadir}/icons/hicolor/22x22/apps/*.png
@@ -305,9 +293,19 @@ fi
 %{_libdir}/libnm_glib_vpn.so
 %{_libdir}/libnm-util.so
 %dir %{_datadir}/gtk-doc/html/libnm-glib
-%{_datadir}/gtk-doc/html/libnm-glib/
+%{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Sat Oct 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4174
+- Ensure that mobile broadband cards are powered up before trying to use them
+- Hostname changing support (rh #441453)
+- Fix mobile broadband secret requests to happen less often
+- Better handling of default devices and default routes
+- Better information in tooltips and notifications
+- Various UI cleanups; hide widgets that aren't used (rh #465397, rh #465395)
+- Accept different separators for DNS servers and searches
+- Make applet's icon accurately reflect signal strength of the current AP
+
 * Wed Oct  1 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4022.4
 - Fix connection comparison that could cause changes to get overwritten (rh #464417)
 
