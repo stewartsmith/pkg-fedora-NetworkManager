@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4175
-%define applet_snapshot svn939
+%define snapshot svn4201
+%define applet_snapshot svn958
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -41,9 +41,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Obsoletes: dhcdbd
 
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.10.svn4174
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4174
 Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4174
-Conflicts: NetworkManager-pptp < 1:0.7.0-0.10.svn4174
+Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4174
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -53,7 +53,6 @@ BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
 BuildRequires: GConf2-devel
-BuildRequires: gnome-panel-devel
 BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
@@ -95,7 +94,6 @@ Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
-Requires: gnome-panel
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: libnotify >= 0.4.3
@@ -296,6 +294,14 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Tue Oct 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4201
+- Fix issues with hostname during anaconda installation (rh #461933)
+- Fix Ad-Hoc WPA connections (rh #461197)
+- Don't require gnome-panel or gnome-panel-devel (rh #427834)
+- Fix determination of WPA encryption capabilities on some cards
+- Fix conflicts with PPTP and vpnc plugins
+- Allow .cer file extensions when choosing certificates
+
 * Sat Oct 11 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4175
 - Fix conflicts for older PPTP VPN plugins
 
