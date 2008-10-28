@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4201
-%define applet_snapshot svn958
+%define snapshot svn4229
+%define applet_snapshot svn986
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -41,9 +41,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Obsoletes: dhcdbd
 
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4174
-Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4174
-Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4174
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4229
+Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4229
+Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4229
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -294,6 +294,12 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Mon Oct 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4229
+- More reliable mobile broadband card initialization
+- Handle mobile broadband PINs correctly when PPP passwords are also used
+- Additional PolicyKit integration for editing system connections
+- Close the applet menu if a keyring password is needed (rh #353451)
+
 * Tue Oct 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4201
 - Fix issues with hostname during anaconda installation (rh #461933)
 - Fix Ad-Hoc WPA connections (rh #461197)
