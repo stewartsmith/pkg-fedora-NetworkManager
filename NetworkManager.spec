@@ -9,14 +9,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4229
-%define applet_snapshot svn986
+%define snapshot svn4293
+%define applet_snapshot svn1024
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.11.%{snapshot}%{?dist}
+Release: 0.12.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -53,7 +53,6 @@ BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: openssl-devel
 BuildRequires: GConf2-devel
-BuildRequires: libgnomeui-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
@@ -294,6 +293,17 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Fri Nov 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4293
+- Update to NetworkManager 0.7.0 RC2
+- Handle gateways on a different subnet from the interface
+- Clear VPN secrets on connection failure to ensure they are requested again (rh #429287)
+- Add support for PKCS#12 private keys
+- Fix mangling of VPN's default route on DHCP renew
+- Fix type detection of qemu/kvm network devices (rh #466340)
+- Clear up netmask/prefix confusion in the connection editor
+- Make the secrets dialog go away when it's not needed
+- Fix inability to add system connections (rh #471308)
+
 * Mon Oct 27 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.11.svn4229
 - More reliable mobile broadband card initialization
 - Handle mobile broadband PINs correctly when PPP passwords are also used
