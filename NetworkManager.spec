@@ -23,7 +23,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
-Patch1: NetworkManager-0.6.5-fixup-internal-applet-build.patch
+Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
