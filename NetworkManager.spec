@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4293
-%define applet_snapshot svn1024
+%define snapshot svn4295
+%define applet_snapshot svn1031
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -293,11 +293,20 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Mon Nov 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4295
+- Fix issues reading ifcfg files
+- Previously fixed:
+- Doesn't send DHCP hostname (rh #469336)
+- 'Auto eth0' forgets settings (rh #468612)
+- DHCP renewal sometimes breaks VPN (rh #471852)
+- Connection editor menu item in the wrong place (rh #471495)
+- Cannot make system-wide connections (rh #471308)
+
 * Fri Nov 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4293
 - Update to NetworkManager 0.7.0 RC2
 - Handle gateways on a different subnet from the interface
 - Clear VPN secrets on connection failure to ensure they are requested again (rh #429287)
-- Add support for PKCS#12 private keys
+- Add support for PKCS#12 private keys (rh #462705)
 - Fix mangling of VPN's default route on DHCP renew
 - Fix type detection of qemu/kvm network devices (rh #466340)
 - Clear up netmask/prefix confusion in the connection editor
