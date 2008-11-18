@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4295
-%define applet_snapshot svn1031
+%define snapshot svn4296
+%define applet_snapshot svn1033
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -293,6 +293,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 
 %changelog
+* Tue Nov 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4296
+- Fix PIN/PUK issues with high-speed Option HSDPA mobile broadband cards
+- Fix desensitized OK button when asking for wireless keys
+
 * Mon Nov 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4295
 - Fix issues reading ifcfg files
 - Previously fixed:
