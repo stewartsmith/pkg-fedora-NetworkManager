@@ -9,8 +9,8 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4296
-%define applet_snapshot svn1033
+%define snapshot svn4326
+%define applet_snapshot svn1043
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -20,6 +20,7 @@ Release: 0.12.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
+
 Source: %{name}-%{version}.%{snapshot}.tar.gz
 Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
@@ -41,9 +42,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Obsoletes: dhcdbd
 
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4229
-Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4229
-Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4229
+Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4326
+Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4326
+Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4326
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -65,6 +66,7 @@ BuildRequires: ppp-devel >= %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
 BuildRequires: dhclient
+BuildRequires: gtk-doc
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -146,17 +148,19 @@ autoreconf -i
 	--with-distro=redhat \
 	--with-dhcp-client=dhclient \
 	--with-crypto=nss \
-	--enable-more-warnings=yes
+	--enable-more-warnings=yes \
+	--with-docs=yes \
+	--with-system-ca-path=/etc/pki/tls/certs
 make
 
 # build the applet
 pushd nm-applet-0.7.0
-  autoreconf -i
-  intltoolize --force
-  %configure --disable-static
-  make
+	autoreconf -i
+	intltoolize --force
+	%configure --disable-static
+	make
 popd
- 
+
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -222,7 +226,7 @@ fi
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
-%doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO
+%doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO docs/spec.html
 %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
@@ -291,8 +295,13 @@ fi
 %{_libdir}/libnm-util.so
 %dir %{_datadir}/gtk-doc/html/libnm-glib
 %{_datadir}/gtk-doc/html/libnm-glib/*
+%{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Nov 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4326
+- API and documentation updates
+- Fix PIN handling on 'hso' mobile broadband devices
+
 * Tue Nov 18 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4296
 - Fix PIN/PUK issues with high-speed Option HSDPA mobile broadband cards
 - Fix desensitized OK button when asking for wireless keys
