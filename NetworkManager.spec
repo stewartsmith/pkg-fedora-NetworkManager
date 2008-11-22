@@ -295,6 +295,7 @@ fi
 %{_libdir}/libnm-util.so
 %dir %{_datadir}/gtk-doc/html/libnm-glib
 %{_datadir}/gtk-doc/html/libnm-glib/*
+%dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
