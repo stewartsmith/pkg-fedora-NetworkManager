@@ -44,7 +44,7 @@ Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4326
 Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4326
-Conflicts: NetworkManager-pptp < 1:0.7.0-0.11.svn4326
+Conflicts: NetworkManager-pptp < 1:0.7.0-0.12.svn4326
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
