@@ -9,20 +9,20 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot svn4326
-%define applet_snapshot svn1043
+%define snapshot git20090102
+%define applet_snapshot svn1091
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 0.12.%{snapshot}%{?dist}
+Release: 1.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{version}.%{snapshot}.tar.gz
-Source1: nm-applet-%{version}.%{applet_snapshot}.tar.gz
+Source: %{name}-%{version}.%{snapshot}.tar.bz2
+Source1: network-manager-applet-%{version}.%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
@@ -42,9 +42,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Obsoletes: dhcdbd
 
-Conflicts: NetworkManager-vpnc < 1:0.7.0-0.11.svn4326
-Conflicts: NetworkManager-openvpn < 1:0.7.0-16.svn4326
-Conflicts: NetworkManager-pptp < 1:0.7.0-0.12.svn4326
+Conflicts: NetworkManager-vpnc < 1:0.7.0-1
+Conflicts: NetworkManager-openvpn < 1:0.7.0-17
+Conflicts: NetworkManager-pptp < 1:0.7.0-1
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -142,6 +142,11 @@ tar -xzf %{SOURCE1}
 %patch2 -p1 -b .explain-dns1-dns2
 
 %build
+
+# back up pristine docs and use them instead of generated ones, which make
+# multilib unhappy due to different timestamps in the generated content
+%{__cp} -R docs ORIG-docs
+
 autoreconf -i
 %configure \
 	--disable-static \
@@ -154,10 +159,10 @@ autoreconf -i
 make
 
 # build the applet
-pushd nm-applet-0.7.0
+pushd network-manager-applet-0.7.0
 	autoreconf -i
 	intltoolize --force
-	%configure --disable-static
+	%configure --disable-static --enable-more-warnings=yes
 	make
 popd
 
@@ -170,12 +175,17 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
 # install the applet
-pushd nm-applet-0.7.0
+pushd network-manager-applet-0.7.0
   make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
 # create a VPN directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
+
+# create a keyfile plugin system settings directory
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/system-connections
+
+%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
 %find_lang %{name}
 %find_lang nm-applet
@@ -186,6 +196,11 @@ cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
 
 install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
+
+# install the pristine docs
+%{__cp} ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
+%{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
+
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -252,6 +267,7 @@ fi
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
+%dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManagerSystemSettings.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
@@ -275,6 +291,7 @@ fi
 %{_datadir}/icons/hicolor/22x22/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
+%dir %{_datadir}/gnome-vpn-properties
 
 %files glib
 %defattr(-,root,root,0755)
@@ -299,6 +316,16 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Jan  2 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0-1.git20090102
+- Update to 0.7.1 pre-release
+- Allow connections to be ignored when determining the default route (rh #476089)
+- Own /usr/share/gnome-vpn-properties (rh #477155)
+- Fix log flooding due to netlink errors (rh #459205)
+- Pass connection UUID to dispatcher scripts via the environment
+- Fix possible crash after deactivating a VPN connection
+- Fix issues with editing wired 802.1x connections
+- Fix issues when using PKCS#12 certificates with 802.1x connections
+
 * Fri Nov 21 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.12.svn4326
 - API and documentation updates
 - Fix PIN handling on 'hso' mobile broadband devices
