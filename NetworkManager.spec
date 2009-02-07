@@ -10,7 +10,7 @@ ExcludeArch: s390 s390x
 %define ppp_version 2.2.4
 
 %define snapshot git20090207
-%define applet_snapshot svn1146
+%define applet_snapshot svn1148
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
