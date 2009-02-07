@@ -9,14 +9,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot git20090102
-%define applet_snapshot svn1091
+%define snapshot git20090207
+%define applet_snapshot svn1146
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0
-Release: 1.%{snapshot}%{?dist}
+Release: 2.%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -253,7 +253,7 @@ fi
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/VPN
-%{_sysconfdir}/%{name}/nm-system-settings.conf
+%config %{_sysconfdir}/%{name}/nm-system-settings.conf
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
@@ -316,6 +316,21 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sat Feb  7 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0-2.git20090207
+- applet: fix blank VPN connection message bubbles
+- applet: better handling of VPN routing on update
+- applet: silence pointless warning (rh #484136)
+- applet: desensitize devices in the menu until they are ready (rh #483879)
+- nm: Expose WINS servers in the IP4Config over D-Bus
+- nm: Better handling of GSM Mobile Broadband modem initialization
+- nm: Handle DHCP Classless Static Routes (RFC 3442)
+- nm: Fix Mobile Broadband and PPPoE to always use 'noauth'
+- nm: Better compatibility with older dual-SSID AP configurations (rh #445369)
+- nm: Mark nm-system-settings.conf as %config (rh #465633)
+- nm-tool: Show VPN connection information
+- ifcfg-rh: Silence message about ignoring loopback config (rh #484060)
+- ifcfg-rh: Fix issue with wrong gateway for system connections (rh #476089)
+
 * Fri Jan  2 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0-1.git20090102
 - Update to 0.7.1 pre-release
 - Allow connections to be ignored when determining the default route (rh #476089)
