@@ -9,20 +9,20 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot git20090207
-%define applet_snapshot svn1148
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.0
-Release: 2.%{snapshot}%{?dist}
+Version: 0.7.0.97
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{version}.%{snapshot}.tar.bz2
-Source1: network-manager-applet-%{version}.%{applet_snapshot}.tar.gz
+Source: %{name}-%{version}%{snapshot}.tar.gz
+Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.gz
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
@@ -40,6 +40,7 @@ Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
+Requires: udev-extras
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0-1
@@ -67,6 +68,7 @@ BuildRequires: nss-devel >= 3.11.7
 BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
 BuildRequires: dhclient
 BuildRequires: gtk-doc
+BuildRequires: libudev-devel
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -159,7 +161,7 @@ autoreconf -i
 make
 
 # build the applet
-pushd network-manager-applet-0.7.0
+pushd network-manager-applet-%{version}
 	autoreconf -i
 	intltoolize --force
 	%configure --disable-static --enable-more-warnings=yes
@@ -175,7 +177,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
 # install the applet
-pushd network-manager-applet-0.7.0
+pushd network-manager-applet-%{version}
   make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -247,7 +249,7 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
-%config %{_sysconfdir}/rc.d/init.d/NetworkManager
+%config(noreplace) %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
 %{_sbindir}/nm-system-settings
 %dir %{_sysconfdir}/%{name}/
@@ -289,7 +291,9 @@ fi
 %{_datadir}/nm-applet/
 %{_datadir}/icons/hicolor/16x16/apps/*.png
 %{_datadir}/icons/hicolor/22x22/apps/*.png
+%{_datadir}/icons/hicolor/32x32/apps/*.png
 %{_datadir}/icons/hicolor/48x48/apps/*.png
+%{_datadir}/icons/hicolor/scalable/apps/*.svg
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
 %dir %{_datadir}/gnome-vpn-properties
 
@@ -316,6 +320,19 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Feb 18 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-1
+- Update to 0.7.1rc1
+- nm: support for Huawei E160G mobile broadband devices (rh #466177)
+- nm: fix misleading routing error message (rh #477916)
+- nm: fix issues with 32-character SSIDs (rh #485312)
+- nm: allow root to activate user connections
+- nm: automatic modem detection with udev-extras
+- nm: massive manpage rewrite
+- applet: fix crash when showing the CA certificate ignore dialog a second time
+- applet: clear keyring items when deleting a connection
+- applet: fix max signal strength calculation in menu (rh #475123)
+- applet: fix VPN export (rh #480496)
+
 * Sat Feb  7 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0-2.git20090207
 - applet: fix blank VPN connection message bubbles
 - applet: better handling of VPN routing on update
