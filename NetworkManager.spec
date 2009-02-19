@@ -18,7 +18,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.97
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -42,6 +42,7 @@ Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
+Requires: udev
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0-1
@@ -323,7 +324,7 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-3.git20090219
+* Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-4.git20090219
 - Fix PEAP version selection in the applet (rh #468844)
 - Match hostname behavior to 'network' service when hostname is localhost (rh #441453)
 
