@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.97
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -249,13 +249,13 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
-%config(noreplace) %{_sysconfdir}/rc.d/init.d/NetworkManager
+%config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
 %{_sbindir}/nm-system-settings
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/VPN
-%config %{_sysconfdir}/%{name}/nm-system-settings.conf
+%config(noreplace) %{_sysconfdir}/%{name}/nm-system-settings.conf
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
@@ -320,6 +320,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-2
+- Fix 'noreplace' for nm-system-settings.conf
+
 * Wed Feb 18 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-1
 - Update to 0.7.1rc1
 - nm: support for Huawei E160G mobile broadband devices (rh #466177)
