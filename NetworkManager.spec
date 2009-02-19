@@ -1,3 +1,5 @@
+%define udev_scriptdir /lib/udev
+
 ExcludeArch: s390 s390x
 
 %define dbus_version 1.1
@@ -9,14 +11,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
+%define snapshot .git20090219
+%define applet_snapshot .svn1189
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.97
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -40,7 +42,6 @@ Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
-Requires: udev-extras
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0-1
@@ -274,6 +275,8 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_datadir}/PolicyKit/policy/*.policy
+%{udev_scriptdir}/nm-modem-probe
+%{udev_scriptdir}/rules.d/77-nm-probe-modem-capabilities.rules
 
 %files devel
 %defattr(-,root,root,0755)
@@ -320,6 +323,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-3.git20090219
+- Fix PEAP version selection in the applet (rh #468844)
+- Match hostname behavior to 'network' service when hostname is localhost (rh #441453)
+
 * Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-2
 - Fix 'noreplace' for nm-system-settings.conf
 
