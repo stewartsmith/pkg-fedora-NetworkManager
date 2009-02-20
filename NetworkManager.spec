@@ -11,14 +11,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090219
+%define snapshot .git20090220
 %define applet_snapshot .svn1189
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.97
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -324,6 +324,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Feb 20 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-5.git20090220
+- Use IFF_LOWER_UP for carrier detect instead of IFF_RUNNING
+- Add small delay before probing cdc-acm driven mobile broadband devices
+
 * Thu Feb 19 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-4.git20090219
 - Fix PEAP version selection in the applet (rh #468844)
 - Match hostname behavior to 'network' service when hostname is localhost (rh #441453)
