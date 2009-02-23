@@ -18,7 +18,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.97
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -324,6 +324,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Feb 23 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.7.0.97-6.git20090220
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
 * Fri Feb 20 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.97-5.git20090220
 - Use IFF_LOWER_UP for carrier detect instead of IFF_RUNNING
 - Add small delay before probing cdc-acm driven mobile broadband devices
