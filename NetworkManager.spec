@@ -11,20 +11,20 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090220
-%define applet_snapshot .svn1189
+%define snapshot .git20090225
+%define applet_snapshot .svn1202
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.0.97
-Release: 6%{snapshot}%{?dist}
+Version: 0.7.0.98
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{version}%{snapshot}.tar.gz
-Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.gz
+Source: %{name}-%{version}%{snapshot}.tar.bz2
+Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
@@ -141,7 +141,7 @@ NetworkManager functionality from applications that use glib.
 %setup -q
 
 # unpack the applet
-tar -xzf %{SOURCE1}
+tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 
@@ -324,6 +324,11 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Feb 25 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.98-1.git20090225
+- Fix getting secrets for system connections (rh #486696)
+- More compatible modem autodetection
+- Better handle minimal ifcfg files
+
 * Mon Feb 23 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.7.0.97-6.git20090220
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
