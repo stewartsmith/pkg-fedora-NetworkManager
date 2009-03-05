@@ -11,13 +11,13 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090225
-%define applet_snapshot .svn1202
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.0.98
+Version: 0.7.0.99
 Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -45,9 +45,10 @@ Requires: dnsmasq
 Requires: udev
 Obsoletes: dhcdbd
 
-Conflicts: NetworkManager-vpnc < 1:0.7.0-1
-Conflicts: NetworkManager-openvpn < 1:0.7.0-17
-Conflicts: NetworkManager-pptp < 1:0.7.0-1
+Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
+Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
+Conflicts: NetworkManager-pptp < 1:0.7.0.99-1
+Conflicts: NetworkManager-openconnect < 1:0.7.0.99-1
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -324,6 +325,15 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Mar  4 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-1
+- nm: make default wired "Auto ethX" connection modifiable if an enabled system settings
+    plugin supports modifying connections (rh #485555)
+- nm: manpage fixes (rh #447233)
+- nm: CVE-2009-0365 - GetSecrets disclosure
+- applet: CVE-2009-0578 - local users can modify the connection settings
+- applet: fix inability to choose WPA Ad-Hoc networks from the menu
+- ifcfg-rh: add read-only support for WPA-PSK connections
+
 * Wed Feb 25 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.98-1.git20090225
 - Fix getting secrets for system connections (rh #486696)
 - More compatible modem autodetection
