@@ -18,7 +18,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.99
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
+Patch4: NetworkManager-0.7.0.99-fix-hal-resync.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -48,7 +49,7 @@ Obsoletes: dhcdbd
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
 Conflicts: NetworkManager-pptp < 1:0.7.0.99-1
-Conflicts: NetworkManager-openconnect < 1:0.7.0.99-1
+Conflicts: NetworkManager-openconnect < 0:0.7.0.99-1
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -145,6 +146,7 @@ NetworkManager functionality from applications that use glib.
 tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
+%patch4 -p1 -b .fix-hal-resync
 
 %build
 
@@ -325,6 +327,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Mar  9 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-2
+- Fix conflict with NetworkManager-openconnect (rh #489271)
+- Fix possible crash when resynchronizing devices if HAL restarts
+
 * Wed Mar  4 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-1
 - nm: make default wired "Auto ethX" connection modifiable if an enabled system settings
     plugin supports modifying connections (rh #485555)
