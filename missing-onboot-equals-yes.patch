@@ -1,0 +1,15 @@
+diff -up NetworkManager-0.7.0.99/system-settings/plugins/ifcfg-rh/reader.c.ignore-minimal NetworkManager-0.7.0.99/system-settings/plugins/ifcfg-rh/reader.c
+--- NetworkManager-0.7.0.99/system-settings/plugins/ifcfg-rh/reader.c.ignore-minimal	2009-03-09 23:02:38.000000000 -0400
++++ NetworkManager-0.7.0.99/system-settings/plugins/ifcfg-rh/reader.c	2009-03-09 23:22:57.000000000 -0400
+@@ -132,9 +132,9 @@ make_connection_setting (const char *fil
+ 	              NULL);
+ 	g_free (uuid);
+ 
+-	/* Be somewhat conservative about autoconnect */
++	/* Missing ONBOOT is treated as "ONBOOT=true" by the old network service */
+ 	g_object_set (s_con, NM_SETTING_CONNECTION_AUTOCONNECT,
+-	              svTrueValue (ifcfg, "ONBOOT", FALSE),
++	              svTrueValue (ifcfg, "ONBOOT", TRUE),
+ 	              NULL);
+ 
+ 	value = svGetValue (ifcfg, "LAST_CONNECT", FALSE);

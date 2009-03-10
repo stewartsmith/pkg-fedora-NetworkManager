@@ -18,7 +18,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.99
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -29,6 +29,7 @@ Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch4: NetworkManager-0.7.0.99-fix-hal-resync.patch
+Patch5: missing-onboot-equals-yes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -147,6 +148,7 @@ tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch4 -p1 -b .fix-hal-resync
+%patch5 -p1 -b .missing-onboot
 
 %build
 
@@ -327,6 +329,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Mar  9 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-3
+- Missing ONBOOT should actually mean ONBOOT=yes (rh #489422)
+
 * Mon Mar  9 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-2
 - Fix conflict with NetworkManager-openconnect (rh #489271)
 - Fix possible crash when resynchronizing devices if HAL restarts
