@@ -11,14 +11,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090318
-%define applet_snapshot .svn1224
+%define snapshot .git20090324
+%define applet_snapshot .svn1233
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.99
-Release: 3.5%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -325,8 +325,16 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Mar 24 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-4
+- nm: fix communication with Option GT Max 3.6 mobile broadband cards
+- nm: fix communication with Huawei mobile broadband cards (rh #487663)
+- nm: don't look up hostname when HOSTNAME=localhost unless asked (rh #490184)
+- nm: fix crash during IP4 configuration (rh #491620)
+- nm: ignore ONBOOT=no for minimal ifcfg files (f9 & f10 only) (rh #489398)
+- applet: updated translations
+
 * Wed Mar 18 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-3.5
-- nm: work around unhandled device removals due to missing HAL events
+- nm: work around unhandled device removals due to missing HAL events (rh #484530)
 - nm: improve handling of multiple modem ports
 - nm: support for Sony Ericsson F3507g / MD300 and Dell 5530
 - applet: updated translations
