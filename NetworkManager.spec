@@ -11,14 +11,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090324
-%define applet_snapshot .svn1233
+%define snapshot .git20090326
+%define applet_snapshot .svn1235
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.0.99
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -325,6 +325,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Mar 26 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-5
+- nm: fix crashes with out-of-tree modules that provide no driver link (rh #492246)
+- nm: fix USB modem probing on recent udev versions
+
 * Tue Mar 24 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-4
 - nm: fix communication with Option GT Max 3.6 mobile broadband cards
 - nm: fix communication with Huawei mobile broadband cards (rh #487663)
