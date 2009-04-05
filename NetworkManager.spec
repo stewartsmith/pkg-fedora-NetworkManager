@@ -11,14 +11,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090326
-%define applet_snapshot .svn1235
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.0.99
-Release: 5%{snapshot}%{?dist}
+Version: 0.7.0.100
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -34,7 +34,7 @@ PreReq:   chkconfig
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
-Requires: iproute openssl
+Requires: iproute
 Requires: dhclient >= 3.0.2-12
 Requires: wpa_supplicant >= 0.5.7-21
 Requires: libnl >= %{libnl_version}
@@ -56,7 +56,6 @@ BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
-BuildRequires: openssl-devel
 BuildRequires: GConf2-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gettext-devel
@@ -325,6 +324,12 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sun Apr  5 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.100-1
+- Update to 0.7.1-rc4
+- nm: use PolicyKit for system connection secrets retrieval
+- nm: correctly interpret errors returned from chmod(2) when saving keyfile system connections
+- editor: use PolicyKit to get system connection secrets
+
 * Thu Mar 26 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.99-5
 - nm: fix crashes with out-of-tree modules that provide no driver link (rh #492246)
 - nm: fix USB modem probing on recent udev versions
