@@ -11,13 +11,13 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090408
-%define applet_snapshot .svn1260
+%define snapshot .git20090414
+%define applet_snapshot %{nil}
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.0.100
+Version: 0.7.1
 Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -326,6 +326,13 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Apr 14 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.1-2.git20090414
+- ifcfg-rh: enable write support for wired and wifi connections
+
+* Sun Apr 12 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.1-1
+- nm: update to 0.7.1
+- nm: fix startup race with HAL causing unmanaged devices to sometimes be managed (rh #494527)
+
 * Wed Apr  8 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.0.100-2.git20090408
 - nm: fix recognition of Option GT Fusion and Option GT HSDPA (nozomi) devices (rh #494069)
 - nm: fix handling of spaces in DHCP 'domain-search' option
