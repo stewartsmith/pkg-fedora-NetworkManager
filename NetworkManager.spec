@@ -70,8 +70,7 @@ BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
 BuildRequires: dhclient
 BuildRequires: gtk-doc
 BuildRequires: libudev-devel
-# for libuuid
-BuildRequires: e2fsprogs-devel
+BuildRequires: libuuid-devel
 
 %description
 NetworkManager attempts to keep an active network connection available at all
