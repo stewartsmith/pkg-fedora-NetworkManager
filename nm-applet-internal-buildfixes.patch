@@ -3,20 +3,19 @@ diff -up NetworkManager-0.7.1/network-manager-applet-0.7.1/configure.ac.buildfix
 +++ NetworkManager-0.7.1/network-manager-applet-0.7.1/configure.ac	2009-04-05 08:31:12.000000000 -0400
 @@ -68,10 +68,6 @@ PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
  PKG_CHECK_MODULES(NMA,
- 		[dbus-glib-1 >= 0.72
+ 		[dbus-glib-1 >= 0.74
  		 glib-2.0 >= 2.10
--		 NetworkManager >= 0.7.0
--		 libnm_glib >= 0.7.0
--		 libnm-util >= 0.7.0
--		 libnm_glib_vpn >= 0.7.0
- 		 gtk+-2.0 >= 2.10
+-		 NetworkManager >= 0.7.1
+-		 libnm_glib >= 0.7.1
+-		 libnm-util >= 0.7.1
+-		 libnm_glib_vpn >= 0.7.1
+ 		 gtk+-2.0 >= 2.14
  		 libglade-2.0
  		 gmodule-export-2.0
 diff -up NetworkManager-0.7.1/network-manager-applet-0.7.1/src/connection-editor/Makefile.am.buildfix NetworkManager-0.7.1/network-manager-applet-0.7.1/src/connection-editor/Makefile.am
 --- NetworkManager-0.7.1/network-manager-applet-0.7.1/src/connection-editor/Makefile.am.buildfix	2009-04-03 09:30:25.000000000 -0400
 +++ NetworkManager-0.7.1/network-manager-applet-0.7.1/src/connection-editor/Makefile.am	2009-04-05 08:31:12.000000000 -0400
-@@ -2,6 +2,10 @@ NULL=
- 
+@@ -1,5 +1,9 @@
  bin_PROGRAMS = nm-connection-editor
  
 +INCLUDES = -I${top_srcdir}/../include \

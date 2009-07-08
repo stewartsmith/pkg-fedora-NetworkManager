@@ -1,7 +1,5 @@
 %define udev_scriptdir /lib/udev
 
-ExcludeArch: s390 s390x
-
 %define dbus_version 1.1
 %define dbus_glib_version 0.73-6
 %define hal_version 0.5.0
@@ -11,14 +9,14 @@ ExcludeArch: s390 s390x
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090414
-%define applet_snapshot %{nil}
+%define snapshot .git20090708
+%define applet_snapshot .git20090708
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.1
-Release: 3%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,7 +26,6 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
-Patch3: ifcfg-rh-inotify-update-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -36,14 +33,15 @@ Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: hal >= %{hal_version}
 Requires: iproute
-Requires: dhclient >= 3.0.2-12
-Requires: wpa_supplicant >= 0.5.7-21
+Requires: dhclient >= 12:4.1.0
+Requires: wpa_supplicant >= 1:0.6.8-4
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp >= %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
+Requires: mobile-broadband-provider-info >= 0.20090602
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -145,9 +143,9 @@ NetworkManager functionality from applications that use glib.
 
 # unpack the applet
 tar -xjf %{SOURCE1}
+
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
-%patch3 -p1 -b .ifcfg-rh-inotify-fix
 
 %build
 
@@ -281,7 +279,7 @@ fi
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_datadir}/PolicyKit/policy/*.policy
 %{udev_scriptdir}/nm-modem-probe
-%{udev_scriptdir}/rules.d/77-nm-probe-modem-capabilities.rules
+%{udev_scriptdir}/rules.d/*.rules
 
 %files devel
 %defattr(-,root,root,0755)
@@ -328,6 +326,37 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Jul  8 2009 Dan Williams <dcbw@redhat.com> - 0.7.1-7.git20090708
+- nm: fixes for ZTE/Onda modem detection
+- nm: prevent re-opening serial port when the SIM has a PIN
+- applet: updated translations
+- editor: show list column headers
+
+* Thu Jun 25 2009 Dan Williams <dcbw@redhat.com> - 0.7.1-6.git20090617
+- nm: fix serial port settings
+
+* Wed Jun 17 2009 Dan Williams <dcbw@redhat.com> - 0.7.1-5.git20090617
+- nm: fix AT&T Quicksilver modem connections (rh #502002)
+- nm: fix support for s390 bus types (rh #496820)
+- nm: fix detection of some CMOtech modems
+- nm: handle unsolicited wifi scans better
+- nm: resolv.conf fixes when using DHCP and overriding search domains
+- nm: handle WEP and WPA passphrases (rh #441070)
+- nm: fix removal of old APs when none are scanned
+- nm: fix Huawei EC121 and EC168C detection and handling (rh #496426)
+- applet: save WEP and WPA passphrases instead of hashed keys (rh #441070)
+- applet: fix broken notification bubble actions
+- applet: default to WEP encryption for Ad-Hoc network creation
+- applet: fix crash when connection editor dialogs are canceled
+- applet: add a mobile broadband provider wizard
+
+* Tue May 19 2009 Karsten Hopp <karsten@redhat.com> 0.7.1-4.git20090414.1
+- drop ExcludeArch s390 s390x, we need at least the header files
+
+* Tue May 05 2009 Adam Jackson <ajax@redhat.com> 1:0.7.1-4.git20090414
+- nm-save-the-leases.patch: Use per-connection lease files, and don't delete
+  them on interface deactivate.
+
 * Thu Apr 16 2009 Dan Williams <dcbw@redhat.com> - 1:0.7.1-3.git20090414
 - ifcfg-rh: fix problems noticing changes via inotify (rh #495884)
 
