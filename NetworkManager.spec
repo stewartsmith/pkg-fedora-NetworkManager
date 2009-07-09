@@ -16,7 +16,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.1
-Release: 7%{snapshot}%{?dist}
+Release: 8%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -26,6 +26,7 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
+Patch3: nm-applet-file-chooser-validation.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -145,6 +146,7 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
+%patch3 -p1 -b .file-chooser-validate
 
 %build
 
@@ -325,6 +327,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Jul  9 2009 Dan Williams <dcbw@redhat.com> - 0.7.1-8.git20090708
+- applet: fix certificate validation in hidden wifi networks dialog (rh #508207)
+
 * Wed Jul  8 2009 Dan Williams <dcbw@redhat.com> - 0.7.1-7.git20090708
 - nm: fixes for ZTE/Onda modem detection
 - nm: prevent re-opening serial port when the SIM has a PIN
