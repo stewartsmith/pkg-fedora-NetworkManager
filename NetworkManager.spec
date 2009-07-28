@@ -2,21 +2,20 @@
 
 %define dbus_version 1.1
 %define dbus_glib_version 0.73-6
-%define hal_version 0.5.0
 
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090708
-%define applet_snapshot .git20090708
+%define snapshot .git20090728
+%define applet_snapshot .git20090728
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.1
-Release: 9%{snapshot}%{?dist}
+Version: 0.7.995
+Release: 0%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -26,13 +25,11 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
-Patch3: nm-applet-file-chooser-validation.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: hal >= %{hal_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
 Requires: wpa_supplicant >= 1:0.6.8-4
@@ -43,6 +40,7 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: mobile-broadband-provider-info >= 0.20090602
+Requires: ModemManager >= 0.2
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -53,7 +51,6 @@ Conflicts: NetworkManager-openconnect < 0:0.7.0.99-1
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
-BuildRequires: hal-devel >= %{hal_version}
 BuildRequires: glib2-devel gtk2-devel
 BuildRequires: libglade2-devel
 BuildRequires: GConf2-devel
@@ -62,7 +59,7 @@ BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel >= %{libnl_version}
-BuildRequires: libnotify-devel >= 0.3
+BuildRequires: libnotify-devel >= 0.4
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp-devel >= %{ppp_version}
@@ -72,6 +69,8 @@ BuildRequires: dhclient
 BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
+BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
+BuildRequires: libgudev1 >= 143
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -146,7 +145,6 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
-%patch3 -p1 -b .file-chooser-validate
 
 %build
 
@@ -201,6 +199,7 @@ cat nm-applet.lang >> %{name}.lang
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/2.4.4/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/gnome-bluetooth/plugins/*.la
 
 install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 
@@ -253,10 +252,8 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
-%{_sysconfdir}/dbus-1/system.d/nm-system-settings.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
-%{_sbindir}/nm-system-settings
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/VPN
@@ -275,12 +272,9 @@ fi
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
 %dir %{_sysconfdir}/NetworkManager/system-connections
-%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManagerSystemSettings.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_datadir}/PolicyKit/policy/*.policy
-%{udev_scriptdir}/nm-modem-probe
-%{udev_scriptdir}/rules.d/*.rules
 
 %files devel
 %defattr(-,root,root,0755)
@@ -303,6 +297,7 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/*.svg
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
 %dir %{_datadir}/gnome-vpn-properties
+%{_libdir}/gnome-bluetooth/plugins/*
 
 %files glib
 %defattr(-,root,root,0755)
@@ -327,6 +322,12 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Jul 28 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-0.git20090728
+- Update to upstream 'master' branch
+- Use modem-manager for better 3G modem support
+- Integrated system settings with NetworkManager itself
+- Use udev instead of HAL
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.7.1-9.git20090708
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
