@@ -70,7 +70,7 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
-BuildRequires: libgudev1 >= 143
+BuildRequires: libgudev1-devel >= 143
 
 %description
 NetworkManager attempts to keep an active network connection available at all
