@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.995
-Release: 0%{snapshot}%{?dist}
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -247,7 +247,7 @@ fi
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
-%doc COPYING ChangeLog NEWS AUTHORS README CONTRIBUTING TODO docs/spec.html
+%doc COPYING NEWS AUTHORS README CONTRIBUTING TODO 
 %{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
@@ -278,6 +278,7 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
+%doc ChangeLog doc/spec.html
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/NetworkManagerVPN.h
@@ -322,6 +323,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sun Aug  2 2009 Matthias Clasen <mclasen@redhat.com> - 0.7.995-1.git20090728
+- Move some big docs to -devel to save space
+
 * Tue Jul 28 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-0.git20090728
 - Update to upstream 'master' branch
 - Use modem-manager for better 3G modem support
