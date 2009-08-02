@@ -278,7 +278,7 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
-%doc ChangeLog doc/spec.html
+%doc ChangeLog docs/spec.html
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/NetworkManagerVPN.h
