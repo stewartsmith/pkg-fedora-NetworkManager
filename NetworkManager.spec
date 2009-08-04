@@ -8,8 +8,8 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090728
-%define applet_snapshot .git20090728
+%define snapshot .git20090804
+%define applet_snapshot .git20090804
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -323,6 +323,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug  4 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-1.git20090804
+- nm: IPv6 support for manual & router-advertisement modes
+
 * Sun Aug  2 2009 Matthias Clasen <mclasen@redhat.com> - 0.7.995-1.git20090728
 - Move some big docs to -devel to save space
 
