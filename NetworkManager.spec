@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.995
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -25,6 +25,7 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
+Patch3: 0001-bluetooth-fix-device-capability-checking-need-NAP.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -145,6 +146,7 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
+%patch3 -p1 -b .bt-detection
 
 %build
 
@@ -323,6 +325,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug 11 2009 Bastien Nocera <bnocera@redhat.com> 0.7.995-2.git20090804
+- Add patch to fix service detection on phones
+
 * Tue Aug  4 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-1.git20090804
 - nm: IPv6 support for manual & router-advertisement modes
 
