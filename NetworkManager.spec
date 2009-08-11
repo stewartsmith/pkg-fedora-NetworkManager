@@ -146,7 +146,9 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
+pushd network-manager-applet-*/
 %patch3 -p1 -b .bt-detection
+popd
 
 %build
 
