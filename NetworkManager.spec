@@ -8,14 +8,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090804
-%define applet_snapshot .git20090804
+%define snapshot .git20090813
+%define applet_snapshot .git20090813
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.995
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -25,7 +25,6 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
-Patch3: 0001-bluetooth-fix-device-capability-checking-need-NAP.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -146,9 +145,6 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
-pushd network-manager-applet-*/
-%patch3 -p1 -b .bt-detection
-popd
 
 %build
 
@@ -279,6 +275,7 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
 %{_datadir}/PolicyKit/policy/*.policy
+%{udev_scriptdir}/rules.d/*.rules
 
 %files devel
 %defattr(-,root,root,0755)
@@ -327,6 +324,13 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Aug 13 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-3.git20090813
+- nm: add iSCSI support
+- nm: add connection assume/takeover support for ethernet (rh #517333)
+- nm: IPv6 fixes
+- nm: re-add OLPC XO-1 mesh device support (removed with 0.7.0)
+- applet: better WiFi dialog focus handling
+
 * Tue Aug 11 2009 Bastien Nocera <bnocera@redhat.com> 0.7.995-2.git20090804
 - Add patch to fix service detection on phones
 
