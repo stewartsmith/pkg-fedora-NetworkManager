@@ -1,21 +1,21 @@
 %define udev_scriptdir /lib/udev
 
 %define dbus_version 1.1
-%define dbus_glib_version 0.73-6
+%define dbus_glib_version 0.75
 
 %define gtk2_version	2.12.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090813
-%define applet_snapshot .git20090813
+%define snapshot .git20090826
+%define applet_snapshot .git20090826
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.995
-Release: 3%{snapshot}%{?dist}
+Version: 0.7.996
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -40,7 +40,7 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: mobile-broadband-provider-info >= 0.20090602
-Requires: ModemManager >= 0.2
+Requires: ModemManager >= 0.2-3.20090826
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -64,7 +64,7 @@ BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp-devel >= %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
-BuildRequires: PolicyKit-devel PolicyKit-gnome-devel
+BuildRequires: polkit-devel
 BuildRequires: dhclient
 BuildRequires: gtk-doc
 BuildRequires: libudev-devel
@@ -274,7 +274,7 @@ fi
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
-%{_datadir}/PolicyKit/policy/*.policy
+%{_datadir}/polkit-1/actions/*.policy
 %{udev_scriptdir}/rules.d/*.rules
 
 %files devel
@@ -300,11 +300,12 @@ fi
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
 %dir %{_datadir}/gnome-vpn-properties
 %{_libdir}/gnome-bluetooth/plugins/*
+%{_sysconfdir}/gconf/schemas/nm-applet.schemas
 
 %files glib
 %defattr(-,root,root,0755)
-%{_libdir}/libnm_glib.so.*
-%{_libdir}/libnm_glib_vpn.so.*
+%{_libdir}/libnm-glib.so.*
+%{_libdir}/libnm-glib-vpn.so.*
 %{_libdir}/libnm-util.so.*
 
 %files glib-devel
@@ -312,11 +313,11 @@ fi
 %dir %{_includedir}/libnm-glib
 %{_includedir}/libnm-glib/*.h
 %{_includedir}/%{name}/nm-*.h
-%{_libdir}/pkgconfig/libnm_glib.pc
-%{_libdir}/pkgconfig/libnm_glib_vpn.pc
+%{_libdir}/pkgconfig/libnm-glib.pc
+%{_libdir}/pkgconfig/libnm-glib-vpn.pc
 %{_libdir}/pkgconfig/libnm-util.pc
-%{_libdir}/libnm_glib.so
-%{_libdir}/libnm_glib_vpn.so
+%{_libdir}/libnm-glib.so
+%{_libdir}/libnm-glib-vpn.so
 %{_libdir}/libnm-util.so
 %dir %{_datadir}/gtk-doc/html/libnm-glib
 %{_datadir}/gtk-doc/html/libnm-glib/*
@@ -324,6 +325,13 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Aug 26 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-1.git20090826
+- nm: IPv6 zeroconf support and fixes
+- nm: port to polkit (rh #499965)
+- nm: fixes for ehea devices (rh #511304) (rh #516591)
+- nm: work around PPP bug causing bogus nameservers for mobile broadband connections
+- editor: fix segfault with "Unlisted" plans in the mobile broadband assistant
+
 * Thu Aug 13 2009 Dan Williams <dcbw@redhat.com> - 0.7.995-3.git20090813
 - nm: add iSCSI support
 - nm: add connection assume/takeover support for ethernet (rh #517333)
