@@ -3,19 +3,20 @@
 %define dbus_version 1.1
 %define dbus_glib_version 0.75
 
-%define gtk2_version	2.12.0
+%define gtk2_version	2.14.0
+%define glib2_version	2.16.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090826
-%define applet_snapshot .git20090826
+%define snapshot .git20090921
+%define applet_snapshot .git20090921
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.996
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -30,6 +31,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 PreReq:   chkconfig
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
+Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
 Requires: wpa_supplicant >= 1:0.6.8-4
@@ -51,7 +53,8 @@ Conflicts: NetworkManager-openconnect < 0:0.7.0.99-1
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
-BuildRequires: glib2-devel gtk2-devel
+BuildRequires: glib2-devel >= %{glib2_version}
+BuildRequires: gtk2-devel >= %{gtk2_version}
 BuildRequires: libglade2-devel
 BuildRequires: GConf2-devel
 BuildRequires: gnome-keyring-devel
@@ -325,6 +328,16 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Sep 21 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-2.git20090921
+- nm: allow disconnection of all device types
+- nm: ensure that wired connections are torn down when their hardware goes away
+- nm: fix crash when canceling a VPN's request for secrets
+- editor: fix issues changing connections between system and user scopes
+- editor: ensure changes are thrown away when editing is canceled
+- applet: ensure connection changes are noticed by NetworkManager
+- applet: fix crash when creating new connections
+- applet: actually use wired 802.1x secrets after they are requested
+
 * Wed Aug 26 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-1.git20090826
 - nm: IPv6 zeroconf support and fixes
 - nm: port to polkit (rh #499965)
