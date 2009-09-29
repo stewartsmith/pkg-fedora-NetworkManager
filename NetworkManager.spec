@@ -9,8 +9,8 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090921
-%define applet_snapshot .git20090921
+%define snapshot .git20090928
+%define applet_snapshot .git20090928-menu-rework
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
@@ -342,6 +342,15 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Sep 28 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-3.git20090928
+- nm: fix connection takeover when carrier is not on
+- nm: handle certificate paths (CA chain PEM files are now fully usable)
+- nm: defer action for 4 seconds when wired carrier drops
+- ifcfg-rh: fix writing WPA passphrases with odd characters
+- editor: fix editing of IPv4 settings with new connections (rh #525819)
+- editor: fix random crashes when editing due to bad widget refcounting
+- applet: debut reworked menu layout (not final yet...)
+
 * Wed Sep 23 2009 Matthias Clasen <mclasen@redhat.com> - 0.7.996-3.git20090921
 - Install GConf schemas
 
