@@ -9,14 +9,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20090928
-%define applet_snapshot .git20090928-menu-rework
+%define snapshot .git20091002
+%define applet_snapshot .git20091002
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.996
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -239,7 +239,7 @@ exit 0
 %pre gnome
 if [ "$1" -gt 1 ]; then
   export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
-  gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+  gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null || :
 fi
 
 %preun gnome
@@ -342,6 +342,13 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Oct  2 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-4.git20091002
+- install: fix -gnome package %pre script failures (rh #526519)
+- nm: fix failures validating private keys when using the NSS crypto backend
+- applet: fix crashes when clicking on menu but not associated (rh #526535)
+- editor: fix crash editing wired 802.1x settings
+- editor: fix secrets retrieval when editing connections
+
 * Mon Sep 28 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-3.git20090928
 - nm: fix connection takeover when carrier is not on
 - nm: handle certificate paths (CA chain PEM files are now fully usable)
