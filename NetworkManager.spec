@@ -9,14 +9,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20091002
-%define applet_snapshot .git20091002
+%define snapshot .git20091021
+%define applet_snapshot .git20091021
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.996
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -26,6 +26,7 @@ Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
+Patch3: nm-applet-no-notifications.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 PreReq:   chkconfig
@@ -72,8 +73,11 @@ BuildRequires: dhclient
 BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
-BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 BuildRequires: libgudev1-devel >= 143
+# No bluetooth on s390
+%ifnarch s390 s390x
+BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
+%endif
 
 %description
 NetworkManager attempts to keep an active network connection available at all
@@ -148,6 +152,7 @@ tar -xjf %{SOURCE1}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
+%patch3 -p1 -b .no-notifications
 
 %build
 
@@ -163,15 +168,24 @@ autoreconf -i
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
 	--with-docs=yes \
-	--with-system-ca-path=/etc/pki/tls/certs
-make
+	--with-system-ca-path=/etc/pki/tls/certs \
+	--with-tests=yes
+make %{?_smp_mflags}
+
+# intltool is too stupid to know that the network-manager-applet subdir
+# isn't part of the NetworkManager build, so punch it in the face, otherwise
+# its 'make check' hook will complain about applet translatables that aren't
+# listed in NetworkManager's po/POTFILES
+chmod -wrx network-manager-applet-%{version}
+make check
+chmod +wrx network-manager-applet-%{version}
 
 # build the applet
 pushd network-manager-applet-%{version}
 	autoreconf -i
 	intltoolize --force
 	%configure --disable-static --enable-more-warnings=yes
-	make
+	make %{?_smp_mflags}
 popd
 
 %install
@@ -239,13 +253,17 @@ exit 0
 %pre gnome
 if [ "$1" -gt 1 ]; then
   export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
-  gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null || :
+  if [ -f "%{_sysconfdir}/gconf/schemas/nm-applet.schemas" ]; then
+    gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+  fi
 fi
 
 %preun gnome
 if [ "$1" -eq 0 ]; then
   export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
-  gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+  if [ -f "%{_sysconfdir}/gconf/schemas/nm-applet.schemas" ]; then
+    gconftool-2 --makefile-uninstall-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+  fi
 fi
 
 %post gnome
@@ -254,7 +272,9 @@ if [ -x /usr/bin/gtk-update-icon-cache ]; then
   gtk-update-icon-cache -q %{_datadir}/icons/hicolor
 fi
 export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
-gconftool-2 --makefile-install-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+if [ -f "%{_sysconfdir}/gconf/schemas/nm-applet.schemas" ]; then
+  gconftool-2 --makefile-install-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
+fi
 
 %postun gnome
 touch --no-create %{_datadir}/icons/hicolor
@@ -316,8 +336,10 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/*.svg
 %{_sysconfdir}/xdg/autostart/nm-applet.desktop
 %dir %{_datadir}/gnome-vpn-properties
-%{_libdir}/gnome-bluetooth/plugins/*
 %{_sysconfdir}/gconf/schemas/nm-applet.schemas
+%ifnarch s390 s390x
+%{_libdir}/gnome-bluetooth/plugins/*
+%endif
 
 %files glib
 %defattr(-,root,root,0755)
@@ -342,6 +364,18 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Oct 21 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-5.git20091021
+- install: better fix for (rh #526519)
+- install: don't build Bluetooth bits on s390 (rh #529854)
+- nm: wired 802.1x connection activation fixes
+- nm: fix crash after modifying default wired connections like "Auto eth0"
+- nm: ensure VPN secrets are requested again after connection failure
+- nm: reset 'accept_ra' to previous value after deactivating IPv6 connections
+- nm: ensure random netlink events don't interfere with IPv6 connection activation
+- ifcfg-rh: fix writing out LEAP connections
+- ifcfg-rh: recognize 'static' as a valid BOOTPROTO (rh #528068)
+- applet: fix "could not find required resources" error (rh #529766)
+
 * Fri Oct  2 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-4.git20091002
 - install: fix -gnome package %pre script failures (rh #526519)
 - nm: fix failures validating private keys when using the NSS crypto backend
