@@ -172,15 +172,6 @@ autoreconf -i
 	--with-tests=yes
 make %{?_smp_mflags}
 
-# intltool is too stupid to know that the network-manager-applet subdir
-# isn't part of the NetworkManager build, so punch it in the face, otherwise
-# its 'make check' hook will complain about applet translatables that aren't
-# listed in NetworkManager's po/POTFILES
-chmod -wrx network-manager-applet-%{version}
-dbus-uuidgen --ensure=$RPM_BUILD_ROOT/var/lib/dbus/machine-id
-make check
-chmod +wrx network-manager-applet-%{version}
-
 # build the applet
 pushd network-manager-applet-%{version}
 	autoreconf -i
