@@ -177,6 +177,7 @@ make %{?_smp_mflags}
 # its 'make check' hook will complain about applet translatables that aren't
 # listed in NetworkManager's po/POTFILES
 chmod -wrx network-manager-applet-%{version}
+dbus-uuidgen --ensure
 make check
 chmod +wrx network-manager-applet-%{version}
 
