@@ -9,14 +9,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20091021
-%define applet_snapshot .git20091021
+%define snapshot .git20091113
+%define applet_snapshot .git20091113
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.996
-Release: 5%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -356,6 +356,23 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Nov 13 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-.git20091113
+- nm: better pidfile handing (rh #517362)
+- nm: save WiFi and Networking enabled/disabled states across reboot
+- nm: fix crash with missing VPN secrets (rh #532084)
+- applet: fix system connection usage from the "Connect to hidden..." dialog
+- applet: show Bluetooth connections when no other devices are available (rh #532049)
+- applet: don't die when autoconfigured connections can't be made (rh #532680)
+- applet: allow system administrators to disable the "Create new wireless network..." menu item
+- applet: fix missing username connecting to VPNs the second time
+- applet: really fix animation stuttering
+- editor: fix IP config widget tooltips
+- editor: allow unlisted countries in the mobile broadband wizard (rh #530981)
+- ifcfg-rh: ignore .rpmnew files (rh #509621)
+
+* Wed Nov 04 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-6.git20091021
+- nm: fix PPPoE connection authentication (rh #532862)
+
 * Wed Oct 21 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-5.git20091021
 - install: better fix for (rh #526519)
 - install: don't build Bluetooth bits on s390 (rh #529854)
