@@ -9,14 +9,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot .git20091113
-%define applet_snapshot .git20091113
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.996
-Release: 7%{snapshot}%{?dist}
+Version: 0.7.997
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -29,7 +29,8 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-PreReq:   chkconfig
+Requires(post): chkconfig
+Requires(preun): chkconfig
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: glib2 >= %{glib2_version}
@@ -109,10 +110,10 @@ Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: libnotify >= 0.4.3
-PreReq:  gtk2 >= %{gtk2_version}
 Requires: gnome-keyring
 Requires: nss >= 3.11.7
 Requires: gnome-icon-theme
+Requires(post): gtk2 >= %{gtk2_version}
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -201,6 +202,8 @@ popd
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
+%{__mkdir_p} $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
+
 %find_lang %{name}
 %find_lang nm-applet
 cat nm-applet.lang >> %{name}.lang
@@ -239,8 +242,8 @@ fi
 /sbin/chkconfig --del NetworkManagerDispatcher
 exit 0
 
-%post   glib -p /sbin/ldconfig
-%postun glib -p /sbin/ldconfig
+%post	glib -p /sbin/ldconfig
+%postun	glib -p /sbin/ldconfig
 
 %pre gnome
 if [ "$1" -gt 1 ]; then
@@ -297,6 +300,7 @@ fi
 %{_mandir}/man1/*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/run/NetworkManager
+%dir %{_localstatedir}/lib/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
 %{_datadir}/NetworkManager/gdb-cmd
@@ -356,7 +360,24 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Fri Nov 13 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-.git20091113
+* Mon Dec  7 2009 Dan Williams <dcbw@redhat.com> - 0.7.997-1
+- core: remove haldaemon from initscript dependencies (rh #542078)
+- core: handle PEM certificates without an ending newline (rh #507315)
+- core: fix rfkill reporting for ipw2x00 devices
+- core: increase PPPoE timeout to 30 seconds
+- core: fix re-activating system connections with secrets
+- core: fix crash when deleting automatically created wired connections
+- core: ensure that a VPN's DNS servers are used when sharing the VPN connection
+- ifcfg-rh: support routes files (rh #507307)
+- ifcfg-rh: warn when device will be managed due to missing HWADDR (rh #545003)
+- ifcfg-rh: interpret DEFROUTE as never-default (rh #528281)
+- ifcfg-rh: handle MODE=Auto correctly
+- rpm: fix rpmlint errors
+- applet: don't crash on various D-Bus and other errors (rh #545011) (rh #542617)
+- editor: fix various PolicyKit-related crashes (rh #462944)
+- applet+editor: notify user that private keys must be protected
+
+* Fri Nov 13 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-7.git20091113
 - nm: better pidfile handing (rh #517362)
 - nm: save WiFi and Networking enabled/disabled states across reboot
 - nm: fix crash with missing VPN secrets (rh #532084)
@@ -386,7 +407,7 @@ fi
 - applet: fix "could not find required resources" error (rh #529766)
 
 * Fri Oct  2 2009 Dan Williams <dcbw@redhat.com> - 0.7.996-4.git20091002
-- install: fix -gnome package %pre script failures (rh #526519)
+- install: fix -gnome package pre script failures (rh #526519)
 - nm: fix failures validating private keys when using the NSS crypto backend
 - applet: fix crashes when clicking on menu but not associated (rh #526535)
 - editor: fix crash editing wired 802.1x settings
@@ -578,7 +599,7 @@ fi
 - nm: Handle DHCP Classless Static Routes (RFC 3442)
 - nm: Fix Mobile Broadband and PPPoE to always use 'noauth'
 - nm: Better compatibility with older dual-SSID AP configurations (rh #445369)
-- nm: Mark nm-system-settings.conf as %config (rh #465633)
+- nm: Mark nm-system-settings.conf as config (rh #465633)
 - nm-tool: Show VPN connection information
 - ifcfg-rh: Silence message about ignoring loopback config (rh #484060)
 - ifcfg-rh: Fix issue with wrong gateway for system connections (rh #476089)
@@ -1091,12 +1112,12 @@ fi
 - Update to 0.6.5 final
 - Don't lose scanned security information
 
-* Mon Apr  9 2007 Dan Williams  <dcbw@redhat.com> - 1:0.6.5-0.7.svn2547
+* Mon Apr  9 2007 Dan Williams <dcbw@redhat.com> - 1:0.6.5-0.7.svn2547
 - Update from trunk
-    - Updated translations
-    - Cleaned-up VPN properties dialogs
-    - Fix 64-bit kernel leakage issues in WEXT
-    - Don't capture and redirect wpa_supplicant log output
+	* Updated translations
+	* Cleaned-up VPN properties dialogs
+	* Fix 64-bit kernel leakage issues in WEXT
+	* Don't capture and redirect wpa_supplicant log output
 
 * Wed Mar 28 2007 Matthew Barnes  <mbarnes@redhat.com> 1:0.6.5-0.6.svn2474
 - Close private D-Bus connections. (#232691)
@@ -1196,14 +1217,14 @@ fi
 
 * Thu Mar 30 2006 Dan Williams <dcbw@redhat.com> - 0.6.2-1
 - Update to 0.6.2:
-    * Fix various WPA-related bugs
-    * Clean up leaks
-    * Increased DHCP timeout to account for slow DHCP servers, or STP-enabled
-        switches
-    * Allow applet to reconnect on dbus restarts
-    * Add "Dynamic WEP" support
-    * Allow hiding of password/key entry text
-    * More responsive connection switching
+	* Fix various WPA-related bugs
+	* Clean up leaks
+	* Increased DHCP timeout to account for slow DHCP servers, or STP-enabled
+		switches
+	* Allow applet to reconnect on dbus restarts
+	* Add "Dynamic WEP" support
+	* Allow hiding of password/key entry text
+	* More responsive connection switching
 
 * Tue Mar 14 2006 Peter Jones <pjones@redhat.com> - 0.6.0-3
 - Fix device bringup on resume
