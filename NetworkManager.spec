@@ -9,14 +9,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.2.4
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
+%define snapshot .git20091214
+%define applet_snapshot .git20091214
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.7.997
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -360,6 +360,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Dec 14 2009 Dan Williams <dcbw@redhat.com> - 0.7.997-2.git20091214
+- core: fix recognition of standalone 802.1x private keys
+- applet: clean notification text to ensure it passes libnotify validation
+
 * Mon Dec  7 2009 Dan Williams <dcbw@redhat.com> - 0.7.997-1
 - core: remove haldaemon from initscript dependencies (rh #542078)
 - core: handle PEM certificates without an ending newline (rh #507315)
