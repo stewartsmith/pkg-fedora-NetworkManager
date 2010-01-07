@@ -7,16 +7,16 @@
 %define glib2_version	2.16.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
-%define ppp_version 2.2.4
+%define ppp_version 2.4.5
 
-%define snapshot .git20091214
-%define applet_snapshot .git20091214
+%define snapshot .git20100106
+%define applet_snapshot .git20100106
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.997
-Release: 2%{snapshot}%{?dist}
+Version: 0.7.998
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -39,7 +39,7 @@ Requires: dhclient >= 12:4.1.0
 Requires: wpa_supplicant >= 1:0.6.8-4
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
-Requires: ppp >= %{ppp_version}
+Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
@@ -67,7 +67,8 @@ BuildRequires: libnl-devel >= %{libnl_version}
 BuildRequires: libnotify-devel >= 0.4
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
-BuildRequires: ppp-devel >= %{ppp_version}
+BuildRequires: ppp = %{ppp_version}
+BuildRequires: ppp-devel = %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: polkit-devel
 BuildRequires: dhclient
@@ -170,7 +171,9 @@ autoreconf -i
 	--enable-more-warnings=yes \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
-	--with-tests=yes
+	--with-tests=yes \
+	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version}
+
 make %{?_smp_mflags}
 
 # build the applet
@@ -209,7 +212,7 @@ popd
 cat nm-applet.lang >> %{name}.lang
 
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/2.4.4/*.la
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/gnome-bluetooth/plugins/*.la
 
@@ -306,7 +309,7 @@ fi
 %{_datadir}/NetworkManager/gdb-cmd
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
-%{_libdir}/pppd/2.4.4/nm-pppd-plugin.so
+%{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
 %{udev_scriptdir}/rules.d/*.rules
 
@@ -360,6 +363,14 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Jan  6 2010 Dan Williams <dcbw@redhat.com> - 0.7.998-1.git20100106
+- build: fix for new pppd (rh #548520)
+- core: add WWAN enable/disable functionality
+- ifcfg-rh: IPv6 addressing and routes support (rh #523288)
+- ifcfg-rh: ensure connection is updated when route/key files change
+- applet: fix crash when active AP isn't found (rh #546901)
+- editor: fix crash when editing connections (rh #549579)
+
 * Mon Dec 14 2009 Dan Williams <dcbw@redhat.com> - 0.7.997-2.git20091214
 - core: fix recognition of standalone 802.1x private keys
 - applet: clean notification text to ensure it passes libnotify validation
