@@ -9,24 +9,27 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100106
-%define applet_snapshot .git20100106
+%define snapshot .git20100122
+%define applet_snapshot .git20100120
+%define realversion 0.7.999
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.7.998
-Release: 1%{snapshot}%{?dist}
+Version: 0.8.0
+Release: 0.1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{version}%{snapshot}.tar.bz2
-Source1: network-manager-applet-%{version}%{applet_snapshot}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}.tar.bz2
+Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
+Source3: nmcli-git20100122.tar.bz2
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
+Patch4: nmcli-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -76,6 +79,7 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
+BuildRequires: cmake
 # No bluetooth on s390
 %ifnarch s390 s390x
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
@@ -147,14 +151,16 @@ NetworkManager functionality from applications that use glib.
 
 
 %prep
-%setup -q
+%setup -q -n NetworkManager-%{realversion}
 
-# unpack the applet
+# unpack the applet and nmcli
 tar -xjf %{SOURCE1}
+tar -xjf %{SOURCE3}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
+%patch4 -p1 -b .nmcli-buildfix
 
 %build
 
@@ -166,7 +172,8 @@ autoreconf -i
 %configure \
 	--disable-static \
 	--with-distro=redhat \
-	--with-dhcp-client=dhclient \
+	--with-dhclient=yes \
+	--with-dhcpcd=no \
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
 	--with-docs=yes \
@@ -177,7 +184,13 @@ autoreconf -i
 make %{?_smp_mflags}
 
 # build the applet
-pushd network-manager-applet-%{version}
+pushd nmcli
+	cmake .
+	make %{?_smp_mflags}
+popd
+
+# build the applet
+pushd network-manager-applet-%{realversion}
 	autoreconf -i
 	intltoolize --force
 	%configure --disable-static --enable-more-warnings=yes
@@ -193,7 +206,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
 # install the applet
-pushd network-manager-applet-%{version}
+pushd network-manager-applet-%{realversion}
   make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -206,6 +219,8 @@ popd
 %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
+
+%{__cp} nmcli/src/nmcli $RPM_BUILD_ROOT%{_bindir}/
 
 %find_lang %{name}
 %find_lang nm-applet
@@ -289,6 +304,7 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
+%{_bindir}/nmcli
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/VPN
@@ -363,6 +379,19 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Jan 22 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.1.git20100122
+- ifcfg-rh: read and write DHCPv6 enabled connections (rh #429710)
+- nmcli: update
+
+* Thu Jan 21 2010 Dan Williams <dcbw@redhat.com> - 0.7.999-2.git20100120
+- core: clean NSS up later to preserve errors from crypto_init()
+
+* Wed Jan 20 2010 Dan Williams <dcbw@redhat.com> - 0.7.999-1.git20100120
+- core: support for managed-mode DHCPv6 (rh #429710)
+- ifcfg-rh: gracefully handle missing PREFIX/NETMASK
+- cli: initial preview of command-line client
+- applet: add --help to explain what the applet is (rh #494641)
+
 * Wed Jan  6 2010 Dan Williams <dcbw@redhat.com> - 0.7.998-1.git20100106
 - build: fix for new pppd (rh #548520)
 - core: add WWAN enable/disable functionality
