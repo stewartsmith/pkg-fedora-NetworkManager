@@ -72,28 +72,26 @@ diff -up NetworkManager-0.7.999/network-manager-applet-0.7.999/src/gnome-bluetoo
 --- NetworkManager-0.7.999/network-manager-applet-0.7.999/src/gnome-bluetooth/Makefile.am.buildfix	2009-07-28 13:23:40.282718683 -0400
 +++ NetworkManager-0.7.999/network-manager-applet-0.7.999/src/gnome-bluetooth/Makefile.am	2009-07-28 13:24:56.316719077 -0400
 @@ -6,6 +6,9 @@ INCLUDES = \
- 	-DLOCALEDIR="\"$(datadir)/locale\""	\
- 	-I$(top_srcdir)/src/gconf-helpers/ \
  	-I$(top_builddir) \
+ 	-I${top_builddir}/src/marshallers \
+ 	-I${top_srcdir}/src/utils \
 +	-I${top_srcdir}/../include \
 +	-I${top_srcdir}/../libnm-util \
 +	-I${top_srcdir}/../libnm-glib \
  	$(GNOME_BLUETOOTH_CFLAGS) \
  	$(WARN_CFLAGS)
  
-@@ -14,7 +17,11 @@ plugin_LTLIBRARIES = libnma.la
+@@ -14,7 +17,9 @@ plugin_LTLIBRARIES = libnma.la
  
- libnma_la_SOURCES = network-manager-applet.c
- libnma_la_LDFLAGS = -module -avoid-version
--libnma_la_LIBADD = $(top_builddir)/src/gconf-helpers/libgconf-helpers.la $(GNOME_BLUETOOTH_LIBS)
-+libnma_la_LIBADD = \
-+	$(top_builddir)/src/gconf-helpers/libgconf-helpers.la \
+ libnma_la_LIBADD = \
+ 	$(top_builddir)/src/gconf-helpers/libgconf-helpers.la \
+-	$(GNOME_BLUETOOTH_LIBS)
 +	$(GNOME_BLUETOOTH_LIBS) \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la
  endif
  
- EXTRA_DIST = network-manager-applet.c
+ EXTRA_DIST = \
 diff -up NetworkManager-0.7.999/network-manager-applet-0.7.999/src/Makefile.am.buildfix NetworkManager-0.7.999/network-manager-applet-0.7.999/src/Makefile.am
 --- NetworkManager-0.7.999/network-manager-applet-0.7.999/src/Makefile.am.buildfix	2009-07-27 15:26:53.000000000 -0400
 +++ NetworkManager-0.7.999/network-manager-applet-0.7.999/src/Makefile.am	2009-07-28 11:29:11.686841642 -0400

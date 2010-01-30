@@ -9,15 +9,16 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100122
-%define applet_snapshot .git20100120
+%define snapshot .git20100129
+%define applet_snapshot .git20100129
+%define nmcli_snapshot -git20100129
 %define realversion 0.7.999
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 0.1%{snapshot}%{?dist}
+Release: 0.2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -25,7 +26,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
-Source3: nmcli-git20100122.tar.bz2
+Source3: nmcli%{nmcli_snapshot}.tar.bz2
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
@@ -379,6 +380,11 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Jan 29 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.2.git20100129
+- core: add Bluetooth Dial-Up Networking (DUN) support (rh #136663)
+- core: start DHCPv6 on receipt of RA 'otherconf'/'managed' bits
+- nmcli: allow enable/disable of WiFi and WWAN
+
 * Fri Jan 22 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.1.git20100122
 - ifcfg-rh: read and write DHCPv6 enabled connections (rh #429710)
 - nmcli: update
