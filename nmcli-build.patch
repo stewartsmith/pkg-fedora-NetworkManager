@@ -27,4 +27,4 @@ diff -up NetworkManager-0.7.999/nmcli/src/CMakeLists.txt.foo NetworkManager-0.7.
  ADD_EXECUTABLE (nmcli ${NMCLI_SRC})
  
 -TARGET_LINK_LIBRARIES (nmcli ${LIBNM_LIBRARIES})
-+TARGET_LINK_LIBRARIES (nmcli -L../../libnm-util/.libs/ -L../../libnm-glib/.libs/ -lnm-glib -lnm-util -lnm-glib-vpn ${DBUS_GLIB_LIBRARIES})
++TARGET_LINK_LIBRARIES (nmcli -L../../libnm-util/.libs/ -L../../libnm-glib/.libs/ -lnm-glib -lnm-util -lnm-glib-vpn ${DBUS_GLIB_LIBRARIES} -lm)
