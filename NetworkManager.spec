@@ -18,7 +18,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 0.2%{snapshot}%{?dist}
+Release: 0.3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -81,6 +81,7 @@ BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: cmake
+BuildRequires: desktop-file-utils
 # No bluetooth on s390
 %ifnarch s390 s390x
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
@@ -238,6 +239,14 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %{__cp} ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 
+# don't autostart in KDE on F13+ (#541353)
+%if 0%{?fedora} > 12
+echo 'NotShowIn=KDE;' >>$RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
+%endif
+
+# validate the autostart .desktop file
+desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
+
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -380,6 +389,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Feb 09 2010 Kevin Kofler <Kevin@tigcc.ticalc.org> - 0.8-0.3.git20100129
+- don't autostart in KDE on F13+ (#541353)
+- validate the autostart .desktop file
+
 * Fri Jan 29 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.2.git20100129
 - core: add Bluetooth Dial-Up Networking (DUN) support (rh #136663)
 - core: start DHCPv6 on receipt of RA 'otherconf'/'managed' bits
