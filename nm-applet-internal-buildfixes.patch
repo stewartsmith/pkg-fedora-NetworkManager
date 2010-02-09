@@ -36,7 +36,7 @@ diff -up NetworkManager-0.7.999/network-manager-applet-0.7.999/src/connection-ed
  nm_connection_editor_CPPFLAGS = \
  	$(NMA_CFLAGS) \
  	-DICONDIR=\""$(datadir)/icons"\" \
-@@ -63,7 +67,10 @@ nm_connection_editor_LDADD = \
+@@ -63,7 +67,11 @@ nm_connection_editor_LDADD = \
  	${top_builddir}/src/wireless-security/libwireless-security.la \
  	${top_builddir}/src/utils/libutils.la \
  	${top_builddir}/src/marshallers/libmarshallers.la \
