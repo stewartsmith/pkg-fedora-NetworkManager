@@ -44,7 +44,8 @@ diff -up NetworkManager-0.7.999/network-manager-applet-0.7.999/src/connection-ed
 +	$(NMA_LIBS) \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la \
-+	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib-vpn.la
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib-vpn.la \
++	-lm
  
  gladedir = $(datadir)/nm-applet
  glade_DATA = \

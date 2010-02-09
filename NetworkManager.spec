@@ -393,6 +393,7 @@ fi
 - don't autostart in KDE on F13+ (#541353)
 - validate the autostart .desktop file
 - fix nmcli-build.patch hack for the stricter ld (fixes FTBFS)
+- fix nm-connection-editor for the stricter ld, need -lm (fixes FTBFS)
 
 * Fri Jan 29 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.2.git20100129
 - core: add Bluetooth Dial-Up Networking (DUN) support (rh #136663)
