@@ -9,16 +9,16 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100129
-%define applet_snapshot .git20100129
-%define nmcli_snapshot -git20100129
+%define snapshot .git20100211
+%define applet_snapshot .git20100211
+%define nmcli_snapshot -git20100211
 %define realversion 0.7.999
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 0.3%{snapshot}%{?dist}
+Release: 0.4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -389,11 +389,17 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Feb 11 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.4.git20100211
+- core: fix mobile broadband PIN handling (rh #543088) (rh #560742)
+- core: better handling of /etc/hosts if hostname was already added by the user
+- applet: crash less on D-Bus property errors (rh #557007)
+- applet: fix crash entering wired 802.1x connection details (rh #556763)
+
 * Tue Feb 09 2010 Kevin Kofler <Kevin@tigcc.ticalc.org> - 0.8-0.3.git20100129
-- don't autostart in KDE on F13+ (#541353)
-- validate the autostart .desktop file
-- fix nmcli-build.patch hack for the stricter ld (fixes FTBFS)
-- fix nm-connection-editor for the stricter ld, need -lm (fixes FTBFS)
+- core: validate the autostart .desktop file
+- build: fix nmcli for the stricter ld (fixes FTBFS)
+- build: fix nm-connection-editor for the stricter ld (fixes FTBFS)
+- applet: don't autostart in KDE on F13+ (#541353)
 
 * Fri Jan 29 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.2.git20100129
 - core: add Bluetooth Dial-Up Networking (DUN) support (rh #136663)
