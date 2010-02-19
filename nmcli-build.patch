@@ -22,9 +22,12 @@ diff -up NetworkManager-0.7.999/nmcli/src/CMakeLists.txt.foo NetworkManager-0.7.
  
  #ADD_DEFINITIONS( -Wall -Werror -std=gnu89 -g -O2 -Wshadow
  ADD_DEFINITIONS( -Wall -std=gnu89 -g -O0 -Wshadow
-@@ -28,4 +29,4 @@ set (NMCLI_SRC
+@@ -44,7 +45,7 @@
+ INCLUDE_DIRECTORIES (${CMAKE_CURRENT_SOURCE_DIR})
  
  ADD_EXECUTABLE (nmcli ${NMCLI_SRC})
- 
 -TARGET_LINK_LIBRARIES (nmcli ${LIBNM_LIBRARIES})
 +TARGET_LINK_LIBRARIES (nmcli -L../../libnm-util/.libs/ -L../../libnm-glib/.libs/ -lnm-glib -lnm-util -lnm-glib-vpn ${DBUS_GLIB_LIBRARIES})
+ 
+ INSTALL(TARGETS nmcli DESTINATION bin)
+ 

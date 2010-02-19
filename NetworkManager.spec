@@ -9,16 +9,16 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100211
-%define applet_snapshot .git20100211
-%define nmcli_snapshot -git20100211
-%define realversion 0.7.999
+%define snapshot .git20100219
+%define applet_snapshot .git20100219
+%define nmcli_snapshot -git20100219
+%define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 0.4%{snapshot}%{?dist}
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -312,6 +312,7 @@ fi
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
+%{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
 %config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
@@ -389,6 +390,13 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Feb 19 2010 Dan Williams <dcbw@redhat.com> - 0.8-1.git20100219
+- core: update to final 0.8 release
+- core: fix Bluetooth DUN connections when secrets are needed
+- ifcfg-rh: add helper for initscripts to determine ifcfg connection UUIDs
+- applet: fix Bluetooth connection secrets requests
+- applet: fix rare conflict with other gnome-bluetooth plugins
+
 * Thu Feb 11 2010 Dan Williams <dcbw@redhat.com> - 0.8-0.4.git20100211
 - core: fix mobile broadband PIN handling (rh #543088) (rh #560742)
 - core: better handling of /etc/hosts if hostname was already added by the user
