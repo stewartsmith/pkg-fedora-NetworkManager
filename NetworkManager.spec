@@ -9,16 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100219
-%define applet_snapshot .git20100219
-%define nmcli_snapshot -git20100219
+%define snapshot .git20100317
+%define applet_snapshot .git20100317
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -26,11 +25,9 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: nm-system-settings.conf
-Source3: nmcli%{nmcli_snapshot}.tar.bz2
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
-Patch4: nmcli-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -48,7 +45,7 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: mobile-broadband-provider-info >= 0.20090602
-Requires: ModemManager >= 0.2-3.20090826
+Requires: ModemManager >= 0.3-3.git20100317
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -157,12 +154,10 @@ NetworkManager functionality from applications that use glib.
 
 # unpack the applet and nmcli
 tar -xjf %{SOURCE1}
-tar -xjf %{SOURCE3}
 
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
-%patch4 -p1 -b .nmcli-buildfix
 
 %build
 
@@ -184,12 +179,6 @@ autoreconf -i
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version}
 
 make %{?_smp_mflags}
-
-# build the applet
-pushd nmcli
-	cmake .
-	make %{?_smp_mflags}
-popd
 
 # build the applet
 pushd network-manager-applet-%{realversion}
@@ -221,8 +210,6 @@ popd
 %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
-
-%{__cp} nmcli/src/nmcli $RPM_BUILD_ROOT%{_bindir}/
 
 %find_lang %{name}
 %find_lang nm-applet
@@ -328,6 +315,7 @@ fi
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/*.so*
 %{_mandir}/man1/*
+%{_mandir}/man5/*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/run/NetworkManager
 %dir %{_localstatedir}/lib/NetworkManager
@@ -390,6 +378,19 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Mar 17 2010 Dan Williams <dcbw@redhat.com> - 0.8-2.git20100317
+- man: many manpage updates
+- core: determine classful prefix if non is given via DHCP
+- core: ensure /etc/hosts is always up-to-date and correct (rh #569914)
+- core: support GSM network and roaming preferences
+- applet: startup speed enhancements
+- applet: better support for OTP/token-based WiFi connections
+- applet: show GSM and CDMA registration status and signal strength when available
+- applet: fix zombie GSM and CDMA devices in the menu
+- applet: remove 4-character GSM PIN/PUK code limit
+- applet: fix insensitive WiFi Create... button (rh #541163)
+- applet: allow unlocking of mobile devices immediately when plugged in
+
 * Fri Feb 19 2010 Dan Williams <dcbw@redhat.com> - 0.8-1.git20100219
 - core: update to final 0.8 release
 - core: fix Bluetooth DUN connections when secrets are needed
