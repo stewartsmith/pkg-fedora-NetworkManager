@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100317
-%define applet_snapshot .git20100317
+%define snapshot .git20100323
+%define applet_snapshot .git20100323
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,13 +378,22 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Mar 23 2010 Dan Williams <dcbw@redhat.com> - 0.8-3.git20100323
+- core: don't exit early on non-fatal state file errors
+- core: fix Bluetooth connection issues (rh #572340)
+- applet: fix some translations (rh #576056)
+- applet: better feedback when wrong PIN/PUK is entered
+- applet: many updated translations
+- applet: PIN2 unlock not required for normal modem functionality
+- applet: fix wireless secrets dialog display
+
 * Wed Mar 17 2010 Dan Williams <dcbw@redhat.com> - 0.8-2.git20100317
 - man: many manpage updates
 - core: determine classful prefix if non is given via DHCP
 - core: ensure /etc/hosts is always up-to-date and correct (rh #569914)
 - core: support GSM network and roaming preferences
 - applet: startup speed enhancements
-- applet: better support for OTP/token-based WiFi connections
+- applet: better support for OTP/token-based WiFi connections (rh #526383)
 - applet: show GSM and CDMA registration status and signal strength when available
 - applet: fix zombie GSM and CDMA devices in the menu
 - applet: remove 4-character GSM PIN/PUK code limit
