@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100323
-%define applet_snapshot .git20100323
+%define snapshot .git20100325
+%define applet_snapshot .git20100325
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Mar 25 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100325
+- core: fix modem enable/disable
+- core: fix modem default route handling
+
 * Tue Mar 23 2010 Dan Williams <dcbw@redhat.com> - 0.8-3.git20100323
 - core: don't exit early on non-fatal state file errors
 - core: fix Bluetooth connection issues (rh #572340)
