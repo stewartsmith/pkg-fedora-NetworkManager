@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100325
-%define applet_snapshot .git20100325
+%define snapshot .git20100408
+%define applet_snapshot .git20100408
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,14 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100408
+- core: more flexible logging
+- core: fix crash with OLPC mesh devices after suspend
+- applet: updated translations
+- applet: show mobile broadband signal strength and technology in the icon
+- applet: fix continuous password requests for 802.1x connections
+- applet: many updated translations
+
 * Thu Mar 25 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100325
 - core: fix modem enable/disable
 - core: fix modem default route handling
