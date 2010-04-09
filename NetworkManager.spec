@@ -378,12 +378,15 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-5.git20100408
+- core: fix automatic WiFi connections on resume (rh #578141)
+
 * Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100408
 - core: more flexible logging
 - core: fix crash with OLPC mesh devices after suspend
 - applet: updated translations
 - applet: show mobile broadband signal strength and technology in the icon
-- applet: fix continuous password requests for 802.1x connections
+- applet: fix continuous password requests for 802.1x connections (rh #576925)
 - applet: many updated translations
 
 * Thu Mar 25 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100325
