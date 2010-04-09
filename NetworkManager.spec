@@ -17,7 +17,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,10 +378,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-5.git20100408
+* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-6.git20100408
 - core: fix automatic WiFi connections on resume (rh #578141)
 
-* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-4.git20100408
+* Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-5.git20100408
 - core: more flexible logging
 - core: fix crash with OLPC mesh devices after suspend
 - applet: updated translations
