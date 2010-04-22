@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100408
-%define applet_snapshot .git20100408
+%define snapshot .git20100422
+%define applet_snapshot .git20100422
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 6%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,12 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Apr 22 2010 Dan Williams <dcbw@redhat.com> - 0.8-7.git20100422
+- core: fix crash during install (rh #581794)
+- wifi: fix crash when supplicant segfaults after resume (rh #538717)
+- ifcfg-rh: fix MTU handling for wired connections (rh #569319)
+- applet: fix display of disabled mobile broadband devices
+
 * Thu Apr  8 2010 Dan Williams <dcbw@redhat.com> - 0.8-6.git20100408
 - core: fix automatic WiFi connections on resume (rh #578141)
 
