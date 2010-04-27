@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100422
-%define applet_snapshot .git20100422
+%define snapshot .git20100426
+%define applet_snapshot .git20100426
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 7%{snapshot}%{?dist}
+Release: 8%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,16 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Apr 26 2010 Dan Williams <dcbw@redhat.com> - 0.8-8.git20100426
+- core: fix issues with IPv6 router advertisement mishandling (rh #530670)
+- core: many fixes for IPv6 RA and DHCP handling (rh #538499)
+- core: ignore WWAN ethernet devices until usable (rh #585214)
+- ifcfg-rh: fix handling of WEP passphrases (rh #581718)
+- applet: fix crashes (rh #582938) (rh #582428)
+- applet: fix crash with multiple concurrent authorization requests (rh #585405)
+- editor: allow disabling IPv4 on a per-connection basis
+- editor: add support for IPv6 DHCP-only configurations
+
 * Thu Apr 22 2010 Dan Williams <dcbw@redhat.com> - 0.8-7.git20100422
 - core: fix crash during install (rh #581794)
 - wifi: fix crash when supplicant segfaults after resume (rh #538717)

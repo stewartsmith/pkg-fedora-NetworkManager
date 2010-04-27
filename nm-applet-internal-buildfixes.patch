@@ -79,8 +79,8 @@ diff -up NetworkManager-0.8/network-manager-applet-0.8/src/gnome-bluetooth/Makef
 +	-I${top_srcdir}/../libnm-util \
 +	-I${top_srcdir}/../libnm-glib \
  	$(GNOME_BLUETOOTH_CFLAGS) \
+ 	$(DISABLE_DEPRECATED) \
  	$(WARN_CFLAGS)
- 
 @@ -14,7 +17,9 @@ plugin_LTLIBRARIES = libnma.la
  
  libnma_la_LIBADD = \
