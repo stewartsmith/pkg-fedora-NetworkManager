@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100426
-%define applet_snapshot .git20100426
+%define snapshot .git20100429
+%define applet_snapshot .git20100429
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 8%{snapshot}%{?dist}
+Release: 9%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Apr 29 2010 Dan Williams <dcbw@redhat.com> - 0.8-9.git20100429
+- core: fix crash when IPv6 is enabled and interface is deactivated
+
 * Mon Apr 26 2010 Dan Williams <dcbw@redhat.com> - 0.8-8.git20100426
 - core: fix issues with IPv6 router advertisement mishandling (rh #530670)
 - core: many fixes for IPv6 RA and DHCP handling (rh #538499)
