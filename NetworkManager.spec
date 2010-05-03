@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100502
-%define applet_snapshot .git20100502
+%define snapshot .git20100503
+%define applet_snapshot .git20100503
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 10%{snapshot}%{?dist}
+Release: 11%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,12 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon May  3 2010 Dan Williams <dcbw@redhat.com> - 0.8-11.git20100503
+- core: allow IP configuration as long as one method completes (rh #567978)
+- core: don't prematurely remove IPv6 RDNSS nameservers (rh #588192)
+- core: ensure router advertisements are only used when needed (rh #588613)
+- editor: add IPv6 gateway editing capability
+
 * Sun May  2 2010 Dan Williams <dcbw@redhat.com> - 0.8-10.git20100502
 - core: IPv6 autoconf, DHCP, link-local, and manual mode fixes
 - editor: fix saving IPv6 address in user connections
