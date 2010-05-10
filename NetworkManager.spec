@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100504
-%define applet_snapshot .git20100504
+%define snapshot .git20100509
+%define applet_snapshot .git20100509
 %define realversion 0.8
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.0
-Release: 12%{snapshot}%{?dist}
+Release: 13%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -378,6 +378,11 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sun May  9 2010 Dan Williams <dcbw@redhat.com> - 0.8-13.git20100509
+- core: restore initial accept_ra value for IPv6 ignored connections (rh #588619)
+- bluetooth: fix bad timeout on PAN connections (rh #586961)
+- applet: updated translations
+
 * Wed May  4 2010 Dan Williams <dcbw@redhat.com> - 0.8-12.git20100504
 - core: treat missing IPv6 configuration as ignored (rh #588814)
 - core: don't flush IPv6 link-local routes (rh #587836)
