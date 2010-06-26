@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100510
-%define applet_snapshot .git20100510
-%define realversion 0.8.0.997
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
+%define realversion 0.8.0.999
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 0.1%{snapshot}%{?dist}
+Release: 0.4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -176,7 +176,8 @@ autoreconf -i
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
-	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version}
+	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
+	--with-dist-version=%{version}-%{release}
 
 make %{?_smp_mflags}
 
@@ -378,6 +379,36 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Jun 25 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-0.4
+- Update to 0.8.1 release candidate
+- core: fix WWAN hardware enable state tracking (rh #591622)
+- core: fix Red Hat initscript return value on double-start (rh #584321)
+- core: add multicast route entry for IPv4 link-local connections
+- core: fix connection sharing in cases where a dnsmasq config file exists
+- core: fix handling of Ad-Hoc wifi connections to indicate correct network
+- core: ensure VPN interface name is passed to dispatcher when VPN goes down
+- ifcfg-rh: fix handling of ASCII WEP keys
+- ifcfg-rh: fix double-quoting of some SSIDs (rh #606518)
+- applet: ensure deleted connections are actually forgotten (rh #618973)
+- applet: don't crash if the AP's BSSID isn't availabe (rh #603236)
+- editor: don't crash on PolicyKit events after windows are closed (rh #572466)
+
+* Wed May 26 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-0.3
+- core: fix nm-online crash (rh #593677)
+- core: fix failed suspend disables network (rh #589108)
+- core: print out missing firmware errors (rh #594578)
+- applet: fix device descriptions for some mobile broadband devices
+- keyfile: bluetooth fixes
+- applet: updated translations (rh #589230)
+
+* Wed May 19 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-0.2.git20100519
+- core: use GIO in local mode only (rh #588745)
+- core: updated translations (rh #589230)
+- core: be more lenient in IPv6 RDNSS server expiry (rh #590202)
+- core: fix headers to be C++ compatible (rh #592783)
+- applet: updated translations (rh #589230)
+- applet: lock connections with well-known SSIDs to their specific AP
+
 * Mon May 10 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-0.1.git20100510
 - core: fix handling of IPv6 RA flags when router goes away (rh #588560)
 - bluetooth: fix crash configuring DUN connections from the wizard (rh #590666)
