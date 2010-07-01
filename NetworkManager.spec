@@ -17,7 +17,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 0.4%{snapshot}%{?dist}
+Release: 0.5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -379,6 +379,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Jul  1 2010 Matthias Clasen <mclasen@redhatcom> - 0.8.1-0.5
+- Rebuild against new gnome-bluetooth
+
 * Fri Jun 25 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-0.4
 - Update to 0.8.1 release candidate
 - core: fix WWAN hardware enable state tracking (rh #591622)
