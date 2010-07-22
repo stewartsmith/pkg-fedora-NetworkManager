@@ -11,20 +11,20 @@
 
 %define snapshot %{nil}
 %define applet_snapshot %{nil}
-%define realversion 0.8.0.999
+%define realversion 0.8.1
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 0.5%{snapshot}%{?dist}
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
-Source2: nm-system-settings.conf
+Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
@@ -77,7 +77,6 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
-BuildRequires: cmake
 BuildRequires: desktop-file-utils
 # No bluetooth on s390
 %ifnarch s390 s390x
@@ -307,7 +306,7 @@ fi
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/VPN
-%config(noreplace) %{_sysconfdir}/%{name}/nm-system-settings.conf
+%config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-tool
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-client.action
@@ -379,6 +378,19 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Jul 22 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-1
+- core: read nm-system-settings.conf before NetworkManager.conf (rh #606160)
+- core: fix editing system DSL connections when using keyfile plugin
+- core: work around inconsistent proprietary driver associated AP reporting
+- core: ensure empty VPN secrets are not used (rh #587784)
+- core: don't request WiFi scans when connection is locked to a specific BSSID
+- cli: show IPv6 settings and configuration
+- applet: updated translations
+- editor: fix a PolicyKit-related crash editing connections (rh #603566)
+- applet: fix saving the ignore-missing-CA-cert preference (rh #610084)
+- editor: fix listing connections on PPC64 (rh #608663)
+- editor: ensure editor windows are destroyed when closed (rh #572466)
+
 * Thu Jul  1 2010 Matthias Clasen <mclasen@redhatcom> - 0.8.1-0.5
 - Rebuild against new gnome-bluetooth
 
