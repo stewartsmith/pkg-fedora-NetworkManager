@@ -1,7 +1,7 @@
 %define udev_scriptdir /lib/udev
 
 %define dbus_version 1.1
-%define dbus_glib_version 0.75
+%define dbus_glib_version 0.86
 
 %define gtk2_version	2.14.0
 %define glib2_version	2.16.0
@@ -9,15 +9,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
+%define snapshot .git20100813
+%define applet_snapshot .git20100813
 %define realversion 0.8.1
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 1%{snapshot}%{?dist}
+Release: 2.1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -45,7 +45,7 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: mobile-broadband-provider-info >= 0.20090602
-Requires: ModemManager >= 0.3-3.git20100317
+Requires: ModemManager >= 0.4
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -84,12 +84,10 @@ BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
 
 %description
-NetworkManager attempts to keep an active network connection available at all
-times.  It is intended only for the desktop use-case, and is not intended for
-usage on servers.   The point of NetworkManager is to make networking
-configuration and setup as painless and automatic as possible.  If using DHCP,
-NetworkManager is _intended_ to replace default routes, obtain IP addresses
-from a DHCP server, and change nameservers whenever it sees fit.
+NetworkManager is a system network service that manages your network devices
+and connections, attempting to keep active network connectivity when available.
+It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
+provides VPN integration with a variety of different VPN services.
 
 
 %package devel
@@ -378,6 +376,29 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Aug 13 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-2.1
+- core: quiet annoying warnings (rh #612991)
+- core: fix retrieval of various IP options in libnm-glib (rh #611141)
+- core: ship NetworkManager.conf instead of deprecated nm-system-settings.conf (rh #606160)
+- core: add short hostname to /etc/hosts too (rh #621910)
+- core: recheck autoactivation when new system connections appear
+- core: enable DHCPv6-only configurations (rh #612445)
+- core: don't fail connection immediately if DHCP lease expires (rh #616084) (rh #590874)
+- core: fix editing of PPPoE system connections
+- core: work around twitchy frequency reporting of various wifi drivers
+- core: don't tear down user connections on console changes (rh #614556)
+- cli: wait a bit for NM's permissions check to complete (rh #614866)
+- ifcfg-rh: ignore BRIDGE and VLAN configs and treat as unmanaged (rh #619863)
+- man: add manpage for nm-online
+- applet: fix crash saving ignore-missing-CA-cert preference (rh #619775)
+- applet: hide PIN/PUK by default in the mobile PIN/PUK dialog (rh #615085)
+- applet: ensure Enter closes the PIN/PUK dialog (rh #611831)
+- applet: fix another crash in ignore-CA-certificate handling (rh #557495)
+- editor: fix handling of Wired/s390 connections (rh #618620)
+- editor: fix crash when canceling editing in IP address pages (rh #610891)
+- editor: fix handling of s390-specific options
+- editor: really fix crash when changing system connections (rh #603566)
+
 * Thu Jul 22 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-1
 - core: read nm-system-settings.conf before NetworkManager.conf (rh #606160)
 - core: fix editing system DSL connections when using keyfile plugin
