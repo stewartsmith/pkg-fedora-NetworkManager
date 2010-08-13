@@ -1,7 +1,7 @@
 %define udev_scriptdir /lib/udev
 
 %define dbus_version 1.1
-%define dbus_glib_version 0.86
+%define dbus_glib_version 0.86-4
 
 %define gtk2_version	2.14.0
 %define glib2_version	2.16.0
@@ -17,7 +17,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 2.1%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -376,7 +376,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Wed Aug 13 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-2.1
+* Fri Aug 13 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-3
+- core: rebuild to fix dbus-glib security issue (CVE-2010-1172) (rh #585394)
+
+* Fri Aug 13 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-2
 - core: quiet annoying warnings (rh #612991)
 - core: fix retrieval of various IP options in libnm-glib (rh #611141)
 - core: ship NetworkManager.conf instead of deprecated nm-system-settings.conf (rh #606160)
