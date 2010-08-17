@@ -1,5 +1,3 @@
-%define udev_scriptdir /lib/udev
-
 %define dbus_version 1.1
 %define dbus_glib_version 0.86-4
 
@@ -9,15 +7,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100813
-%define applet_snapshot .git20100813
+%define snapshot .git20100817
+%define applet_snapshot .git20100817
 %define realversion 0.8.1
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -81,6 +79,9 @@ BuildRequires: desktop-file-utils
 # No bluetooth on s390
 %ifnarch s390 s390x
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
+%endif
+%if 0%{?fedora} >= 14
+BuildRequires: systemd
 %endif
 
 %description
@@ -324,7 +325,12 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
-%{udev_scriptdir}/rules.d/*.rules
+/lib/udev/rules.d/*.rules
+# systemd stuff
+%if 0%{?fedora} >= 14
+/lib/systemd/system/NetworkManager.service
+%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
+%endif
 
 %files devel
 %defattr(-,root,root,0755)
@@ -376,6 +382,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug 17 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-4
+- core: rebuild to fix polkit 0.97 build issue
+- applet: updated translations
+
 * Fri Aug 13 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-3
 - core: rebuild to fix dbus-glib security issue (CVE-2010-1172) (rh #585394)
 
