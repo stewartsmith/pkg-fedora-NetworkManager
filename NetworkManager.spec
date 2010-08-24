@@ -7,15 +7,20 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100817
+%define snapshot .git20100818
 %define applet_snapshot .git20100817
 %define realversion 0.8.1
+
+%define use_systemd 0
+%if 0%{?fedora} >= 14
+%define use_systemd 1
+%endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -80,7 +85,7 @@ BuildRequires: desktop-file-utils
 %ifnarch s390 s390x
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
-%if 0%{?fedora} >= 14
+%if %{use_systemd}
 BuildRequires: systemd
 %endif
 
@@ -239,9 +244,14 @@ desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desk
 
 
 %post
-if [ "$1" == "1" ]; then
+if [ $1 == 1 ]; then
 	/sbin/chkconfig --add NetworkManager
 	/sbin/chkconfig NetworkManager resetpriorities
+
+%if %{use_systemd}
+        # Enable (but don't start) the units by default
+        /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
+%endif
 fi
 
 %preun
@@ -249,7 +259,26 @@ if [ $1 -eq 0 ]; then
     /sbin/service NetworkManager stop >/dev/null 2>&1
     killall -TERM nm-system-settings >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
+
+%if %{use_systemd}
+    # Disable and stop the units
+    /bin/systemctl disable NetworkManager.service >/dev/null 2>&1 || :
+    /bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
+%endif
 fi
+
+%if %{use_systemd}
+%postun
+if [ $1 -ge 1 ] ; then
+        # On upgrade, reload init system configuration if we changed unit files
+        /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+fi
+
+%triggerin -- NetworkManager < 1:0.8.1-5
+if /sbin/chkconfig NetworkManager ; then
+        /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
+fi
+%endif
 
 %triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
 /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
@@ -327,7 +356,7 @@ fi
 %{_datadir}/polkit-1/actions/*.policy
 /lib/udev/rules.d/*.rules
 # systemd stuff
-%if 0%{?fedora} >= 14
+%if %{use_systemd}
 /lib/systemd/system/NetworkManager.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 %endif
@@ -382,6 +411,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Aug 18 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-5
+- core: fix some systemd interaction issues
+
 * Tue Aug 17 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-4
 - core: rebuild to fix polkit 0.97 build issue
 - applet: updated translations
