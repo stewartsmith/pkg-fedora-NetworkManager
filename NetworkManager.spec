@@ -7,8 +7,8 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100818
-%define applet_snapshot .git20100817
+%define snapshot .git20100831
+%define applet_snapshot .git20100831
 %define realversion 0.8.1
 
 %define use_systemd 0
@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -188,7 +188,10 @@ make %{?_smp_mflags}
 pushd network-manager-applet-%{realversion}
 	autoreconf -i
 	intltoolize --force
-	%configure --disable-static --enable-more-warnings=yes
+	%configure \
+		--disable-static \
+		--with-bluetooth \
+		--enable-more-warnings=yes
 	make %{?_smp_mflags}
 popd
 
@@ -411,6 +414,14 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug 31 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-6
+- core: add dispatcher events on DHCPv4 and DHCPv6 lease changes
+- core: enforce access permissions when enabling/disabling WiFi and WWAN (rh #626337)
+- core: listen for UPower suspend/resume signals
+- applet: fix disabled Enable Networking and Enable Wireless menu items (rh #627365)
+- applet: updated translations
+- applet: obscure Mobile Broadband PIN in secondary unlock dialog
+
 * Wed Aug 18 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-5
 - core: fix some systemd interaction issues
 
