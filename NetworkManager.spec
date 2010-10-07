@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 6%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -31,6 +31,7 @@ Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
+Patch4: nm-remove-stale-hosts-mappings.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -161,6 +162,7 @@ tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
+%patch4 -p1 -b .remove-stale-hosts-mappings
 
 %build
 
@@ -414,6 +416,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Oct  7 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-7
+- core: remove stale /etc/hosts mappings (rh #630146)
+
 * Tue Aug 31 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-6
 - core: add dispatcher events on DHCPv4 and DHCPv6 lease changes
 - core: enforce access permissions when enabling/disabling WiFi and WWAN (rh #626337)
