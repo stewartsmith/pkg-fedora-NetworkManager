@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 8%{snapshot}%{?dist}
+Release: 9%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -34,6 +34,8 @@ Patch3: nm-applet-no-notifications.patch
 Patch4: nm-remove-stale-hosts-mappings.patch
 Patch5: nm-preserve-custom-hostnames.patch
 Patch6: nm-prevent-hostname-dup.patch
+Patch7: nm-sleep-wake-no-auth.patch
+Patch8: nm-libnm-glib-prop-set-delay.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -167,6 +169,8 @@ tar -xjf %{SOURCE1}
 %patch4 -p1 -b .remove-stale-hosts-mappings
 %patch5 -p1 -b .preserve-custom-hostnames
 %patch6 -p1 -b .prevent-hostname-dup
+%patch7 -p1 -b .sleep-wake
+%patch8 -p1 -b .prop-set-delay
 
 %build
 
@@ -420,6 +424,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Oct 15 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-9
+- core: fix suspend/resume regression (rh #638640)
+- core: fix issue causing some nmcli requests to be ignored
+
 * Thu Oct  7 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-8
 - core: preserve custom local-mapped hostnames in /etc/hosts (rh #627269)
 

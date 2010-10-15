@@ -1,0 +1,50 @@
+commit 8d7b9a4ef56d3ca0c06c8d655e71698bdab04d9f
+Author: Jiří Klimeš <jklimes@redhat.com>
+Date:   Fri Oct 15 09:41:34 2010 +0200
+
+    libnm-glib: call D-Bus with a timeout when Set()ting properties
+    
+    The caller needs to be authenticated, so wait a bit to be sure
+    it didn't quit too quickly.
+
+diff --git a/libnm-glib/Makefile.am b/libnm-glib/Makefile.am
+index 008cc6d..ec21a32 100644
+--- a/libnm-glib/Makefile.am
++++ b/libnm-glib/Makefile.am
+@@ -132,7 +132,7 @@ libnm_glib_la_LIBADD = \
+ 	$(GUDEV_LIBS)
+ 
+ libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib.ver \
+-	-version-info "6:1:4"
++	-version-info "6:2:4"
+ 
+ noinst_PROGRAMS = libnm-glib-test
+ 
+diff --git a/libnm-glib/nm-object.c b/libnm-glib/nm-object.c
+index 72ea050..85cb6b7 100644
+--- a/libnm-glib/nm-object.c
++++ b/libnm-glib/nm-object.c
+@@ -527,12 +527,17 @@ _nm_object_set_property (NMObject *object,
+ 	g_return_if_fail (prop_name != NULL);
+ 	g_return_if_fail (G_IS_VALUE (value));
+ 
+-	dbus_g_proxy_call_no_reply (NM_OBJECT_GET_PRIVATE (object)->properties_proxy,
+-								"Set",
+-								G_TYPE_STRING, interface,
+-								G_TYPE_STRING, prop_name,
+-								G_TYPE_VALUE, value,
+-								G_TYPE_INVALID);
++	if (!dbus_g_proxy_call_with_timeout (NM_OBJECT_GET_PRIVATE (object)->properties_proxy,
++	                                     "Set", 2000, NULL,
++	                                     G_TYPE_STRING, interface,
++	                                     G_TYPE_STRING, prop_name,
++	                                     G_TYPE_VALUE, value,
++	                                     G_TYPE_INVALID)) {
++
++		/* Ignore errors. dbus_g_proxy_call_with_timeout() is called instead of
++		 * dbus_g_proxy_call_no_reply() to give NM chance to authenticate the caller.
++		 */
++	}
+ }
+ 
+ char *
