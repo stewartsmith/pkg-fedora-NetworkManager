@@ -12,7 +12,7 @@
 %define realversion 0.8.1
 
 %define use_systemd 0
-%if 0%{?fedora} >= 14
+%if 0%{?fedora} >= 15
 %define use_systemd 1
 %endif
 
@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 9%{snapshot}%{?dist}
+Release: 10%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -36,6 +36,7 @@ Patch5: nm-preserve-custom-hostnames.patch
 Patch6: nm-prevent-hostname-dup.patch
 Patch7: nm-sleep-wake-no-auth.patch
 Patch8: nm-libnm-glib-prop-set-delay.patch
+Patch9: nm-preserve-wifi-state.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -171,6 +172,7 @@ tar -xjf %{SOURCE1}
 %patch6 -p1 -b .prevent-hostname-dup
 %patch7 -p1 -b .sleep-wake
 %patch8 -p1 -b .prop-set-delay
+%patch9 -p1 -b .wifi-state-preserve
 
 %build
 
@@ -251,6 +253,11 @@ echo 'NotShowIn=KDE;' >>$RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.de
 # validate the autostart .desktop file
 desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
 
+# remove systemd stuff if necessary
+%if !%{use_systemd}
+%{__rm} -f $RPM_BUILD_ROOT/lib/systemd/system/NetworkManager.service
+%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
+%endif
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -424,6 +431,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Nov  1 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-10
+- core: preserve WiFi Enabled state across reboot and suspend/resume
+
 * Fri Oct 15 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-9
 - core: fix suspend/resume regression (rh #638640)
 - core: fix issue causing some nmcli requests to be ignored
