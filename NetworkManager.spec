@@ -38,8 +38,7 @@ Patch7: nm-sleep-wake-no-auth.patch
 Patch8: nm-libnm-glib-prop-set-delay.patch
 Patch9: nm-preserve-wifi-state.patch
 Patch10: Port-to-libnotify-070.patch
-Patch11: pkauth.patch
-Patch12: gtk-build.patch
+Patch11: gtk-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -179,8 +178,7 @@ tar -xjf %{SOURCE1}
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
 popd
-%patch11 -p1 -b .pkauth
-%patch12 -p1 -b .gtk-build
+%patch11 -p1 -b .gtk-build
 
 %build
 

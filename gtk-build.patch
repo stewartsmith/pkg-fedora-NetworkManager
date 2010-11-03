@@ -1,14 +1,3 @@
---- NetworkManager-0.8.1/network-manager-applet-0.8.1/src/utils/nma-bling-spinner.c	2010-06-25 21:46:38.000000000 -0400
-+++ NetworkManager-0.8.1.hacked/network-manager-applet-0.8.1/src/utils/nma-bling-spinner.c	2010-11-02 21:18:06.858180000 -0400
-@@ -154,7 +154,7 @@
- 	priv->current = 0;
- 	priv->timeout = 0;
- 
--	GTK_WIDGET_SET_FLAGS (GTK_WIDGET (spinner), GTK_NO_WINDOW);
-+        gtk_widget_set_has_window (GTK_WIDGET (spinner), FALSE);
- }
- 
- static gboolean
 --- NetworkManager-0.8.1/network-manager-applet-0.8.1/src/wireless-dialog.c	2010-07-21 19:01:21.000000000 -0400
 +++ NetworkManager-0.8.1.hacked/network-manager-applet-0.8.1/src/wireless-dialog.c	2010-11-02 21:19:46.531180001 -0400
 @@ -1069,7 +1069,6 @@
