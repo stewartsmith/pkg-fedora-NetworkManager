@@ -7,9 +7,9 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20100831
-%define applet_snapshot .git20100831
-%define realversion 0.8.1
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
+%define realversion 0.8.2
 
 %define use_systemd 0
 %if 0%{?fedora} >= 15
@@ -19,8 +19,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.1
-Release: 10.1%{snapshot}%{?dist}
+Version: 0.8.2
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -31,12 +31,6 @@ Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
-Patch4: nm-remove-stale-hosts-mappings.patch
-Patch5: nm-preserve-custom-hostnames.patch
-Patch6: nm-prevent-hostname-dup.patch
-Patch7: nm-sleep-wake-no-auth.patch
-Patch8: nm-libnm-glib-prop-set-delay.patch
-Patch9: nm-preserve-wifi-state.patch
 Patch10: Port-to-libnotify-070.patch
 Patch11: gtk-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -169,12 +163,6 @@ tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
-%patch4 -p1 -b .remove-stale-hosts-mappings
-%patch5 -p1 -b .preserve-custom-hostnames
-%patch6 -p1 -b .prevent-hostname-dup
-%patch7 -p1 -b .sleep-wake
-%patch8 -p1 -b .prop-set-delay
-%patch9 -p1 -b .wifi-state-preserve
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
 popd
@@ -437,6 +425,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Nov  3 2010 Dan Williams <dcbw@redhat.com> - 0.8.2-1
+- Update to 0.8.2
+
 * Wed Nov  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.1-10.1
 - Rebuild against libnotify 0.7
 - misc gtk build fixes

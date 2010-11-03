@@ -1,15 +1,5 @@
---- NetworkManager-0.8.1/network-manager-applet-0.8.1/src/wireless-dialog.c	2010-07-21 19:01:21.000000000 -0400
-+++ NetworkManager-0.8.1.hacked/network-manager-applet-0.8.1/src/wireless-dialog.c	2010-11-02 21:19:46.531180001 -0400
-@@ -1069,7 +1069,6 @@
- 	gtk_container_set_border_width (GTK_CONTAINER (self), 6);
- 	gtk_window_set_default_size (GTK_WINDOW (self), 488, -1);
- 	gtk_window_set_resizable (GTK_WINDOW (self), FALSE);
--	gtk_dialog_set_has_separator (GTK_DIALOG (self), FALSE);
- 
- 	priv->auth_only = auth_only;
- 	if (auth_only)
---- NetworkManager-0.8.1/network-manager-applet-0.8.1/src/applet.c	2010-11-02 21:28:16.850180001 -0400
-+++ NetworkManager-0.8.1.hacked/network-manager-applet-0.8.1/src/applet.c	2010-11-02 20:58:40.797180001 -0400
+--- NetworkManager-0.8.2/network-manager-applet-0.8.2/src/applet.c	2010-11-02 21:28:16.850180001 -0400
++++ NetworkManager-0.8.2.hacked/network-manager-applet-0.8.2/src/applet.c	2010-11-02 20:58:40.797180001 -0400
 @@ -2736,7 +2736,7 @@
  	return *icon;
  }
