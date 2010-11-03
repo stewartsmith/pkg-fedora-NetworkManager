@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.1
-Release: 10%{snapshot}%{?dist}
+Release: 10.1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -37,6 +37,9 @@ Patch6: nm-prevent-hostname-dup.patch
 Patch7: nm-sleep-wake-no-auth.patch
 Patch8: nm-libnm-glib-prop-set-delay.patch
 Patch9: nm-preserve-wifi-state.patch
+Patch10: Port-to-libnotify-070.patch
+Patch11: pkauth.patch
+Patch12: gtk-build.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -122,7 +125,7 @@ Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: libnotify >= 0.4.3
+Requires: libnotify >= 0.7.0
 Requires: gnome-keyring
 Requires: nss >= 3.11.7
 Requires: gnome-icon-theme
@@ -173,6 +176,11 @@ tar -xjf %{SOURCE1}
 %patch7 -p1 -b .sleep-wake
 %patch8 -p1 -b .prop-set-delay
 %patch9 -p1 -b .wifi-state-preserve
+pushd  network-manager-applet-%{realversion}
+%patch10 -p1 -b .libnotify-070
+popd
+%patch11 -p1 -b .pkauth
+%patch12 -p1 -b .gtk-build
 
 %build
 
@@ -431,6 +439,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Nov  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.1-10.1
+- Rebuild against libnotify 0.7
+- misc gtk build fixes
+
 * Mon Nov  1 2010 Dan Williams <dcbw@redhat.com> - 0.8.1-10
 - core: preserve WiFi Enabled state across reboot and suspend/resume
 

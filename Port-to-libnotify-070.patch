@@ -1,0 +1,44 @@
+From 9ac43601950dfd568cc9f64cf9a20c11af6fa627 Mon Sep 17 00:00:00 2001
+From: William Jon McCann <jmccann@redhat.com>
+Date: Sat, 16 Oct 2010 22:01:00 -0400
+Subject: [PATCH] Port to libnotify 0.7.0
+
+https://bugzilla.gnome.org/show_bug.cgi?id=632327
+---
+ configure.ac |    2 +-
+ src/applet.c |    4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index acb39a2..8fb0a66 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -78,7 +78,7 @@ PKG_CHECK_MODULES(NMA,
+ 		 gmodule-export-2.0
+ 		 gconf-2.0
+ 		 gnome-keyring-1
+-		 libnotify >= 0.4.3])
++		 libnotify >= 0.7.0])
+ 
+ # Check for dbus-1.2.6 or later for deny-by-default rules
+ PKG_CHECK_MODULES(DBUS_126, [dbus-1 >= 1.2.6], [have_dbus_126=yes],[have_dbus_126=no])
+diff --git a/src/applet.c b/src/applet.c
+index e451f75..8164501 100644
+--- a/src/applet.c
++++ b/src/applet.c
+@@ -622,12 +622,10 @@ applet_do_notify (NMApplet *applet,
+ 	escaped = utils_escape_notify_message (message);
+ 	notify = notify_notification_new (summary,
+ 	                                  escaped,
+-	                                  icon ? icon : GTK_STOCK_NETWORK,
+-	                                  NULL);
++	                                  icon ? icon : GTK_STOCK_NETWORK);
+ 	g_free (escaped);
+ 	applet->notification = notify;
+ 
+-	notify_notification_attach_to_status_icon (notify, applet->status_icon);
+ 	notify_notification_set_urgency (notify, urgency);
+ 	notify_notification_set_timeout (notify, NOTIFY_EXPIRES_DEFAULT);
+ 
+-- 
+1.7.2.3
