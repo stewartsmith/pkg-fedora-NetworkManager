@@ -1,0 +1,215 @@
+commit 546ae3141a987b3efa350b1a31c0579f1fa88c73
+Author: Dan Williams <dcbw@redhat.com>
+Date:   Sat Nov 6 14:25:56 2010 -0500
+
+    core: more fixes for GTK3
+    
+    It'll actually build now.  GTK3 is the default, pass:
+    
+    --with-gtk2=yes
+    
+    to still use GTK2.
+
+diff --git a/configure.ac b/configure.ac
+index f8d6819..cbfa4cf 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -73,13 +73,24 @@ PKG_CHECK_MODULES(NMA,
+ PKG_CHECK_MODULES(NMA,
+ 		[dbus-glib-1 >= 0.74
+ 		 glib-2.0 >= 2.16
+-		 gtk+-2.0 >= 2.14
+ 		 libglade-2.0
+ 		 gmodule-export-2.0
+ 		 gconf-2.0
+ 		 gnome-keyring-1
+ 		 libnotify >= 0.7.0])
+ 
++AC_ARG_WITH([gtk2], AS_HELP_STRING([--with-gtk2], [Use GTK+ 2.x instead of GTK+ 3.x]),
++            with_gtk2="$withval",with_gtk2=no)
++gtkver=3
++case "${with_gtk2}" in
++	yes)	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.18)
++		gtkver=2
++		;;
++	*)	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 2.90)
++		;;
++esac
++AM_CONDITIONAL(USE_GTK2, test x"$gtkver" = "x2")
++
+ # Check for dbus-1.2.6 or later for deny-by-default rules
+ PKG_CHECK_MODULES(DBUS_126, [dbus-1 >= 1.2.6], [have_dbus_126=yes],[have_dbus_126=no])
+ AM_CONDITIONAL(HAVE_DBUS_126, test x"$have_dbus_126" = "xyes")
+@@ -156,3 +167,6 @@ icons/scalable/Makefile
+ po/Makefile.in
+ ])
+ AC_OUTPUT
++
++echo Building for GTK+ version: ${gtkver}
++
+diff --git a/src/Makefile.am b/src/Makefile.am
+index ec786d8..2da5ee2 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -3,6 +3,7 @@ SUBDIRS = marshallers utils gconf-helpers wireless-security connection-editor gn
+            -I${top_srcdir}/../libnm-glib
+ 
+ nm_applet_CPPFLAGS = \
++	$(GTK_CFLAGS) \
+ 	$(NMA_CFLAGS) \
+ 	$(NOTIFY_CFLAGS) \
+ 	-DICONDIR=\""$(datadir)/icons"\"						\
+@@ -53,6 +54,7 @@ nm_applet_SOURCES =			\
+ 
+ nm_applet_LDADD = \
+ 	-lm \
++	$(GTK_LIBS) \
+ 	$(NMA_LIBS) \
+ 	$(NOTIFY_LIBS) \
+ 	${top_builddir}/src/marshallers/libmarshallers.la \
+diff --git a/src/applet-dialogs.c b/src/applet-dialogs.c
+index 046f378..132cec2 100644
+--- a/src/applet-dialogs.c
++++ b/src/applet-dialogs.c
+@@ -1031,13 +1031,21 @@ applet_mobile_pin_dialog_start_spinner (GtkWidget *dialog, const char *text)
+ 	xml = g_object_get_data (G_OBJECT (dialog), "xml");
+ 	g_return_if_fail (xml != NULL);
+ 
++#if GTK_CHECK_VERSION(2,90,0)
++	spinner = gtk_spinner_new ();
++#else
+ 	spinner = nma_bling_spinner_new ();
++#endif
+ 	g_return_if_fail (spinner != NULL);
+ 	g_object_set_data (G_OBJECT (dialog), "spinner", spinner);
+ 
+ 	align = glade_xml_get_widget (xml, "spinner_alignment");
+ 	gtk_container_add (GTK_CONTAINER (align), spinner);
++#if GTK_CHECK_VERSION(2,90,0)
++	gtk_spinner_start (GTK_SPINNER (spinner));
++#else
+ 	nma_bling_spinner_start (NMA_BLING_SPINNER (spinner));
++#endif
+ 
+ 	widget = glade_xml_get_widget (xml, "progress_label");
+ 	gtk_label_set_text (GTK_LABEL (widget), text);
+@@ -1075,7 +1083,11 @@ applet_mobile_pin_dialog_stop_spinner (GtkWidget *dialog, const char *text)
+ 
+ 	spinner = g_object_get_data (G_OBJECT (dialog), "spinner");
+ 	g_return_if_fail (spinner != NULL);
++#if GTK_CHECK_VERSION(2,90,0)
++	gtk_spinner_stop (GTK_SPINNER (spinner));
++#else
+ 	nma_bling_spinner_stop (NMA_BLING_SPINNER (spinner));
++#endif
+ 	g_object_set_data (G_OBJECT (dialog), "spinner", NULL);
+ 
+ 	/* Remove it from the alignment */
+diff --git a/src/connection-editor/Makefile.am b/src/connection-editor/Makefile.am
+index 326c642..a4d04a7 100644
+--- a/src/connection-editor/Makefile.am
++++ b/src/connection-editor/Makefile.am
+@@ -1,6 +1,7 @@
+            -I${top_srcdir}/../libnm-glib
+ 
+ nm_connection_editor_CPPFLAGS = \
++	$(GTK_CFLAGS) \
+ 	$(NMA_CFLAGS) \
+ 	-DICONDIR=\""$(datadir)/icons"\" \
+ 	-DGLADEDIR=\""$(gladedir)"\" \
+@@ -63,6 +64,7 @@ nm_connection_editor_LDADD = \
+ 	${top_builddir}/src/wireless-security/libwireless-security.la \
+ 	${top_builddir}/src/utils/libutils.la \
+ 	${top_builddir}/src/marshallers/libmarshallers.la \
++	$(GTK_LIBS) \
+ 	$(NMA_LIBS) \
+ 	-lm \
+ 	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
+diff --git a/src/gconf-helpers/Makefile.am b/src/gconf-helpers/Makefile.am
+index 873fc90..3ec3489 100644
+--- a/src/gconf-helpers/Makefile.am
++++ b/src/gconf-helpers/Makefile.am
+@@ -11,6 +11,7 @@ libgconf_helpers_la_SOURCES =	\
+ 	nma-gconf-settings.c
+ 
+ libgconf_helpers_la_CPPFLAGS = \
++	$(GTK_CFLAGS) \
+ 	$(NMA_CFLAGS) \
+ 	$(DISABLE_DEPRECATED) \
+ 	-I${top_srcdir}/src \
+@@ -18,6 +19,7 @@ libgconf_helpers_la_CPPFLAGS = \
+ 	-I${top_srcdir}/src/utils
+ 
+ libgconf_helpers_la_LIBADD = \
++	$(GTK_LIBS) \
+ 	$(NMA_LIBS) \
+ 	${top_builddir}/src/marshallers/libmarshallers.la \
+ 	${top_builddir}/src/utils/libutils.la \
+diff --git a/src/utils/Makefile.am b/src/utils/Makefile.am
+index 0794db5..d9a9c8e 100644
+--- a/src/utils/Makefile.am
++++ b/src/utils/Makefile.am
+@@ -8,11 +8,16 @@ libutils_la_SOURCES = \
+ 	nmn-mobile-providers.h \
+ 	nmn-mobile-providers.c \
+ 	mobile-wizard.h \
+-	mobile-wizard.c \
++	mobile-wizard.c
++
++if USE_GTK2
++libutils_la_SOURCES += \
+ 	nma-bling-spinner.h \
+ 	nma-bling-spinner.c
++endif
+ 
+ libutils_la_CPPFLAGS = \
++	$(GTK_CFLAGS) \
+ 	$(NMA_CFLAGS) \
+ 	-DGLADEDIR=\""$(gladedir)"\" \
+ 	-DDATADIR=\""$(datadir)"\" \
+@@ -20,7 +25,7 @@ libutils_la_CPPFLAGS = \
+ 	-I${top_srcdir}/src/gconf-helpers \
+ 	-I${top_srcdir}/src
+ 
+-libutils_la_LIBADD = $(NMA_LIBS) \
++libutils_la_LIBADD = $(GTK_LIBS) $(NMA_LIBS) \
+ 	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
+ 	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la
+ 
+diff --git a/src/utils/tests/Makefile.am b/src/utils/tests/Makefile.am
+index 72169d6..213829f 100644
+--- a/src/utils/tests/Makefile.am
++++ b/src/utils/tests/Makefile.am
+@@ -4,10 +4,11 @@ noinst_PROGRAMS = test-utils
+ 
+ test_utils_SOURCES = test-utils.c
+ 
+-test_utils_CPPFLAGS = $(NMA_CFLAGS)
++test_utils_CPPFLAGS = $(GTK_CFLAGS) $(NMA_CFLAGS)
+ 
+ test_utils_LDADD = \
+ 	${top_builddir}/src/utils/libutils.la \
++	$(GTK_LIBS) \
+ 	$(NMA_LIBS)
+ 
+ check-local: test-utils
+diff --git a/src/wireless-security/Makefile.am b/src/wireless-security/Makefile.am
+index 3f4088f..986d60d 100644
+--- a/src/wireless-security/Makefile.am
++++ b/src/wireless-security/Makefile.am
+@@ -29,12 +29,14 @@ libwireless_security_la_SOURCES = \
+ 	helpers.c
+ 
+ libwireless_security_la_CPPFLAGS = \
++	$(GTK_CFLAGS) \
+ 	$(NMA_CFLAGS) \
+ 	$(DISABLE_DEPRECATED) \
+ 	-I${top_srcdir}/src/utils \
+ 	-I${top_srcdir}/src/gconf-helpers
+ 
+ libwireless_security_la_LIBADD = \
++	$(GTK_LIBS) \
+ 	$(NMA_LIBS) \
+ 	${top_builddir}/src/utils/libutils.la \
+ 	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
+

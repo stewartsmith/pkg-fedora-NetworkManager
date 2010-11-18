@@ -1,14 +1,14 @@
 %define dbus_version 1.1
 %define dbus_glib_version 0.86-4
 
-%define gtk2_version	2.14.0
+%define gtk2_version	2.18.0
 %define glib2_version	2.16.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
+%define snapshot .git20101117
+%define applet_snapshot .git20101117
 %define realversion 0.8.2
 
 %define use_systemd 0
@@ -32,7 +32,12 @@ Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch10: Port-to-libnotify-070.patch
-Patch11: gtk-build.patch
+Patch11: gtk3-1.patch
+Patch12: gtk3-2.patch
+Patch13: gtk3-3.patch
+Patch14: gtk3-4.patch
+Patch15: gtk3-5.patch
+Patch16: gtk3-6.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -165,8 +170,13 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
+%patch11 -p1 -b .gtk3-1
+%patch12 -p1 -b .gtk3-2
+%patch13 -p1 -b .gtk3-3
+%patch14 -p1 -b .gtk3-4
+%patch15 -p1 -b .gtk3-5
+%patch16 -p1 -b .gtk3-6
 popd
-%patch11 -p1 -b .gtk-build
 
 %build
 
@@ -196,6 +206,7 @@ pushd network-manager-applet-%{realversion}
 	intltoolize --force
 	%configure \
 		--disable-static \
+		--with-gtk2=yes \
 		--with-bluetooth \
 		--enable-more-warnings=yes
 	make %{?_smp_mflags}
@@ -425,7 +436,7 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Wed Nov  3 2010 Dan Williams <dcbw@redhat.com> - 0.8.2-1
+* Wed Nov  27 2010 Dan Williams <dcbw@redhat.com> - 0.8.2-1.git20101117
 - Update to 0.8.2
 
 * Wed Nov  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.1-10.1
