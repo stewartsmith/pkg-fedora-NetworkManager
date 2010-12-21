@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.2
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -184,7 +184,7 @@ popd
 # multilib unhappy due to different timestamps in the generated content
 %{__cp} -R docs ORIG-docs
 
-autoreconf -i
+autoreconf -i -f
 %configure \
 	--disable-static \
 	--with-distro=redhat \
@@ -202,7 +202,7 @@ make %{?_smp_mflags}
 
 # build the applet
 pushd network-manager-applet-%{realversion}
-	autoreconf -i
+	autoreconf -i -f
 	intltoolize --force
 	%configure \
 		--disable-static \
@@ -436,6 +436,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Dec 21 2010 Dan Horák <dan[at]danny.cz> - 0.8.2-3.git20101117
+- use --force in autoreconf to fix FTBFS
+
 * Fri Dec  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.2-2.git20101117
 - Rebuild against newer gtk
 
