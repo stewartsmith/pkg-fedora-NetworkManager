@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.2
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -436,7 +436,7 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Mon Jan 10 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-3.git20101117
+* Mon Jan 10 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-4.git20101117
 - Rebuild against new gtk3
 
 * Tue Dec 21 2010 Dan Horák <dan[at]danny.cz> - 0.8.2-3.git20101117
