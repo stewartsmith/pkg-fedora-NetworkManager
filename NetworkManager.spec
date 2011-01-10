@@ -436,6 +436,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Jan 10 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-3.git20101117
+- Rebuild against new gtk3
+
 * Tue Dec 21 2010 Dan Horák <dan[at]danny.cz> - 0.8.2-3.git20101117
 - use --force in autoreconf to fix FTBFS
 
