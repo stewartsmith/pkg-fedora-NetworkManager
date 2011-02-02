@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.2
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -444,6 +444,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Feb  2 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-6.git20101117
+- Rebuild against new gtk
+
 * Tue Feb  1 2011 Dan Williams <dcbw@redhat.com> - 0.8.2-5.git20101117
 - Handle modem IP interface changes after device is recognized
 
