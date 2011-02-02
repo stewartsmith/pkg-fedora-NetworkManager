@@ -32,6 +32,7 @@ Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: modem-ip-interface-property-change.patch
+Patch5: no-unused-but-set-warning.patch
 Patch10: Port-to-libnotify-070.patch
 Patch11: gtk3-1.patch
 Patch12: gtk3-2.patch
@@ -170,6 +171,7 @@ tar -xjf %{SOURCE1}
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .modem-ip-iface
+%patch5 -p1 -b .no-unused-but-set
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
 %patch11 -p1 -b .gtk3-1

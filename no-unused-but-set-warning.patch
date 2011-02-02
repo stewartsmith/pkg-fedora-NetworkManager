@@ -1,0 +1,12 @@
+diff -up NetworkManager-0.8.2/m4/compiler_warnings.m4.blah NetworkManager-0.8.2/m4/compiler_warnings.m4
+--- NetworkManager-0.8.2/m4/compiler_warnings.m4.blah	2011-02-01 21:43:21.931142148 -0600
++++ NetworkManager-0.8.2/m4/compiler_warnings.m4	2011-02-01 21:43:39.053928083 -0600
+@@ -10,7 +10,7 @@ if test "$GCC" = "yes" -a "$set_more_war
+ 	for option in -Wshadow -Wmissing-declarations -Wmissing-prototypes \
+ 		      -Wdeclaration-after-statement -Wstrict-prototypes \
+ 		      -Wfloat-equal -Wno-unused-parameter -Wno-sign-compare \
+-		      -fno-strict-aliasing; do
++		      -fno-strict-aliasing -Wno-unused-but-set-variable; do
+ 		SAVE_CFLAGS="$CFLAGS"
+ 		CFLAGS="$CFLAGS $option"
+ 		AC_MSG_CHECKING([whether gcc understands $option])
