@@ -1,0 +1,45 @@
+diff -up NetworkManager-0.8.2/src/nm-device-ethernet.c.uninitialized NetworkManager-0.8.2/src/nm-device-ethernet.c
+--- NetworkManager-0.8.2/src/nm-device-ethernet.c.uninitialized	2010-11-17 18:24:02.000000000 -0600
++++ NetworkManager-0.8.2/src/nm-device-ethernet.c	2011-02-01 22:03:10.633281326 -0600
+@@ -308,7 +308,7 @@ _update_s390_subchannels (NMDeviceEthern
+ 	const char *iface;
+ 	GUdevClient *client;
+ 	GUdevDevice *dev;
+-	GUdevDevice *parent;
++	GUdevDevice *parent = NULL;
+ 	const char *parent_path, *item, *driver;
+ 	const char *subsystems[] = { "net", NULL };
+ 	GDir *dir;
+diff -up NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/reader.c.uninitialized NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/reader.c
+--- NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/reader.c.uninitialized	2011-02-01 22:04:47.501070312 -0600
++++ NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/reader.c	2011-02-01 22:05:16.234711093 -0600
+@@ -893,7 +893,7 @@ error:
+ static NMIP6Address *
+ parse_full_ip6_address (const char *addr_str, GError **error)
+ {
+-	NMIP6Address *addr;
++	NMIP6Address *addr = NULL;
+ 	char **list;
+ 	char *ip_tag, *prefix_tag;
+ 	struct in6_addr tmp = IN6ADDR_ANY_INIT;
+@@ -944,7 +944,8 @@ parse_full_ip6_address (const char *addr
+ 
+ error:
+ 	if (!success) {
+-		nm_ip6_address_unref (addr);
++		if (addr)
++			nm_ip6_address_unref (addr);
+ 		addr = NULL;
+ 	}
+ 
+diff -up NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/writer.c.uninitialized NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/writer.c
+--- NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/writer.c.uninitialized	2010-10-18 18:44:05.000000000 -0500
++++ NetworkManager-0.8.2/system-settings/plugins/ifcfg-rh/writer.c	2011-02-01 22:03:10.634281314 -0600
+@@ -884,6 +884,7 @@ write_wired_setting (NMConnection *conne
+ 	svSetValue (ifcfg, "SUBCHANNELS", NULL, FALSE);
+ 	s390_subchannels = nm_setting_wired_get_s390_subchannels (s_wired);
+ 	if (s390_subchannels) {
++		tmp = NULL;
+ 	    if (s390_subchannels->len == 2) {
+ 			tmp = g_strdup_printf ("%s,%s",
+ 				                   (const char *) g_ptr_array_index (s390_subchannels, 0),

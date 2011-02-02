@@ -33,6 +33,7 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: modem-ip-interface-property-change.patch
 Patch5: no-unused-but-set-warning.patch
+Patch6: fix-uninitialized.patch
 Patch10: Port-to-libnotify-070.patch
 Patch11: gtk3-1.patch
 Patch12: gtk3-2.patch
@@ -40,6 +41,7 @@ Patch13: gtk3-3.patch
 Patch14: gtk3-4.patch
 Patch15: gtk3-5.patch
 Patch16: gtk3-6.patch
+Patch17: nm-applet-no-unused-but-set-warning.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -172,6 +174,7 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .modem-ip-iface
 %patch5 -p1 -b .no-unused-but-set
+%patch6 -p1 -b .uninitialized
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
 %patch11 -p1 -b .gtk3-1
@@ -180,6 +183,7 @@ pushd  network-manager-applet-%{realversion}
 %patch14 -p1 -b .gtk3-4
 %patch15 -p1 -b .gtk3-5
 %patch16 -p1 -b .gtk3-6
+%patch17 -p1 -b .applet-no-unused-but-set
 popd
 
 %build
