@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.2
-Release: 7%{snapshot}%{?dist}
+Release: 8%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -444,6 +444,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Feb 11 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-8.git20101117
+- Rebuild against newer gtk
+
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.8.2-7.git20101117
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
