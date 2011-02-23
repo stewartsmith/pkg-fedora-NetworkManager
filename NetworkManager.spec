@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.2
-Release: 8%{snapshot}%{?dist}
+Release: 9%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -34,6 +34,7 @@ Patch3: nm-applet-no-notifications.patch
 Patch4: modem-ip-interface-property-change.patch
 Patch5: no-unused-but-set-warning.patch
 Patch6: fix-uninitialized.patch
+Patch7: fix-resolv-conf-updating.patch
 Patch10: Port-to-libnotify-070.patch
 Patch11: gtk3-1.patch
 Patch12: gtk3-2.patch
@@ -175,6 +176,7 @@ tar -xjf %{SOURCE1}
 %patch4 -p1 -b .modem-ip-iface
 %patch5 -p1 -b .no-unused-but-set
 %patch6 -p1 -b .uninitialized
+%patch7 -p1 -b .resolv-conf-updating
 pushd  network-manager-applet-%{realversion}
 %patch10 -p1 -b .libnotify-070
 %patch11 -p1 -b .gtk3-1
@@ -444,6 +446,9 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Feb 23 2011 Jiří Klimeš <jklimes@redhat.com> - 0.8.2-9.git20101117
+- Fix updating resolv.conf (rh #672282)
+
 * Fri Feb 11 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-8.git20101117
 - Rebuild against newer gtk
 
