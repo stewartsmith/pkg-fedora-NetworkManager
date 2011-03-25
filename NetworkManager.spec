@@ -1,15 +1,15 @@
 %define dbus_version 1.1
 %define dbus_glib_version 0.86-4
 
-%define gtk2_version	2.18.0
-%define glib2_version	2.16.0
+%define gtk3_version	3.0.1
+%define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20101117
-%define applet_snapshot .git20101117
-%define realversion 0.8.2
+%define snapshot .git20110325
+%define applet_snapshot .git20110325
+%define realversion 0.8.997
 
 %define use_systemd 0
 %if 0%{?fedora} >= 15
@@ -19,8 +19,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.2
-Release: 9%{snapshot}%{?dist}
+Version: 0.8.997
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -31,28 +31,24 @@ Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
 Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
-Patch4: modem-ip-interface-property-change.patch
-Patch5: no-unused-but-set-warning.patch
-Patch6: fix-uninitialized.patch
-Patch7: fix-resolv-conf-updating.patch
-Patch10: Port-to-libnotify-070.patch
-Patch11: gtk3-1.patch
-Patch12: gtk3-2.patch
-Patch13: gtk3-3.patch
-Patch14: gtk3-4.patch
-Patch15: gtk3-5.patch
-Patch16: gtk3-6.patch
-Patch17: nm-applet-no-unused-but-set-warning.patch
+Patch4: nm-polkit-permissive.patch
+Patch5: nm-applet-wifi-dialog-ui-fixes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
 Requires(preun): chkconfig
+%if %{use_systemd}
+Requires(post): /bin/systemctl
+Requires(preun): /bin/systemctl
+Requires(postun): /bin/systemctl
+%endif
+
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
-Requires: wpa_supplicant >= 1:0.6.8-4
+Requires: wpa_supplicant >= 1:0.7.3-1
 Requires: libnl >= %{libnl_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
@@ -72,10 +68,11 @@ BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: glib2-devel >= %{glib2_version}
-BuildRequires: gtk2-devel >= %{gtk2_version}
+BuildRequires: gtk3-devel >= %{gtk3_version}
 BuildRequires: libglade2-devel
 BuildRequires: GConf2-devel
 BuildRequires: gnome-keyring-devel
+BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
@@ -128,11 +125,11 @@ Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
-Requires: libnotify >= 0.7.0
+Requires: libnotify >= 0.4.3
 Requires: gnome-keyring
 Requires: nss >= 3.11.7
 Requires: gnome-icon-theme
-Requires(post): gtk2 >= %{gtk2_version}
+Requires(post): /usr/bin/gtk-update-icon-cache
 
 %description gnome
 This package contains GNOME utilities and applications for use with
@@ -173,20 +170,8 @@ tar -xjf %{SOURCE1}
 %patch1 -p1 -b .buildfix
 %patch2 -p1 -b .explain-dns1-dns2
 %patch3 -p1 -b .no-notifications
-%patch4 -p1 -b .modem-ip-iface
-%patch5 -p1 -b .no-unused-but-set
-%patch6 -p1 -b .uninitialized
-%patch7 -p1 -b .resolv-conf-updating
-pushd  network-manager-applet-%{realversion}
-%patch10 -p1 -b .libnotify-070
-%patch11 -p1 -b .gtk3-1
-%patch12 -p1 -b .gtk3-2
-%patch13 -p1 -b .gtk3-3
-%patch14 -p1 -b .gtk3-4
-%patch15 -p1 -b .gtk3-5
-%patch16 -p1 -b .gtk3-6
-%patch17 -p1 -b .applet-no-unused-but-set
-popd
+%patch4 -p1 -b .polkit-permissive
+%patch5 -p1 -b .applet-wifi-ui
 
 %build
 
@@ -194,7 +179,8 @@ popd
 # multilib unhappy due to different timestamps in the generated content
 %{__cp} -R docs ORIG-docs
 
-autoreconf -i -f
+autopoint --force
+intltoolize --force
 %configure \
 	--disable-static \
 	--with-distro=redhat \
@@ -202,6 +188,7 @@ autoreconf -i -f
 	--with-dhcpcd=no \
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
+	--enable-wimax=no \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
@@ -212,13 +199,13 @@ make %{?_smp_mflags}
 
 # build the applet
 pushd network-manager-applet-%{realversion}
-	autoreconf -i -f
+	autoreconf -i
 	intltoolize --force
 	%configure \
 		--disable-static \
-		--with-gtk2=yes \
 		--with-bluetooth \
-		--enable-more-warnings=yes
+		--enable-more-warnings=yes \
+		--with-gtkver=3
 	make %{?_smp_mflags}
 popd
 
@@ -340,20 +327,20 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %post gnome
-touch --no-create %{_datadir}/icons/hicolor
-if [ -x /usr/bin/gtk-update-icon-cache ]; then
-  gtk-update-icon-cache -q %{_datadir}/icons/hicolor
-fi
+touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
 if [ -f "%{_sysconfdir}/gconf/schemas/nm-applet.schemas" ]; then
   gconftool-2 --makefile-install-rule %{_sysconfdir}/gconf/schemas/nm-applet.schemas >/dev/null
 fi
 
 %postun gnome
-touch --no-create %{_datadir}/icons/hicolor
-if [ -x /usr/bin/gtk-update-icon-cache ]; then
-  gtk-update-icon-cache -q %{_datadir}/icons/hicolor
+if [ $1 -eq 0 ] ; then
+    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 fi
+
+%posttrans gnome
+gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
@@ -398,15 +385,17 @@ fi
 
 %files devel
 %defattr(-,root,root,0755)
-%doc ChangeLog docs/spec.html
+%doc ChangeLog docs/api/html/*
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/NetworkManagerVPN.h
+%{_includedir}/%{name}/nm-version.h
 %{_libdir}/pkgconfig/%{name}.pc
+%dir %{_datadir}/gtk-doc/html/NetworkManager
+%{_datadir}/gtk-doc/html/NetworkManager/*
 
 %files gnome
 %defattr(-,root,root,0755)
-%{_sysconfdir}/dbus-1/system.d/nm-applet.conf
 %{_bindir}/nm-applet
 %{_bindir}/nm-connection-editor
 %{_datadir}/applications/*.desktop
@@ -428,26 +417,60 @@ fi
 %{_libdir}/libnm-glib.so.*
 %{_libdir}/libnm-glib-vpn.so.*
 %{_libdir}/libnm-util.so.*
+%{_libdir}/girepository-1.0/NetworkManager-1.0.typelib
+%{_libdir}/girepository-1.0/NMClient-1.0.typelib
 
 %files glib-devel
 %defattr(-,root,root,0755)
 %dir %{_includedir}/libnm-glib
 %{_includedir}/libnm-glib/*.h
-%{_includedir}/%{name}/nm-*.h
+%{_includedir}/%{name}/nm-setting*.h
+%{_includedir}/%{name}/nm-connection.h
+%{_includedir}/%{name}/nm-utils.h
 %{_libdir}/pkgconfig/libnm-glib.pc
 %{_libdir}/pkgconfig/libnm-glib-vpn.pc
 %{_libdir}/pkgconfig/libnm-util.pc
 %{_libdir}/libnm-glib.so
 %{_libdir}/libnm-glib-vpn.so
 %{_libdir}/libnm-util.so
+%{_datadir}/gir-1.0/NetworkManager-1.0.gir
+%{_datadir}/gir-1.0/NMClient-1.0.gir
 %dir %{_datadir}/gtk-doc/html/libnm-glib
 %{_datadir}/gtk-doc/html/libnm-glib/*
 %dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Wed Feb 23 2011 Jiří Klimeš <jklimes@redhat.com> - 0.8.2-9.git20101117
-- Fix updating resolv.conf (rh #672282)
+* Fri Mar 25 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-4.git20110325
+- core: fix possible libnm-glib crash when activating connections
+- applet: fix various naming and dialog title issues
+
+* Thu Mar 24 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-3.git20110324
+- nm-version.h should be in NetworkManager-devel, not -glib-devel (rh #685442)
+
+* Mon Mar 21 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-1
+- Update to 0.8.997 (0.9-beta3)
+- ifcfg-rh: fix reading and writing of Dynamic WEP connections using LEAP as the eap method
+- wifi: fix signal strength for scanned access points with some drivers
+- applet: translation updates
+
+* Thu Mar 10 2011 Dan Williams <dcbw@redhat.com> - 0.8.996-1
+- Update to 0.8.996 (0.9-beta2)
+
+* Wed Mar  9 2011 Dan Williams <dcbw@redhat.com> - 0.8.995-4.git20110308
+- applet: fix bus name more
+
+* Wed Mar  9 2011 Dan Williams <dcbw@redhat.com> - 0.8.995-3.git20110308
+- applet: fix bus name
+
+* Tue Mar  8 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.995-2.git20110308
+- Fix systemd requires
+
+* Mon Mar  7 2011 Dan Williams <dcbw@redhat.com> - 0.8.995-1.git20110308
+- Update to NetworkManager 0.9-beta1
+- core: consolidate user and system settings services into NM itself
+- core: add WiMAX support
+- applet: support Fast User Switching
 
 * Fri Feb 11 2011 Matthias Clasen <mclasen@redhat.com> - 0.8.2-8.git20101117
 - Rebuild against newer gtk
