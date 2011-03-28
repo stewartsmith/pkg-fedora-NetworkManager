@@ -7,8 +7,8 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110325
-%define applet_snapshot .git20110325
+%define snapshot .git20110328
+%define applet_snapshot .git20110328
 %define realversion 0.8.997
 
 %define use_systemd 0
@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.997
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -441,6 +441,11 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Mar 28 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-5.git20110328
+- core: give default wired connections a more friendly name
+- core: fix base type of newly created wired connections
+- applet: many updated translations
+
 * Fri Mar 25 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-4.git20110325
 - core: fix possible libnm-glib crash when activating connections
 - applet: fix various naming and dialog title issues
