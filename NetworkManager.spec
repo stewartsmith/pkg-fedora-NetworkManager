@@ -7,25 +7,20 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110328
-%define applet_snapshot .git20110328
-%define realversion 0.8.997
-
-%define use_systemd 0
-%if 0%{?fedora} >= 15
-%define use_systemd 1
-%endif
+%define snapshot .git20110427
+%define applet_snapshot .git20110427
+%define realversion 0.8.998
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.997
-Release: 5%{snapshot}%{?dist}
+Version: 0.8.998
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}.tar.bz2
+Source: %{name}-%{realversion}-compat%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
@@ -37,11 +32,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
 Requires(preun): chkconfig
-%if %{use_systemd}
 Requires(post): /bin/systemctl
 Requires(preun): /bin/systemctl
 Requires(postun): /bin/systemctl
-%endif
 
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
@@ -69,7 +62,6 @@ BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gtk3-devel >= %{gtk3_version}
-BuildRequires: libglade2-devel
 BuildRequires: GConf2-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gobject-introspection-devel >= 0.10.3
@@ -94,9 +86,7 @@ BuildRequires: desktop-file-utils
 %ifnarch s390 s390x
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
-%if %{use_systemd}
 BuildRequires: systemd
-%endif
 
 %description
 NetworkManager is a system network service that manages your network devices
@@ -255,11 +245,6 @@ echo 'NotShowIn=KDE;' >>$RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.de
 # validate the autostart .desktop file
 desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
 
-# remove systemd stuff if necessary
-%if !%{use_systemd}
-%{__rm} -f $RPM_BUILD_ROOT/lib/systemd/system/NetworkManager.service
-%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
-%endif
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -270,10 +255,8 @@ if [ $1 == 1 ]; then
 	/sbin/chkconfig --add NetworkManager
 	/sbin/chkconfig NetworkManager resetpriorities
 
-%if %{use_systemd}
         # Enable (but don't start) the units by default
         /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
-%endif
 fi
 
 %preun
@@ -282,25 +265,21 @@ if [ $1 -eq 0 ]; then
     killall -TERM nm-system-settings >/dev/null 2>&1
     /sbin/chkconfig --del NetworkManager
 
-%if %{use_systemd}
     # Disable and stop the units
     /bin/systemctl disable NetworkManager.service >/dev/null 2>&1 || :
     /bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
-%endif
 fi
 
-%if %{use_systemd}
 %postun
 if [ $1 -ge 1 ] ; then
         # On upgrade, reload init system configuration if we changed unit files
         /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
-%triggerin -- NetworkManager < 1:0.8.1-5
+%triggerun -- NetworkManager < 1:0.8.990
 if /sbin/chkconfig NetworkManager ; then
         /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
 fi
-%endif
 
 %triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
 /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
@@ -378,10 +357,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/polkit-1/actions/*.policy
 /lib/udev/rules.d/*.rules
 # systemd stuff
-%if %{use_systemd}
 /lib/systemd/system/NetworkManager.service
+/lib/systemd/system/NetworkManager-wait-online.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
-%endif
 
 %files devel
 %defattr(-,root,root,0755)
@@ -441,7 +419,48 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Apr 27 2011 Dan Williams <dcbw@redhat.com> - 0.8.998-4.git20110427
+- core: enable optimized background roaming for WPA Enterprise configs
+- core: better handling of WiFi and WiMAX rfkill (rh #599002)
+- applet: fix crash detecting Bluetooth DUN devices a second time
+- ifcfg-rh: fix managed/unmanaged changes when removing connections (rh #698202)
+
+* Tue Apr 19 2011 Dan Williams <dcbw@redhat.com> - 0.8.998-3.git20110419
+- core: systemd and startup enhancements for NFS mounts
+- core: more efficient startup process
+- core: fix handling of multiple logins when one is inactive
+- core: fix handling of S390/Hercules CTC network interfaces (rh #641986)
+- core: support Easytether interfaces for Android phones
+- core: fix handling of WWAN enable/disable states
+- ifcfg-rh: harmonize handling if IPADDR/PREFIX/NETMASK with initscripts (rh #658907)
+- applet: fix connection to WPA Enterprise networks (rh #694765)
+
+* Wed Apr 06 2011 Dan Williams <dcbw@redhat.com> - 0.8.998-2.git20110406
+- core: fix handling of infinite IPv6 RDNSS timeouts (rh #689291)
+
+* Mon Apr 04 2011 Dan Williams <dcbw@redhat.com> - 0.8.998-1
+- Update to 0.8.998 (0.9.0-rc1)
+- core: fix near-infinite requests for passwords (rh #692783)
+- core: fix handling of wired 802.1x connections
+- core: ignore Nokia PC-Suite ethernet devices we can't use yet
+- applet: migrate 0.8 OpenVPN passwords to 0.9 formats
+
+* Thu Mar 31 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-8.git20110331
+- core: resurrect default VPN username
+- core: don't stomp on crypto library users by de-initing the crypto library
+
+* Wed Mar 30 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-7.git20110330
+- core: fix creation of default wired connections
+- core: fix requesting new secrets when old ones fail (ex changing WEP keys)
+- editor: ensure all pages are sensitive after retrieving secrets
+- editor: fix crash when scrolling through connection lists (rh #693446)
+- applet: fix crash after using the wifi or wired secrets dialogs (rh #693446)
+
+* Mon Mar 28 2011 Christopher Aillon <caillon@redhat.com> - 0.8.997-6.git20110328
+- Fix trigger to enable the systemd service for upgrades (rh #678553)
+
 * Mon Mar 28 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-5.git20110328
+- core: fix connection deactivation on the compat interface
 - core: give default wired connections a more friendly name
 - core: fix base type of newly created wired connections
 - applet: many updated translations
@@ -452,6 +471,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 * Thu Mar 24 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-3.git20110324
 - nm-version.h should be in NetworkManager-devel, not -glib-devel (rh #685442)
+
+* Thu Mar 24 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-2.git20110324
+- core: add compatibility layer for KDE Plasma network infrastructure
 
 * Mon Mar 21 2011 Dan Williams <dcbw@redhat.com> - 0.8.997-1
 - Update to 0.8.997 (0.9-beta3)
