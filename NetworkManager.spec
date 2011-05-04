@@ -7,20 +7,20 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110427
-%define applet_snapshot .git20110427
-%define realversion 0.8.998
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
+%define realversion 0.8.999
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.998
-Release: 4%{snapshot}%{?dist}
+Version: 0.8.999
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}-compat%{snapshot}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
@@ -419,6 +419,13 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue May  3 2011 Dan Williams <dcbw@redhat.com> - 0.8.999-1
+- core: ensure DER format certificates are correctly recognized (rh #699591)
+- core: fix WINS server handling in client helper libraries
+- core: enhance dispatcher script environment to include IPv6 and VPN details
+- applet: migrate openswan connections to 0.9
+- editor: improve usability of editing IP addresses (rh #698199)
+
 * Wed Apr 27 2011 Dan Williams <dcbw@redhat.com> - 0.8.998-4.git20110427
 - core: enable optimized background roaming for WPA Enterprise configs
 - core: better handling of WiFi and WiMAX rfkill (rh #599002)
