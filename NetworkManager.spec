@@ -277,7 +277,7 @@ if [ $1 -ge 1 ] ; then
 fi
 
 %triggerun -- NetworkManager < 1:0.8.990
-if /sbin/chkconfig NetworkManager ; then
+if /sbin/chkconfig --level 5 NetworkManager ; then
         /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
 fi
 
