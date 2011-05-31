@@ -7,14 +7,14 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
-%define realversion 0.8.999
+%define snapshot .git20110531
+%define applet_snapshot .git20110531
+%define realversion 0.8.9997
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.999
+Version: 0.8.9997
 Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -179,6 +179,7 @@ intltoolize --force
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
 	--enable-wimax=no \
+	--enable-polkit=yes \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
@@ -419,6 +420,29 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue May 31 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-1.git20110531
+- editor: fix resizing of UI elements (rh #707269)
+- core: retry wired connections when cable is replugged
+- core: fix a few warnings and remove some left-over debugging code
+
+* Thu May 26 2011 Dan Williams <dcbw@redhat.com> - 0.8.999-3.git20110526
+- compat: fix activation/deactivation of VPN connections (rh #699786)
+- core: fix autodetection of previously-used hidden wifi networks
+- core: silence error if ConsoleKit database does not yet exist (rh #695617)
+- core: fix Ad-Hoc frequency handling (rh #699203)
+- core: fixes for migrated OpenConnect VPN plugin connections
+- core: various fixes for VPN connection secrets handling
+- core: send only short hostname to DHCP servers (rh #694758)
+- core: better handling of PKCS#8 private keys
+- core: fix dispatcher script interface name handling
+- editor: fix potential crash when connection is invalid (rh #704848)
+- editor: allow _ as a valid character for GSM APNs
+
+* Mon May  9 2011 Dan Williams <dcbw@redhat.com> - 0.8.999-2.git20110509
+- core: fix possible crash when connections are deleted
+- core: fix exported symbols in libnm-util and libnm-glib
+- core/applet: updated translations
+
 * Tue May  3 2011 Dan Williams <dcbw@redhat.com> - 0.8.999-1
 - core: ensure DER format certificates are correctly recognized (rh #699591)
 - core: fix WINS server handling in client helper libraries
