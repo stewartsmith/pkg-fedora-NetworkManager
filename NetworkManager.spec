@@ -7,15 +7,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110531
-%define applet_snapshot .git20110531
+%define snapshot .git20110702
+%define applet_snapshot .git20110702
 %define realversion 0.8.9997
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.9997
-Release: 1%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -56,6 +56,7 @@ Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
 Conflicts: NetworkManager-pptp < 1:0.7.0.99-1
 Conflicts: NetworkManager-openconnect < 0:0.7.0.99-1
+Conflicts: kde-plasma-networkmanagement < 1:0.9-0.49.20110527git.nm09
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
@@ -420,6 +421,35 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sat Jul  2 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-5.git20110702
+- core: ensure users are authorized for shared wifi connections (CVE-2011-2176) (rh #715492)
+- core: retry failed connections after 5 minute timeout
+- core: immediately request new 802.1x 'always ask' passwords if they fail
+- core: add MAC blacklisting capability for WiFi and Wired connections
+- core: retry failed connections when new users log in (rh #706204)
+- applet: updated translations
+- core: drop compat interface now that KDE bits are updated to NM 0.9 API
+
+* Mon Jun 20 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-4.git20110620
+- core: don't cache "(none)" hostname at startup (rh #706094)
+- core: fix handling of VPN connections with only system-owned secrets
+- core: fix optional waiting for networking at startup behavior (rh #710502)
+- ifcfg-rh: fix possible crashes in error cases
+- ifcfg-rh: fix various IPv4 and IPv6 handling issues
+- applet: add notifications of GSM mobile broadband registration status
+- editor: move secrets when making connections available to all users or private
+- applet: don't show irrelevant options when asking for passwords
+
+* Mon Jun 13 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-3.git20110613
+- keyfile: better handling of missing certificates/private keys
+- core: fix issues handling "always-ask" wired and WiFi 802.1x connections (rh #703785)
+- core: fix automatic handling of hidden WiFi networks (rh #707406)
+- editor: fix possible crash after reading network connections (rh #706906)
+- editor: make Enter/Return key close WiFi password dialogs (rh #708666)
+
+* Fri Jun  3 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-2.git20110531
+- Bump for CVE-2011-1943 (no changes, only a rebuild)
+
 * Tue May 31 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-1.git20110531
 - editor: fix resizing of UI elements (rh #707269)
 - core: retry wired connections when cable is replugged
