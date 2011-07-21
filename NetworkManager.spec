@@ -7,15 +7,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110702
-%define applet_snapshot .git20110702
+%define snapshot .git20110721
+%define applet_snapshot .git20110721
 %define realversion 0.8.9997
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.9997
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -331,7 +331,6 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
-%config %{_sysconfdir}/rc.d/init.d/NetworkManager
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
 %dir %{_sysconfdir}/%{name}/
@@ -421,6 +420,19 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Jul 21 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-6.git20110721
+- core: updated Russian translation (rh #652904)
+- core: fix possible crash if secrets are missing
+- core: append interface name for IPv6 link-local DNS server addresses (rh #720001)
+- core: fix setting hostname from DHCP options (rh #719100)
+- libnm-util: GObject introspection annotation fixes
+- libnm-util: ensure IP address/route prefixes are valid
+- ifcfg-rh: read anonymous identity for 802.1x PEAP connections (rh #708436)
+- applet: show notifications on CDMA home/roaming changes
+- applet: fix various issues saving VPN secrets
+- editor: allow exporting VPN secrets
+- editor: default to IPv6 "automatic" addressing mode
+
 * Sat Jul  2 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-5.git20110702
 - core: ensure users are authorized for shared wifi connections (CVE-2011-2176) (rh #715492)
 - core: retry failed connections after 5 minute timeout
