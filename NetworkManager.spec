@@ -67,7 +67,7 @@ BuildRequires: GConf2-devel
 BuildRequires: gnome-keyring-devel
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
-BuildRequires: gettext-autopoint
+BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
 BuildRequires: libnl-devel >= %{libnl_version}
