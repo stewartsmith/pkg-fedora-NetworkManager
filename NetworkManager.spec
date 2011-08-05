@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.8.9997
-Release: 6%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: nm-polkit-permissive.patch
 Patch5: nm-applet-wifi-dialog-ui-fixes.patch
+Patch6: nm-controlled.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -164,6 +165,7 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .polkit-permissive
 %patch5 -p1 -b .applet-wifi-ui
+%patch6 -p1 -b .nm-controlled
 
 %build
 
@@ -421,6 +423,10 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Aug 05 2011 Ray Strode <rstrode@redhat.com> 0.8.9997-7.git20110721
+- Add some patches for some blocker
+  Resolves: #727501
+
 * Thu Jul 21 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-6.git20110721
 - core: updated Russian translation (rh #652904)
 - core: fix possible crash if secrets are missing
