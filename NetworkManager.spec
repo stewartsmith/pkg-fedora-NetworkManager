@@ -7,15 +7,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110721
-%define applet_snapshot .git20110721
-%define realversion 0.8.9997
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
+%define realversion 0.9.0
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.8.9997
-Release: 6%{snapshot}%{?dist}
+Version: 0.9.0
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -421,6 +421,20 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug 23 2011 Dan Williams <dcbw@redhat.com> - 0.9.0-1
+- Update to 0.9 release
+- core: fix issue where scan results could be ignored
+- core: ensure agent secrets are preserved when updating connections
+- core: don't autoconnect disabled modems
+- core: fix race when checking modem enabled/disabled status after disabling
+- core: ensure newly installed VPN plugins can actually talk to NM
+- core: add support for 802.1X certificate subject matching
+- libnm-glib: various introspection fixes
+- applet/editor: updated translations
+
+* Fri Aug 05 2011 Ray Strode <rstrode@redhat.com> 0.8.9997-7.git20110721
+- Add some patches for some blocker (rh #727501)
+
 * Thu Jul 21 2011 Dan Williams <dcbw@redhat.com> - 0.8.9997-6.git20110721
 - core: updated Russian translation (rh #652904)
 - core: fix possible crash if secrets are missing
