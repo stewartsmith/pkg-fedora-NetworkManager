@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.0
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -32,6 +32,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
 Requires(preun): chkconfig
+Requires(post): systemd-sysv
 Requires(post): /bin/systemctl
 Requires(preun): /bin/systemctl
 Requires(postun): /bin/systemctl
@@ -254,35 +255,35 @@ desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desk
 
 
 %post
-if [ $1 == 1 ]; then
-	/sbin/chkconfig --add NetworkManager
-	/sbin/chkconfig NetworkManager resetpriorities
-
-        # Enable (but don't start) the units by default
-        /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
+if [ $1 -eq 1 ] ; then 
+    # Initial installation
+    /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ]; then
-    /sbin/service NetworkManager stop >/dev/null 2>&1
-    killall -TERM nm-system-settings >/dev/null 2>&1
-    /sbin/chkconfig --del NetworkManager
-
-    # Disable and stop the units
-    /bin/systemctl disable NetworkManager.service >/dev/null 2>&1 || :
+    # Package removal, not upgrade
+    /bin/systemctl --no-reload disable NetworkManager.service >/dev/null 2>&1 || :
     /bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
 fi
 
 %postun
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
-        # On upgrade, reload init system configuration if we changed unit files
-        /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+        # Package upgrade, not uninstall
+        /bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
 fi
 
 %triggerun -- NetworkManager < 1:0.8.990
-if /sbin/chkconfig --level 5 NetworkManager ; then
-        /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
-fi
+# Save the current service runlevel info
+# User must manually run systemd-sysv-convert --apply NetworkManager
+# to migrate them to systemd targets
+/usr/bin/systemd-sysv-convert --save NetworkManager >/dev/null 2>&1 ||:
+/bin/systemctl --no-reload enable NetworkManager.service >/dev/null 2>&1 ||:
+# Run these because the SysV package being removed won't do them
+/sbin/chkconfig --del NetworkManager >/dev/null 2>&1 || :
+/bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
+
 
 %triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
 /sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
@@ -421,6 +422,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Sep  9 2011 Tom Callaway <spot@fedoraproject.org> - 0.9.0-2
+- fix systemd scriptlets and trigger
+
 * Tue Aug 23 2011 Dan Williams <dcbw@redhat.com> - 0.9.0-1
 - Update to 0.9 release
 - core: fix issue where scan results could be ignored
