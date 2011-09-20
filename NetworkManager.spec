@@ -9,13 +9,13 @@
 
 %define snapshot %{nil}
 %define applet_snapshot %{nil}
-%define realversion 0.9.0
+%define realversion 0.9.1.90
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.0
-Release: 2%{snapshot}%{?dist}
+Version: 0.9.1.90
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -116,6 +116,7 @@ Summary: GNOME applications for use with NetworkManager
 Group: Applications/Internet
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
+Requires: %{name}-gtk = %{epoch}:%{version}-%{release}
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: libnotify >= 0.4.3
@@ -152,6 +153,29 @@ Requires: dbus-glib-devel >= %{dbus_glib_version}
 %description glib-devel
 This package contains the header and pkg-config files for development applications using
 NetworkManager functionality from applications that use glib.
+
+
+%package gtk
+Summary: Private libraries for NetworkManager GUI support
+Group: Development/Libraries
+Requires: gtk3 >= %{gtk3_version}
+
+%description gtk
+This package contains private libraries to be used only by nm-applet and
+the GNOME Control Center.
+
+
+%package gtk-devel
+Summary: Private header files for NetworkManager GUI support
+Group: Development/Libraries
+Requires: %{name}-devel = %{epoch}:%{version}-%{release}
+Requires: %{name}-glib = %{epoch}:%{version}-%{release}
+Requires: gtk3-devel
+Requires: pkgconfig
+
+%description gtk-devel
+This package contains private header and pkg-config files to be used only by
+nm-applet and the GNOME control center.
 
 
 %prep
@@ -242,9 +266,7 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 
 # don't autostart in KDE on F13+ (#541353)
-%if 0%{?fedora} > 12
 echo 'NotShowIn=KDE;' >>$RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
-%endif
 
 # validate the autostart .desktop file
 desktop-file-validate $RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/nm-applet.desktop
@@ -421,7 +443,28 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
 
+%files gtk
+%defattr(-,root,root,0755)
+%{_libdir}/libnm-gtk.so.*
+
+%files gtk-devel
+%defattr(-,root,root,0755)
+%dir %{_includedir}/libnm-gtk
+%{_includedir}/libnm-gtk/*.h
+%{_libdir}/pkgconfig/libnm-gtk.pc
+%{_libdir}/libnm-gtk.so
+%dir %{_datadir}/libnm-gtk
+%{_datadir}/libnm-gtk/*.ui
+
 %changelog
+* Mon Sep 19 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-1
+- Update to 0.9.1.90 (0.9.2-beta1)
+- core: fix IPv6 link-local DNS servers in the dnsmasq DNS plugin
+- cli: add ability to delete connections
+- keyfile: fix an issue with duplicated keyfile connections
+- core: ensure the 'novj' option is passed through to pppd
+- core: store timestamps for VPN connections too (rh #725353)
+
 * Fri Sep  9 2011 Tom Callaway <spot@fedoraproject.org> - 0.9.0-2
 - fix systemd scriptlets and trigger
 

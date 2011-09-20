@@ -1,14 +1,14 @@
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/configure.ac.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/configure.ac
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/configure.ac.buildfix	2009-07-28 10:01:26.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/configure.ac	2009-07-28 13:11:39.261718877 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/configure.ac.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/configure.ac
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/configure.ac.buildfix	2009-07-28 10:01:26.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/configure.ac	2009-07-28 13:11:39.261718877 -0400
 @@ -70,10 +70,6 @@ PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
  PKG_CHECK_MODULES(NMA,
  		[dbus-glib-1 >= 0.74
  		 glib-2.0 >= 2.16
--		 NetworkManager >= 0.9
--		 libnm-glib >= 0.9
--		 libnm-util >= 0.9
--		 libnm-glib-vpn >= 0.9
+-		 NetworkManager >= 0.9.1
+-		 libnm-glib >= 0.9.1
+-		 libnm-util >= 0.9.1
+-		 libnm-glib-vpn >= 0.9.1
  		 gmodule-export-2.0])
  
  PKG_CHECK_MODULES(GCONF, [gconf-2.0])
@@ -17,16 +17,16 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/configure.ac.buildfix
  		AC_MSG_CHECKING(for gnome-bluetooth)
  		PKG_CHECK_MODULES(GNOME_BLUETOOTH,
 -				  gnome-bluetooth-1.0 >= 2.27.6
--				  libnm-util >= 0.9
--				  libnm-glib >= 0.9,
+-				  libnm-util >= 0.9.1
+-				  libnm-glib >= 0.9.1,
 +				  gnome-bluetooth-1.0 >= 2.27.6,
  				  have_gbt=yes, have_gbt=no)
  		;;
  esac
  
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor/Makefile.am.buildfix	2009-07-23 10:51:39.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor/Makefile.am	2009-07-28 11:29:11.685841724 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/connection-editor/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/connection-editor/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/connection-editor/Makefile.am.buildfix	2009-07-23 10:51:39.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/connection-editor/Makefile.am	2009-07-28 11:29:11.685841724 -0400
 @@ -1,5 +1,9 @@
  bin_PROGRAMS = nm-connection-editor
  
@@ -38,7 +38,7 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor
  	$(GTK_CFLAGS) \
  	$(NMA_CFLAGS) \
 @@ -63,7 +67,10 @@ nm_connection_editor_LDADD = \
- 	${top_builddir}/src/marshallers/libmarshallers.la \
+ 	${top_builddir}/src/libnm-gtk/libnm-gtk.la \
  	$(GTK_LIBS) \
  	$(NMA_LIBS) \
 -	-lm
@@ -49,9 +49,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/connection-editor
  
  uidir = $(datadir)/nm-applet
  ui_DATA = \
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/Makefile.am.buildfix	2009-04-20 07:09:10.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/Makefile.am	2009-07-28 11:29:11.686841642 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/Makefile.am.buildfix	2009-04-20 07:09:10.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/Makefile.am	2009-07-28 11:29:11.686841642 -0400
 @@ -1,5 +1,9 @@
  SUBDIRS=. tests
  
@@ -82,9 +82,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/Mak
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la
  
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/tests/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/tests/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/tests/Makefile.am.buildfix	2011-03-10 02:19:03.664936744 -0600
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/tests/Makefile.am	2011-03-10 02:20:10.784097638 -0600
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/tests/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/tests/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/tests/Makefile.am.buildfix	2011-03-10 02:19:03.664936744 -0600
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gconf-helpers/tests/Makefile.am	2011-03-10 02:20:10.784097638 -0600
 @@ -1,4 +1,7 @@
 -INCLUDES = -I$(top_srcdir)/src/utils
 +INCLUDES = -I$(top_srcdir)/src/utils \
@@ -94,13 +94,13 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gconf-helpers/tes
  
  noinst_PROGRAMS = test-upgrade
  
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/Makefile.am.buildfix	2009-07-28 13:23:40.282718683 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/Makefile.am	2009-07-28 13:24:56.316719077 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gnome-bluetooth/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gnome-bluetooth/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gnome-bluetooth/Makefile.am.buildfix	2009-07-28 13:23:40.282718683 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/gnome-bluetooth/Makefile.am	2009-07-28 13:24:56.316719077 -0400
 @@ -6,6 +6,9 @@ INCLUDES = \
- 	-I$(top_builddir) \
  	-I${top_builddir}/src/marshallers \
  	-I${top_srcdir}/src/utils \
+ 	-I${top_srcdir}/src/libnm-gtk \
 +	-I${top_srcdir}/../include \
 +	-I${top_srcdir}/../libnm-util \
 +	-I${top_srcdir}/../libnm-glib \
@@ -108,9 +108,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/M
  	$(DISABLE_DEPRECATED) \
  	$(WARN_CFLAGS)
 @@ -14,7 +17,9 @@ plugin_LTLIBRARIES = libnma.la
- libnma_la_LIBADD = \
  	$(top_builddir)/src/marshallers/libmarshallers.la \
  	$(top_builddir)/src/utils/libutils.la \
+ 	$(top_builddir)/src/libnm-gtk/libnm-gtk.la \
 -	$(GNOME_BLUETOOTH_LIBS)
 +	$(GNOME_BLUETOOTH_LIBS) \
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
@@ -118,9 +118,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/gnome-bluetooth/M
  endif
  
  EXTRA_DIST = $(BT_WIDGET_SOURCES)
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/Makefile.am.buildfix	2009-07-27 15:26:53.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/Makefile.am	2009-07-28 11:29:11.686841642 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/Makefile.am.buildfix	2009-07-27 15:26:53.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/Makefile.am	2009-07-28 11:29:11.686841642 -0400
 @@ -2,6 +2,10 @@ SUBDIRS = marshallers utils gconf-helper
  
  bin_PROGRAMS = nm-applet
@@ -133,19 +133,19 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/Makefile.am.build
  	$(GTK_CFLAGS) \
  	$(NMA_CFLAGS) \
 @@ -54,7 +58,9 @@ nm_applet_LDADD = \
- 	${top_builddir}/src/marshallers/libmarshallers.la \
  	${top_builddir}/src/utils/libutils.la \
  	${top_builddir}/src/gconf-helpers/libgconf-helpers.la \
--	${top_builddir}/src/wireless-security/libwireless-security.la
-+	${top_builddir}/src/wireless-security/libwireless-security.la \
+ 	${top_builddir}/src/wireless-security/libwireless-security.la \
+-	${top_builddir}/src/libnm-gtk/libnm-gtk.la
++	${top_builddir}/src/libnm-gtk/libnm-gtk.la \
 +	-L${top_srcdir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_srcdir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la
  
  uidir = $(datadir)/nm-applet
- ui_DATA = gsm-unlock.ui info.ui wired-8021x.ui wifi.ui keyring.png
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/Makefile.am	2009-07-28 11:29:11.686841642 -0400
+ ui_DATA = gsm-unlock.ui info.ui wired-8021x.ui keyring.png
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/Makefile.am	2009-07-28 11:29:11.686841642 -0400
 @@ -1,5 +1,9 @@
  SUBDIRS=. tests
  
@@ -165,9 +165,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/Makefile.am
 +	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
 +	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la
 +
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/tests/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/tests/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/tests/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/tests/Makefile.am	2009-07-28 11:29:11.686841642 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/tests/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/tests/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/tests/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/utils/tests/Makefile.am	2009-07-28 11:29:11.686841642 -0400
 @@ -1,4 +1,7 @@
 -INCLUDES = -I$(top_srcdir)/src/utils
 +INCLUDES = -I$(top_srcdir)/src/utils \
@@ -177,9 +177,9 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/utils/tests/Makef
  
  noinst_PROGRAMS = test-utils
  
-diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/wireless-security/Makefile.am.buildfix NetworkManager-0.9.0/network-manager-applet-0.9.0/src/wireless-security/Makefile.am
---- NetworkManager-0.9.0/network-manager-applet-0.9.0/src/wireless-security/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
-+++ NetworkManager-0.9.0/network-manager-applet-0.9.0/src/wireless-security/Makefile.am	2009-07-28 11:29:11.687841490 -0400
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/wireless-security/Makefile.am.buildfix NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/wireless-security/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/wireless-security/Makefile.am.buildfix	2009-07-02 16:32:26.000000000 -0400
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/wireless-security/Makefile.am	2009-07-28 11:29:11.687841490 -0400
 @@ -1,5 +1,9 @@
  noinst_LTLIBRARIES = libwireless-security.la
  
@@ -202,3 +202,32 @@ diff -up NetworkManager-0.9.0/network-manager-applet-0.9.0/src/wireless-security
  uidir = $(datadir)/nm-applet
  ui_DATA = \
 
+diff -up NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/libnm-gtk/Makefile.am.blah NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/libnm-gtk/Makefile.am
+--- NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/libnm-gtk/Makefile.am.blah	2011-09-19 23:44:41.648498871 -0500
++++ NetworkManager-0.9.1.90/network-manager-applet-0.9.1.90/src/libnm-gtk/Makefile.am	2011-09-19 23:45:26.556937440 -0500
+@@ -1,3 +1,7 @@
++INCLUDES = -I${top_srcdir}/../include \
++           -I${top_srcdir}/../libnm-util \
++           -I${top_srcdir}/../libnm-glib
++
+ uidir = $(datadir)/libnm-gtk
+ ui_DATA = wifi.ui
+ 
+@@ -36,11 +40,14 @@ libnm_gtk_la_LIBADD = \
+ 	$(NMA_LIBS) \
+ 	$(GNOME_KEYRING_LIBS) \
+ 	$(top_builddir)/src/marshallers/libmarshallers.la \
+-	$(top_builddir)/src/wireless-security/libwireless-security.la
++	$(top_builddir)/src/wireless-security/libwireless-security.la \
++	-L${top_builddir}/../libnm-util $(top_builddir)/../libnm-util/libnm-util.la \
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib.la \
++	-L${top_builddir}/../libnm-glib $(top_builddir)/../libnm-glib/libnm-glib-vpn.la
+ 
+ libnm_gtk_la_LDFLAGS = -Wl,-no-undefined
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libnm-gtk.pc
+ 
+-EXTRA_DIST = libnm-gtk.pc.in $(ui_DATA)
+\ No newline at end of file
++EXTRA_DIST = libnm-gtk.pc.in $(ui_DATA)
