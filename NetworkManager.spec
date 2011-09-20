@@ -90,7 +90,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
 BuildRequires: systemd
-BuildRequires: iso-codes
+BuildRequires: iso-codes-devel
 
 %description
 NetworkManager is a system network service that manages your network devices
