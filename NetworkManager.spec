@@ -20,7 +20,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}.tar.xz
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
@@ -458,6 +458,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/libnm-gtk/*.ui
 
 %changelog
+* Tue Sep 27 2011 Ray <rstrode@redhat.com> - 1:0.9.1.90-1
+- Update to 0.9.1.90
+
 * Mon Sep 19 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-1
 - Update to 0.9.1.90 (0.9.2-beta1)
 - core: fix IPv6 link-local DNS servers in the dnsmasq DNS plugin
