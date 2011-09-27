@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.1.90
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -447,6 +447,8 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %files gtk
 %defattr(-,root,root,0755)
 %{_libdir}/libnm-gtk.so.*
+%dir %{_datadir}/libnm-gtk
+%{_datadir}/libnm-gtk/*.ui
 
 %files gtk-devel
 %defattr(-,root,root,0755)
@@ -454,17 +456,15 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_includedir}/libnm-gtk/*.h
 %{_libdir}/pkgconfig/libnm-gtk.pc
 %{_libdir}/libnm-gtk.so
-%dir %{_datadir}/libnm-gtk
-%{_datadir}/libnm-gtk/*.ui
 
 %changelog
+* Tue Sep 27 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-3.git20110927
+- core: fix location of wifi.ui (rh #741448)
+
 * Tue Sep 27 2011 Jiří Klimeš <jklimes@redhat.com> - 0.9.1.90-2.git20110927
 - core: ifcfg-rh: remove newlines when writing to ifcfg files (CVE-2011-3364) (rh #737338)
 - core: change iscsiadm path to /sbin/iscsiadm in ifcfg-rh plugin (rh #740753)
 - core: fix refcounting when deleting a default wired connection (lp:797868)
-
-* Tue Sep 27 2011 Ray <rstrode@redhat.com> - 1:0.9.1.90-1
-- Update to 0.9.1.90
 
 * Mon Sep 19 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-1
 - Update to 0.9.1.90 (0.9.2-beta1)
