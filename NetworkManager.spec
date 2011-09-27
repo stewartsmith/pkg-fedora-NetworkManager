@@ -7,20 +7,20 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
+%define snapshot .git20110927
+%define applet_snapshot .git20110927
 %define realversion 0.9.1.90
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.1.90
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}.tar.xz
+Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: network-manager-applet-%{realversion}%{applet_snapshot}.tar.bz2
 Source2: NetworkManager.conf
 Patch1: nm-applet-internal-buildfixes.patch
@@ -458,6 +458,11 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/libnm-gtk/*.ui
 
 %changelog
+* Tue Sep 27 2011 Jiří Klimeš <jklimes@redhat.com> - 0.9.1.90-2.git20110927
+- core: ifcfg-rh: remove newlines when writing to ifcfg files (CVE-2011-3364) (rh #737338)
+- core: change iscsiadm path to /sbin/iscsiadm in ifcfg-rh plugin (rh #740753)
+- core: fix refcounting when deleting a default wired connection (lp:797868)
+
 * Tue Sep 27 2011 Ray <rstrode@redhat.com> - 1:0.9.1.90-1
 - Update to 0.9.1.90
 
