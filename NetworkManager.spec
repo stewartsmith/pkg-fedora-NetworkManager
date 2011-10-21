@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.1.90
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: nm-polkit-permissive.patch
 Patch5: nm-applet-wifi-dialog-ui-fixes.patch
+Patch6: rh719100-dhcp-hostname-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -190,6 +191,7 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .polkit-permissive
 %patch5 -p1 -b .applet-wifi-ui
+%patch6 -p1 -b .dhcp-hostname
 
 %build
 
@@ -458,6 +460,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Fri Oct 21 2011 Jiří Klimeš <jklimes@redhat.com> - 0.9.1.90-4.git20110927
+- core: fix setting hostname from DHCP options (rh #719100)
+
 * Tue Sep 27 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-3.git20110927
 - core: fix location of wifi.ui (rh #741448)
 
