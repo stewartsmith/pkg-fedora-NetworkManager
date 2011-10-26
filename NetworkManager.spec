@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.1.90
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -458,6 +458,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Wed Oct 26 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.1.90-4.git20110927
+- Rebuilt for glibc bug#747377
+
 * Tue Sep 27 2011 Dan Williams <dcbw@redhat.com> - 0.9.1.90-3.git20110927
 - core: fix location of wifi.ui (rh #741448)
 
