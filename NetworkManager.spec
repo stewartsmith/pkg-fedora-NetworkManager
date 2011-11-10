@@ -29,6 +29,7 @@ Patch3: nm-applet-no-notifications.patch
 Patch4: nm-polkit-permissive.patch
 Patch5: nm-applet-wifi-dialog-ui-fixes.patch
 Patch6: nss-error.patch
+Patch7: applet-ignore-deprecated.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -192,6 +193,7 @@ tar -xjf %{SOURCE1}
 %patch4 -p1 -b .polkit-permissive
 %patch5 -p1 -b .applet-wifi-ui
 %patch6 -p1 -b .nss-error
+%patch7 -p1 -b .no-deprecated
 
 %build
 
