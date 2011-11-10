@@ -28,6 +28,7 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: nm-polkit-permissive.patch
 Patch5: nm-applet-wifi-dialog-ui-fixes.patch
+Patch6: nss-error.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -190,6 +191,7 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .polkit-permissive
 %patch5 -p1 -b .applet-wifi-ui
+%patch6 -p1 -b .nss-error
 
 %build
 
