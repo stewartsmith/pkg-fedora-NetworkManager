@@ -7,15 +7,15 @@
 %define libnl_version 1.1
 %define ppp_version 2.4.5
 
-%define snapshot .git20110927
-%define applet_snapshot .git20110927
-%define realversion 0.9.1.90
+%define snapshot %{nil}
+%define applet_snapshot %{nil}
+%define realversion 0.9.2.0
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.1.90
-Release: 5%{snapshot}%{?dist}
+Version: 0.9.2
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,7 +28,6 @@ Patch2: explain-dns1-dns2.patch
 Patch3: nm-applet-no-notifications.patch
 Patch4: nm-polkit-permissive.patch
 Patch5: nm-applet-wifi-dialog-ui-fixes.patch
-Patch6: rh719100-dhcp-hostname-fix.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -191,7 +190,6 @@ tar -xjf %{SOURCE1}
 %patch3 -p1 -b .no-notifications
 %patch4 -p1 -b .polkit-permissive
 %patch5 -p1 -b .applet-wifi-ui
-%patch6 -p1 -b .dhcp-hostname
 
 %build
 
@@ -460,8 +458,21 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Thu Nov 09 2011 Dan Williams <dcbw@redhat.com> - 0.9.2-1
+- core: fix possible crash when talking to ModemManager
+- core: improve handling of rfkill on some machines (eeepc 1005HA and others)
+- ifcfg-rh: don't use spaces in ifcfg file names (rh #742273)
+- core: accept IPv6 Router Advertisements when forwarding is on
+- core: bump dnsmasq cache size to 400 entries
+- core: ensure IPv6 static routes are flushed when device is deactivated
+- ifcfg-rh: fix changing WPA connections to WEP
+- core: fix setting hostname from DHCP (rh #719100)
+- libnm-glib: fix various GObject introspection issues (rh #747302)
+- core: don't change routing or DNS if no devices are managed
+- core: ensure IPv6 RA-provided routes are honored
+
 * Wed Nov  9 2011 Adam Williamson <awilliam@redhat.com> - 1:0.9.1.90-5.git20110927
-- Rebuilt for glibc bug#747377
+- Rebuilt for glibc (rh #747377)
 - core: fix setting hostname from DHCP options (rh #719100)
 - skip a release to keep up with F16
 
