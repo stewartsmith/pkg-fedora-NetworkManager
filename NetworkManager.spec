@@ -15,7 +15,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.2
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -462,6 +462,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Thu Nov 24 2011 Daniel Drake <dsd@laptop.org> - 0.9.2-2
+- Rebuild for libgnome-bluetooth.so.9
+
 * Thu Nov 09 2011 Dan Williams <dcbw@redhat.com> - 0.9.2-1
 - core: fix possible crash when talking to ModemManager
 - core: improve handling of rfkill on some machines (eeepc 1005HA and others)
