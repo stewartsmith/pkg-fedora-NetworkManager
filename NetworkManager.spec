@@ -4,18 +4,24 @@
 %define gtk3_version	3.0.1
 %define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
-%define libnl_version 1.1
+%define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define applet_snapshot %{nil}
-%define realversion 0.9.2.0
+%define snapshot .git20120302
+%define applet_snapshot .git20120302
+%define realversion 0.9.3.995
+
+%if 0%{?fedora} < 17
+%define systemd_dir /lib/systemd/system
+%else
+%define systemd_dir %{_prefix}/lib/systemd/system
+%endif
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.2
-Release: 4%{snapshot}%{?dist}
+Version: 0.9.3.995
+Release: 0.4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -45,7 +51,7 @@ Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
 Requires: wpa_supplicant >= 1:0.7.3-1
-Requires: libnl >= %{libnl_version}
+Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-glib = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
@@ -73,7 +79,7 @@ BuildRequires: gettext-devel
 BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
-BuildRequires: libnl-devel >= %{libnl_version}
+BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: libnotify-devel >= 0.4
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
@@ -87,11 +93,16 @@ BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: desktop-file-utils
-# No bluetooth on s390
+# No wimax or bluetooth on s390
 %ifnarch s390 s390x
+BuildRequires: wimax-devel
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
-BuildRequires: systemd
+BuildRequires: systemd systemd-devel
+%if 0%{?fedora} < 17
+# systemd.pc is in systemd-units for F16 and below
+BuildRequires: systemd-units
+%endif
 BuildRequires: iso-codes-devel
 
 %description
@@ -99,6 +110,19 @@ NetworkManager is a system network service that manages your network devices
 and connections, attempting to keep active network connectivity when available.
 It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
+
+
+%ifnarch s390 s390x
+%package wimax
+Summary: Intel WiMAX device support for NetworkManager
+Group: System Environment/Base
+Requires: wimax
+Requires: %{name} = %{epoch}:%{version}-%{release}
+
+%description wimax
+This package contains NetworkManager support for Intel WiMAX mobile broadband
+devices.
+%endif
 
 
 %package devel
@@ -210,8 +234,11 @@ intltoolize --force
 	--with-dhcpcd=no \
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
-	--enable-wimax=no \
+%ifnarch s390 s390x
+	--enable-wimax=yes \
+%endif
 	--enable-polkit=yes \
+	--with-session-tracking=systemd \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
@@ -355,7 +382,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %files -f %{name}.lang
 %defattr(-,root,root,0755)
 %doc COPYING NEWS AUTHORS README CONTRIBUTING TODO
-%{_sysconfdir}/dbus-1/system.d/NetworkManager.conf
+%{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
@@ -372,7 +399,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libexecdir}/nm-avahi-autoipd.action
 %{_libexecdir}/nm-dispatcher.action
 %dir %{_libdir}/NetworkManager
-%{_libdir}/NetworkManager/*.so*
+%{_libdir}/NetworkManager/libnm-settings-plugin*.so
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
@@ -387,9 +414,15 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/polkit-1/actions/*.policy
 /lib/udev/rules.d/*.rules
 # systemd stuff
-/lib/systemd/system/NetworkManager.service
-/lib/systemd/system/NetworkManager-wait-online.service
+%{systemd_dir}/NetworkManager.service
+%{systemd_dir}/NetworkManager-wait-online.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
+
+%ifnarch s390 s390x
+%files wimax
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-wimax.so
+%endif
 
 %files devel
 %defattr(-,root,root,0755)
@@ -434,6 +467,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_includedir}/libnm-glib/*.h
 %{_includedir}/%{name}/nm-setting*.h
 %{_includedir}/%{name}/nm-connection.h
+%{_includedir}/%{name}/nm-utils-enum-types.h
 %{_includedir}/%{name}/nm-utils.h
 %{_libdir}/pkgconfig/libnm-glib.pc
 %{_libdir}/pkgconfig/libnm-glib-vpn.pc
@@ -462,6 +496,27 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Fri Mar  2 2012 Dan Williams <dcbw@redhat.com> - 0.9.3.995-0.4
+- Update to 0.9.3.995 (0.9.4-beta1)
+- core: add support for bonding and VLAN interfaces
+- core: add support for Internet connectivity detection
+- core: add support for IPv6 Privacy Extensions
+- core: fix interaction with firewalld restarts
+
+* Thu Mar  1 2012 Dan Horák <dan[at]danny.cz> - 0.9.3-0.3
+- disable WiMAX plugin on s390(x)
+
+* Thu Feb 16 2012 Dan Williams <dcbw@redhat.com> - 0.9.3-0.2
+- Put WiMAX plugin files in the right subpackage
+
+* Wed Feb 15 2012 Dan Williams <dcbw@redhat.com> - 0.9.3-0.1
+- Update to 0.9.4 snapshot
+- wimax: enable optional support for Intel WiMAX devices
+- core: use nl80211 for WiFi device control
+- core: add basic support for Infiniband IP interfaces
+- core: add basic support for bonded interfaces
+- core: in-process IP configuration no longer blocks connected state
+
 * Thu Jan 19 2012 Matthias Clasen <mclasen@redhat.com> - 0.9.2-4
 - Rebuild
 
