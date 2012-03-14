@@ -7,8 +7,8 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120302
-%define applet_snapshot .git20120302
+%define snapshot .git20120314
+%define applet_snapshot .git20120314
 %define realversion 0.9.3.995
 
 %if 0%{?fedora} < 17
@@ -21,7 +21,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.3.995
-Release: 0.4%{snapshot}%{?dist}
+Release: 0.6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -496,6 +496,18 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/libnm-gtk.so
 
 %changelog
+* Wed Mar 14 2012 Dan Williams <dcbw@redhat.com> - 0.9.3.995-0.6
+- core: fix issue with carrier changes not being recognized (rh #800690)
+- editor: warn user if CA certificate is left blank
+
+* Tue Mar 13 2012 Dan Williams <dcbw@redhat.com> - 0.9.3.995-0.5
+- core: fix a crash with ipw2200 devices and adhoc networks
+- core: fix IPv6 addressing on newer kernels
+- core: fix issue with VPN plugin passwords (rh #802540)
+- cli: enhancements for Bonding, VLAN, and OLPC mesh devices
+- ifcfg-rh: fix quoting WPA passphrases that include quotes (rh #798102)
+- libnm-glib: fix some issues with duplicate devices shown in menus
+
 * Fri Mar  2 2012 Dan Williams <dcbw@redhat.com> - 0.9.3.995-0.4
 - Update to 0.9.3.995 (0.9.4-beta1)
 - core: add support for bonding and VLAN interfaces
