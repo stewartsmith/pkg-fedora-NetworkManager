@@ -11,7 +11,7 @@
 %define applet_snapshot %{nil}
 %define realversion 0.9.3.997
 
-%if 0%{?fedora} < 19
+%if 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
 %else
 %define systemd_dir %{_prefix}/lib/systemd/system
@@ -94,7 +94,7 @@ BuildRequires: wimax-devel
 BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
 BuildRequires: systemd systemd-devel
-%if 0%{?fedora} < 19
+%if 0%{?fedora} < 17
 # systemd.pc is in systemd-units for F16 and below
 BuildRequires: systemd-units
 %endif
