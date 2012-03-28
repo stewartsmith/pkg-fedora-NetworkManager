@@ -7,8 +7,8 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120319
-%define realversion 0.9.3.997
+%define snapshot .git20120328_2
+%define realversion 0.9.4.0
 
 %if 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -19,8 +19,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.3.997
-Release: 2%{snapshot}%{?dist}
+Version: 0.9.4
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -353,6 +353,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Mar 28 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-1.git20120328_2
+- Update to 0.9.4
+
 * Mon Mar 19 2012 Dan Williams <dcbw@redhat.com> - 0.9.3.997-2
 - libnm-glib: updated for new symbols the applet wants
 
