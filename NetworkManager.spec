@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.4
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -46,7 +46,7 @@ Requires: iproute
 Requires: dhclient >= 12:4.1.0
 Requires: wpa_supplicant >= 1:0.7.3-1
 Requires: libnl3 >= %{libnl3_version}
-Requires: %{name}-glib = %{epoch}:%{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
@@ -111,7 +111,7 @@ provides VPN integration with a variety of different VPN services.
 Summary: Intel WiMAX device support for NetworkManager
 Group: System Environment/Base
 Requires: wimax
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description wimax
 This package contains NetworkManager support for Intel WiMAX mobile broadband
@@ -122,7 +122,7 @@ devices.
 %package devel
 Summary: Libraries and headers for adding NetworkManager support to applications
 Group: Development/Libraries
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: pkgconfig
@@ -146,8 +146,8 @@ functionality from applications that use glib.
 %package glib-devel
 Summary: Header files for adding NetworkManager support to applications that use glib.
 Group: Development/Libraries
-Requires: %{name}-devel = %{epoch}:%{version}-%{release}
-Requires: %{name}-glib = %{epoch}:%{version}-%{release}
+Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
 Requires: dbus-glib-devel >= %{dbus_glib_version}
@@ -353,6 +353,10 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Mar 28 2012 Colin Walters <walters@verbum.org> - 1:0.9.4-2.git20120328_2%{?dist}
+- Add _isa for internal requires; otherwise depsolving may pull in an
+  arbitrary architecture.
+
 * Wed Mar 28 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-1.git20120328_2
 - Update to 0.9.4
 
