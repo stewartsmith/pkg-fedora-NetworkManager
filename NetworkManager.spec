@@ -1,7 +1,6 @@
 %define dbus_version 1.1
 %define dbus_glib_version 0.86-4
 
-%define gtk3_version	3.0.1
 %define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.6
@@ -51,7 +50,6 @@ Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
-Requires: mobile-broadband-provider-info >= 0.20090602
 Requires: ModemManager >= 0.4
 Obsoletes: dhcdbd
 
@@ -65,16 +63,12 @@ BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: glib2-devel >= %{glib2_version}
-BuildRequires: gtk3-devel >= %{gtk3_version}
-BuildRequires: GConf2-devel
-BuildRequires: libgnome-keyring-devel
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
 BuildRequires: wpa_supplicant
 BuildRequires: libnl3-devel >= %{libnl3_version}
-BuildRequires: libnotify-devel >= 0.4
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp = %{ppp_version}
@@ -86,11 +80,9 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
-BuildRequires: desktop-file-utils
 # No wimax or bluetooth on s390
 %ifnarch s390 s390x
 BuildRequires: wimax-devel
-BuildRequires: gnome-bluetooth-libs-devel >= 2.27.7.1-1
 %endif
 BuildRequires: systemd systemd-devel
 %if 0%{?fedora} && 0%{?fedora} < 17
