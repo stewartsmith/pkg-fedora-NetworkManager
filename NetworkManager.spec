@@ -97,7 +97,6 @@ BuildRequires: systemd systemd-devel
 # systemd.pc is in systemd-units for F16 and below
 BuildRequires: systemd-units
 %endif
-BuildRequires: iso-codes-devel
 
 %description
 NetworkManager is a system network service that manages your network devices
