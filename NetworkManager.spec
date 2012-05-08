@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.4
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -282,7 +282,6 @@ exit 0
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
-%dir %{_localstatedir}/run/NetworkManager
 %dir %{_localstatedir}/lib/NetworkManager
 %{_prefix}/libexec/nm-crash-logger
 %dir %{_datadir}/NetworkManager
@@ -344,6 +343,10 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue May  8 2012 Dan Winship <danw@redhat.com> - 0.9.4-4.git20120502
+- NM no longer uses /var/run/NetworkManager, so don't claim to own it.
+  (rh #656638)
+
 * Wed May  2 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-3.git20120502%{?dist}
 - Update to git snapshot
 
