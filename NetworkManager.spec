@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120502
+%define snapshot .git20120521
 %define realversion 0.9.4.0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.4
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -343,6 +343,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon May 21 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-5.git20120521
+- Update to git snapshot
+
 * Tue May  8 2012 Dan Winship <danw@redhat.com> - 0.9.4-4.git20120502
 - NM no longer uses /var/run/NetworkManager, so don't claim to own it.
   (rh #656638)
