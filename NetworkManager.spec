@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120521
-%define realversion 0.9.4.0
+%define snapshot .git20120713
+%define realversion 0.9.5.95
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,8 +18,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.4
-Release: 5%{snapshot}%{?dist}
+Version: 0.9.5.95
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -343,6 +343,15 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Jul 13 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.5.95-1.git20120713
+- Update to 0.9.5.95 (0.9.6-rc1) snapshot
+- core: add autoconnect, driver-versioni and firmware-version properties to NMDevice
+- core: various IPv6 improvements
+- core: reduce number of changes made to DNS information during connection setup
+- core: add Vala language bindings
+- vpn: support IPv6 over VPNs
+- wifi: add on-demand WiFi scan support
+
 * Mon May 21 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-5.git20120521
 - Update to git snapshot
 
