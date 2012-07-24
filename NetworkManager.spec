@@ -1,13 +1,13 @@
 %define dbus_version 1.1
-%define dbus_glib_version 0.86-4
+%define dbus_glib_version 0.94
 
 %define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120713
-%define realversion 0.9.5.95
+%define snapshot %{nil}
+%define realversion 0.9.5.96
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,7 +18,7 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.5.95
+Version: 0.9.5.96
 Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -343,6 +343,13 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Jul 23 2012 Dan Williams <dcbw@redhat.com> - 0.9.5.96-1
+- Update to 0.9.6-rc2
+- core: fix race between parallel DHCP client invocations
+- core: suppress a useless warning (rh #840580)
+- ifcfg-rh: fix segfault with malformed values (rh #841391)
+- ifcfg-rh: ignore IP config on bond slave configurations (rh #838907)
+
 * Fri Jul 13 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.5.95-1.git20120713
 - Update to 0.9.5.95 (0.9.6-rc1) snapshot
 - core: add autoconnect, driver-versioni and firmware-version properties to NMDevice
