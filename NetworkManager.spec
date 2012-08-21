@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define realversion 0.9.5.96
+%define snapshot .git20120820
+%define realversion 0.9.7.0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,8 +18,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.5.96
-Release: 2%{snapshot}%{?dist}
+Version: 0.9.7.0
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -343,6 +343,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Aug 21 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-1.git20120820
+- Update to 0.9.7.0 snapshot
+
 * Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.5.96-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
