@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20120820
+%define snapshot .git20121004
 %define realversion 0.9.7.0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -27,8 +27,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
-Patch2: nm-polkit-permissive.patch
-Patch3: nss-error.patch
+Patch2: nss-error.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -151,8 +150,7 @@ NetworkManager functionality from applications that use glib.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .explain-dns1-dns2
-%patch2 -p1 -b .polkit-permissive
-%patch3 -p1 -b .nss-error
+%patch2 -p1 -b .nss-error
 
 %build
 
@@ -173,6 +171,7 @@ intltoolize --force
 	--enable-wimax=yes \
 %endif
 	--enable-polkit=yes \
+	--enable-modify-system=yes \
 	--with-session-tracking=systemd \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
@@ -342,6 +341,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Oct  4 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-2.git20121004
+- Update to git snapshot
+
 * Tue Aug 21 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-1.git20120820
 - Update to 0.9.7.0 snapshot
 
