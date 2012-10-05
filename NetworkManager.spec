@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -211,6 +211,8 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %{__cp} ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 
+mkdir -p $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
+ln -s ../NetworkManager-wait-online.service $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -226,14 +228,18 @@ fi
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
     /bin/systemctl --no-reload disable NetworkManager.service >/dev/null 2>&1 || :
-    /bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
+
+    # Don't kill networking entirely just on package remove
+    #/bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
 fi
 
 %postun
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
-        # Package upgrade, not uninstall
-        /bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
+    # Package upgrade, not uninstall
+    # Don't restart networking to prevent hiccups
+    #/bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
+    true
 fi
 
 %triggerun -- NetworkManager < 1:0.8.990
@@ -292,6 +298,7 @@ exit 0
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
+%{systemd_dir}/remote-fs-pre.target.wants/NetworkManager-wait-online.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 
 %ifnarch s390 s390x
@@ -341,6 +348,11 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Fri Oct  5 2012 Dan Williams <dcbw@redhat.com> - 0.9.7.0-3.git20121004
+- Forward-port some forgotton fixes from F17
+- Fix networked-filesystem systemd dependencies (rh #787314)
+- Don't restart NM on upgrade, don't stop NM on uninstall (rh #811200)
+
 * Thu Oct  4 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-2.git20121004
 - Update to git snapshot
 
