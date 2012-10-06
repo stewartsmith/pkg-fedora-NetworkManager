@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
 Patch2: nss-error.patch
+Patch3: finish-connecting.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -151,6 +152,7 @@ NetworkManager functionality from applications that use glib.
 
 %patch1 -p1 -b .explain-dns1-dns2
 %patch2 -p1 -b .nss-error
+%patch3 -p1 -b .finish-connecting
 
 %build
 
@@ -348,6 +350,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sat Oct  6 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-4.git20121004
+- Apply patch from master so connections finish connecting properly (bgo #685581)
+
 * Fri Oct  5 2012 Dan Williams <dcbw@redhat.com> - 0.9.7.0-3.git20121004
 - Forward-port some forgotton fixes from F17
 - Fix networked-filesystem systemd dependencies (rh #787314)
