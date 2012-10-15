@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -154,6 +154,7 @@ NetworkManager functionality from applications that use glib.
 %patch1 -p1 -b .explain-dns1-dns2
 %patch2 -p1 -b .nss-error
 %patch3 -p1 -b .finish-connecting
+%patch4 -p1 -b .gvaluearray
 
 %build
 
@@ -351,6 +352,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Oct 15 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-6.git20121004
+- Actually apply the patch from the previous commit...
+
 * Mon Oct 15 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-5.git20121004
 - Apply patch from master to fix a crash (rh #865009)
 
