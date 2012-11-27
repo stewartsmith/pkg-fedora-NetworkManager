@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 6%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -30,6 +30,7 @@ Patch1: explain-dns1-dns2.patch
 Patch2: nss-error.patch
 Patch3: finish-connecting.patch
 Patch4: gvaluearray-crash.patch
+Patch5: udev-uninitialized-devices.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -155,6 +156,7 @@ NetworkManager functionality from applications that use glib.
 %patch2 -p1 -b .nss-error
 %patch3 -p1 -b .finish-connecting
 %patch4 -p1 -b .gvaluearray
+%patch5 -p1 -b .udev-uninitialized
 
 %build
 
@@ -352,6 +354,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Nov 27 2012 Daniel Drake <dsd@laptop.org> - 0.9.7.0-7.git20121004
+- Don't bring up uninitialized devices (fd #56929)
+
 * Mon Oct 15 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-6.git20121004
 - Actually apply the patch from the previous commit...
 
