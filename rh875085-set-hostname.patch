@@ -1,0 +1,52 @@
+From 48d9bc40fb85afc8044b16400adbca7c8ff71a80 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ji=C5=99=C3=AD=20Klime=C5=A1?= <jklimes@redhat.com>
+Date: Wed, 14 Nov 2012 14:48:07 +0100
+Subject: [PATCH 1/2] policy: fix setting system hostname (rh #875085)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Broken by commit 500315329765831d242d51d6a46f1e05869c15d2
+(core: move DNS change handling to the policy and optimize DNS updates (bgo #676778))
+It consolidated DNS update handling, but mistakenly removed hostname changing
+from NM_DEVICE_STATE_ACTIVATED state handler.
+
+Signed-off-by: Jiří Klimeš <jklimes@redhat.com>
+---
+ src/nm-policy.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/src/nm-policy.c b/src/nm-policy.c
+index c847586..ca7e0dc 100644
+--- a/src/nm-policy.c
++++ b/src/nm-policy.c
+@@ -1430,22 +1430,16 @@ device_state_changed (NMDevice *device,
+ 		nm_dns_manager_begin_updates (dns_mgr, __func__);
+ 
+ 		ip4_config = nm_device_get_ip4_config (device);
+-		if (ip4_config) {
++		if (ip4_config)
+ 			nm_dns_manager_add_ip4_config (dns_mgr, ip_iface, ip4_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
+-			update_ip4_dns (policy, dns_mgr);
+-		}
+ 		ip6_config = nm_device_get_ip6_config (device);
+-		if (ip6_config) {
++		if (ip6_config)
+ 			nm_dns_manager_add_ip6_config (dns_mgr, ip_iface, ip6_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
+-			update_ip6_dns (policy, dns_mgr);
+-		}
++
++		update_routing_and_dns (policy, FALSE);
+ 
+ 		nm_dns_manager_end_updates (dns_mgr, __func__);
+ 		g_object_unref (dns_mgr);
+-
+-		/* And make sure the best devices have the default route */
+-		update_ip4_routing (policy, FALSE);
+-		update_ip6_routing (policy, FALSE);
+ 		break;
+ 	case NM_DEVICE_STATE_UNMANAGED:
+ 	case NM_DEVICE_STATE_UNAVAILABLE:
+-- 
+1.7.11.7
+
