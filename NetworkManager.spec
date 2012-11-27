@@ -203,6 +203,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 # create a keyfile plugin system settings directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/system-connections
 
+# create a dnsmasq.d directory
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/dnsmasq.d
+
 %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
@@ -282,6 +285,7 @@ exit 0
 %{_bindir}/nmcli
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
+%dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-tool
@@ -358,6 +362,7 @@ exit 0
 %changelog
 * Tue Nov 27 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-8.git20121004
 - Apply patch from master to update hostname (rh #875085)
+- spec: create /etc/NetworkManager/dnsmasq.d (rh #873621)
 
 * Tue Nov 27 2012 Daniel Drake <dsd@laptop.org> - 0.9.7.0-7.git20121004
 - Don't bring up uninitialized devices (fd #56929)
