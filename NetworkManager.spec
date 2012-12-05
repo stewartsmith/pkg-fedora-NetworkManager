@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 8%{snapshot}%{?dist}
+Release: 9%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -32,6 +32,7 @@ Patch3: finish-connecting.patch
 Patch4: gvaluearray-crash.patch
 Patch5: udev-uninitialized-devices.patch
 Patch6: rh875085-set-hostname.patch
+Patch7: rh831735-etc-hostname.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -159,6 +160,7 @@ NetworkManager functionality from applications that use glib.
 %patch4 -p1 -b .gvaluearray
 %patch5 -p1 -b .udev-uninitialized
 %patch6 -p1 -b .set-hostname
+%patch7 -p1 -b .etc-hostname
 
 %build
 
@@ -360,6 +362,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Dec  5 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-9.git20121004
+- Apply patch from master to read hostname from /etc/hostname (rh #831735)
+
 * Tue Nov 27 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-8.git20121004
 - Apply patch from master to update hostname (rh #875085)
 - spec: create /etc/NetworkManager/dnsmasq.d (rh #873621)
