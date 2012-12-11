@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.6
 %define ppp_version 2.4.5
 
-%define snapshot .git20121004
+%define snapshot .git20121211
 %define realversion 0.9.7.0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 10%{snapshot}%{?dist}
+Release: 11%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,11 +28,7 @@ Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
 Patch2: nss-error.patch
-Patch3: finish-connecting.patch
-Patch4: gvaluearray-crash.patch
-Patch5: udev-uninitialized-devices.patch
-Patch6: rh875085-set-hostname.patch
-Patch7: rh831735-etc-hostname.patch
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires(post): chkconfig
@@ -157,11 +153,6 @@ NetworkManager functionality from applications that use glib.
 
 %patch1 -p1 -b .explain-dns1-dns2
 %patch2 -p1 -b .nss-error
-%patch3 -p1 -b .finish-connecting
-%patch4 -p1 -b .gvaluearray
-%patch5 -p1 -b .udev-uninitialized
-%patch6 -p1 -b .set-hostname
-%patch7 -p1 -b .etc-hostname
 
 %build
 
@@ -365,6 +356,14 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Dec 11 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-11.git20121211
+- Update to git snapshot
+- core: add support for bridge interfaces
+- keyfile: improve IP addresses handling
+- modem-manager: integrate the new `ModemManager1' interface support
+- build: build system enhancements
+- a lot of fixes
+
 * Wed Dec  5 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-10.git20121004
 - Build vapi files and add them to the devel package
 
