@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 11%{snapshot}%{?dist}
+Release: 12%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,7 @@ Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
 Patch2: nss-error.patch
+Patch3: rh876218-killmode.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -153,6 +154,7 @@ NetworkManager functionality from applications that use glib.
 
 %patch1 -p1 -b .explain-dns1-dns2
 %patch2 -p1 -b .nss-error
+%patch3 -p1 -b .killmode
 
 %build
 
@@ -356,6 +358,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Mon Jan 14 2013 Dan Winship <danw@redhat.com> - 0.9.7.0-12.git20121211
+- Set correct systemd KillMode to fix anaconda shutdown hangs (rh #876218)
+
 * Tue Dec 11 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-11.git20121211
 - Update to git snapshot
 - core: add support for bridge interfaces
