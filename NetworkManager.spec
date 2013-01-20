@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.7.0
-Release: 12%{snapshot}%{?dist}
+Release: 13%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -358,6 +358,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Sun Jan 20 2013 Kalev Lember <kalevlember@gmail.com> - 0.9.7.0-13.git20121211
+- Rebuilt for libnl3
+
 * Mon Jan 14 2013 Dan Winship <danw@redhat.com> - 0.9.7.0-12.git20121211
 - Set correct systemd KillMode to fix anaconda shutdown hangs (rh #876218)
 
