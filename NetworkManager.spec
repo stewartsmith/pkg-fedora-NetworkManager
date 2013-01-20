@@ -67,6 +67,7 @@ BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
+BuildRequires: iptables
 BuildRequires: wpa_supplicant
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: perl(XML::Parser)
