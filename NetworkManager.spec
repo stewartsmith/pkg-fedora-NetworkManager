@@ -50,6 +50,7 @@ Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
+Requires: iptables
 Obsoletes: dhcdbd
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
