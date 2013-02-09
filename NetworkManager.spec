@@ -3,11 +3,11 @@
 
 %define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
-%define libnl3_version 3.2.6
+%define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20121211
-%define realversion 0.9.7.0
+%define snapshot %{nil}
+%define realversion 0.9.7.997
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,8 +18,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.7.0
-Release: 13%{snapshot}%{?dist}
+Version: 0.9.7.997
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,7 +28,6 @@ Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
 Patch2: nss-error.patch
-Patch3: rh876218-killmode.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -67,7 +66,6 @@ BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
-BuildRequires: iptables
 BuildRequires: wpa_supplicant
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: perl(XML::Parser)
@@ -155,7 +153,6 @@ NetworkManager functionality from applications that use glib.
 
 %patch1 -p1 -b .explain-dns1-dns2
 %patch2 -p1 -b .nss-error
-%patch3 -p1 -b .killmode
 
 %build
 
@@ -167,17 +164,19 @@ autopoint --force
 intltoolize --force
 %configure \
 	--disable-static \
-	--with-distro=redhat \
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-crypto=nss \
 	--enable-more-warnings=yes \
+	--enable-ppp=yes \
+	--enable-vala=yes \
 %ifnarch s390 s390x
 	--enable-wimax=yes \
 %endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
 	--with-session-tracking=systemd \
+	--with-suspend-resume=systemd \
 	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
@@ -212,6 +211,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
+%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/NetworkManager/gdb-cmd
 
 install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 
@@ -295,10 +295,8 @@ exit 0
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
+%{_mandir}/manx/*
 %dir %{_localstatedir}/lib/NetworkManager
-%{_prefix}/libexec/nm-crash-logger
-%dir %{_datadir}/NetworkManager
-%{_datadir}/NetworkManager/gdb-cmd
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
@@ -359,19 +357,21 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Sun Jan 20 2013 Kalev Lember <kalevlember@gmail.com> - 0.9.7.0-13.git20121211
-- Rebuilt for libnl3
+* Sat Feb  9 2013 Dan Williams <dcbw@redhat.com> - 0.9.7.997-2
+- core: use systemd for suspend/resume, not upower
 
-* Mon Jan 14 2013 Dan Winship <danw@redhat.com> - 0.9.7.0-12.git20121211
+* Fri Feb  8 2013 Dan Williams <dcbw@redhat.com> - 0.9.7.997-1
+- Update to 0.9.8-beta2
+- core: ignore bridges managed by other tools (rh #905035)
+- core: fix libnl assert (rh #894653)
+- wifi: always use Proactive Key Caching with WPA Enterprise (rh #834444)
+- core: don't crash when Internet connection sharing fails to start (rh #883142)
+
+* Fri Jan  4 2013 Dan Winship <danw@redhat.com> - 0.9.7.0-12.git20121004
 - Set correct systemd KillMode to fix anaconda shutdown hangs (rh #876218)
 
-* Tue Dec 11 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-11.git20121211
-- Update to git snapshot
-- core: add support for bridge interfaces
-- keyfile: improve IP addresses handling
-- modem-manager: integrate the new `ModemManager1' interface support
-- build: build system enhancements
-- a lot of fixes
+* Tue Dec 18 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.7.0-11.git20121004
+- ifcfg-rh: write missing IPv6 setting as IPv6 with "auto" method (rh #830434)
 
 * Wed Dec  5 2012 Dan Winship <danw@redhat.com> - 0.9.7.0-10.git20121004
 - Build vapi files and add them to the devel package
