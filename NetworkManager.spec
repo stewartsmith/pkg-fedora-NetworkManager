@@ -81,6 +81,7 @@ BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
+BuildRequires: iptables
 # No wimax or bluetooth on s390
 %ifnarch s390 s390x
 BuildRequires: wimax-devel
