@@ -7,7 +7,7 @@
 %define ppp_version 2.4.5
 
 %define snapshot %{nil}
-%define realversion 0.9.7.997
+%define realversion 0.9.8.0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,8 +18,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.7.997
-Release: 2%{snapshot}%{?dist}
+Version: 0.9.8.0
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -359,6 +359,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Thu Feb 21 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.0
+- Update to the 0.9.8.0 release
+
 * Sat Feb  9 2013 Dan Williams <dcbw@redhat.com> - 0.9.7.997-2
 - core: use systemd for suspend/resume, not upower
 
