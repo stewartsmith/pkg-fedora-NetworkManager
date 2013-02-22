@@ -297,7 +297,6 @@ exit 0
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
-%{_mandir}/manx/*
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
