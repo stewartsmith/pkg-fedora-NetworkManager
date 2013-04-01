@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot %{nil}
-%define realversion 0.9.8.0
+%define snapshot .git20130327
+%define realversion 0.9.8.1
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -18,7 +18,7 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.8.0
+Version: 0.9.8.1
 Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -213,7 +213,6 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
-%{__rm} -f $RPM_BUILD_ROOT%{_datadir}/NetworkManager/gdb-cmd
 
 install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 
@@ -359,8 +358,19 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Thu Feb 21 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.0
+* Wed Mar 27 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.1-1.git20130327
+- Update to 0.9.8.2 snapshot
+- core: fix VLAN parent handling when identified by UUID
+- core: quiet warning about invalid interface index (rh #920145)
+- core: request 'static-routes' from DHCP servers (rh #922558)
+- core: fix crash when dbus-daemon is restarted (rh #918273)
+- core: copy leasefiles from /var/lib/dhclient to fix netboot (rh #916233)
+- core: memory leak and potential crash fixes
+- ifcfg-rh: ensure missing STP property is interpreted as off (rh #922702)
+
+* Wed Feb 27 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.8.0-1
 - Update to the 0.9.8.0 release
+- cli: fix a possible crash
 
 * Sat Feb  9 2013 Dan Williams <dcbw@redhat.com> - 0.9.7.997-2
 - core: use systemd for suspend/resume, not upower
