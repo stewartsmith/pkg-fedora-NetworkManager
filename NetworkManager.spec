@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130327
+%define snapshot .git20130507
 %define realversion 0.9.8.1
 
 %if 0%{?fedora} && 0%{?fedora} < 17
@@ -15,11 +15,15 @@
 %define systemd_dir %{_prefix}/lib/systemd/system
 %endif
 
+# gtk-doc conflicts with hardened build even with the patch, disable
+# until redhat-rpm-config is fixed: https://bugzilla.redhat.com/show_bug.cgi?id=892837
+#global _hardened_build 1
+
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.8.1
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -27,7 +31,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
-Patch2: nss-error.patch
+Patch2: rh853199-fix-gtk-doc-hardened-build.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -154,7 +158,6 @@ NetworkManager functionality from applications that use glib.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .explain-dns1-dns2
-%patch2 -p1 -b .nss-error
 
 %build
 
@@ -184,6 +187,9 @@ intltoolize --force
 	--with-tests=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release}
+
+# Patch here because gtk-doc.make is generated
+patch -p1 -b -z .gtkdoc-hardened-build < %{PATCH2}
 
 make %{?_smp_mflags}
 
@@ -358,6 +364,19 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue May  7 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.1-2.git20130507
+- core: fix issue with UI not showing disconnected on rfkill
+- core: memory leak fixes
+- core: silence warning about failure reading permanent MAC address (rh #907912)
+- core: wait up to 120s for slow-connecting modems
+- core: don't crash on PPPoE connections without a wired setting
+- core: ensure the AvailableConnections property is always correct
+- keyfile: ensure all-default VLAN connections are read correctly
+- core: suppress kernel's automatic creation of bond0 (rh #953466)
+- libnm-glib: make NMSecretAgent usable with GObject Introspection
+- libnm-util: fix GObject Introspection annotations of nm_connection_need_secrets()
+- core: documentation updates
+
 * Wed Mar 27 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.1-1.git20130327
 - Update to 0.9.8.2 snapshot
 - core: fix VLAN parent handling when identified by UUID
