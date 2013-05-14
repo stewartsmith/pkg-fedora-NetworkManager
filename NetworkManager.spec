@@ -6,8 +6,10 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130507
-%define realversion 0.9.8.1
+%define snapshot .git20130514
+%define realversion 0.9.9.0
+
+%global regen_docs 0
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
@@ -15,15 +17,13 @@
 %define systemd_dir %{_prefix}/lib/systemd/system
 %endif
 
-# gtk-doc conflicts with hardened build even with the patch, disable
-# until redhat-rpm-config is fixed: https://bugzilla.redhat.com/show_bug.cgi?id=892837
-#global _hardened_build 1
+%global _hardened_build 1
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.8.1
-Release: 2%{snapshot}%{?dist}
+Version: 0.9.9.0
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -31,7 +31,6 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Patch1: explain-dns1-dns2.patch
-Patch2: rh853199-fix-gtk-doc-hardened-build.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -80,7 +79,9 @@ BuildRequires: ppp-devel = %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: polkit-devel
 BuildRequires: dhclient
+%if %{regen_docs}
 BuildRequires: gtk-doc
+%endif
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
@@ -161,12 +162,14 @@ NetworkManager functionality from applications that use glib.
 
 %build
 
+%if %{regen_docs}
 # back up pristine docs and use them instead of generated ones, which make
 # multilib unhappy due to different timestamps in the generated content
 %{__cp} -R docs ORIG-docs
+%endif
 
-autopoint --force
-intltoolize --force
+#autopoint --force
+#intltoolize --force
 %configure \
 	--disable-static \
 	--with-dhclient=yes \
@@ -178,18 +181,17 @@ intltoolize --force
 %ifnarch s390 s390x
 	--enable-wimax=yes \
 %endif
+%if %{regen_docs}
+	--enable-gtk-doc \
+%endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
-	--with-docs=yes \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release}
-
-# Patch here because gtk-doc.make is generated
-patch -p1 -b -z .gtkdoc-hardened-build < %{PATCH2}
 
 make %{?_smp_mflags}
 
@@ -222,9 +224,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 
+%if %{regen_docs}
 # install the pristine docs
 %{__cp} ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
+%endif
 
 mkdir -p $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
 ln -s ../NetworkManager-wait-online.service $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
@@ -281,7 +285,6 @@ exit 0
 %defattr(-,root,root,0755)
 %doc COPYING NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
-%{_sysconfdir}/dbus-1/system.d/nm-dhcp-client.conf
 %{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
@@ -293,9 +296,8 @@ exit 0
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
-%{_bindir}/nm-tool
 %{_bindir}/nm-online
-%{_libexecdir}/nm-dhcp-client.action
+%{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-avahi-autoipd.action
 %{_libexecdir}/nm-dispatcher.action
 %dir %{_libdir}/NetworkManager
@@ -314,6 +316,7 @@ exit 0
 %{systemd_dir}/NetworkManager-wait-online.service
 %{systemd_dir}/remote-fs-pre.target.wants/NetworkManager-wait-online.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
+%{_datadir}/doc/NetworkManager/examples/server.conf
 
 %ifnarch s390 s390x
 %files wimax
@@ -364,6 +367,14 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue May 14 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-1.git20130514
+- Enable hardened build
+- Update to 0.9.10 snapshot
+- cli: new capabilities and somewhat re-arranged syntax
+- core: generic interface support
+- core: split config support; new "server mode" options
+- core: allow locking connections to interface names
+
 * Tue May  7 2013 Dan Williams <dcbw@redhat.com> - 0.9.8.1-2.git20130507
 - core: fix issue with UI not showing disconnected on rfkill
 - core: memory leak fixes
