@@ -299,6 +299,7 @@ exit 0
 %{_mandir}/man8/*
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/NetworkManager/system-connections
+%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
@@ -306,8 +307,8 @@ exit 0
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
-%{systemd_dir}/remote-fs-pre.target.wants/NetworkManager-wait-online.service
-%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
+%{systemd_dir}/NetworkManager-dispatcher.service
+%{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
 
 %ifnarch s390 s390x
