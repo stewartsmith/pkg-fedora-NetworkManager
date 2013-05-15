@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130514
+%define snapshot .git20130515
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -23,7 +23,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -37,9 +37,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires(post): chkconfig
 Requires(preun): chkconfig
 Requires(post): systemd-sysv
-Requires(post): /bin/systemctl
-Requires(preun): /bin/systemctl
-Requires(postun): /bin/systemctl
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
@@ -91,7 +91,7 @@ BuildRequires: iptables
 %ifnarch s390 s390x
 BuildRequires: wimax-devel
 %endif
-BuildRequires: systemd systemd-devel
+BuildRequires: systemd >= 200-3 systemd-devel
 %if 0%{?fedora} && 0%{?fedora} < 17
 # systemd.pc is in systemd-units for F16 and below
 BuildRequires: systemd-units
@@ -230,18 +230,15 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 %endif
 
-mkdir -p $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
-ln -s ../NetworkManager-wait-online.service $RPM_BUILD_ROOT%{systemd_dir}/remote-fs-pre.target.wants
+mkdir -p $RPM_BUILD_ROOT%{systemd_dir}/network-online.target.wants
+ln -s ../NetworkManager-wait-online.service $RPM_BUILD_ROOT%{systemd_dir}/network-online.target.wants
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
 
 %post
-if [ $1 -eq 1 ] ; then 
-    # Initial installation
-    /bin/systemctl enable NetworkManager.service >/dev/null 2>&1 || :
-fi
+%systemd_post NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
 %preun
 if [ $1 -eq 0 ]; then
@@ -251,15 +248,10 @@ if [ $1 -eq 0 ]; then
     # Don't kill networking entirely just on package remove
     #/bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
 fi
+%systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    # Don't restart networking to prevent hiccups
-    #/bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
-    true
-fi
+%systemd_postun
 
 %triggerun -- NetworkManager < 1:0.8.990
 # Save the current service runlevel info
@@ -367,6 +359,10 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed May 15 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-2.git20130515
+- Update for systemd network-online.target (rh #787314)
+- Add system service for the script dispatcher (rh #948433)
+
 * Tue May 14 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-1.git20130514
 - Enable hardened build
 - Update to 0.9.10 snapshot
