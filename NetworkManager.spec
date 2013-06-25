@@ -23,7 +23,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -88,8 +88,10 @@ BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
 # No wimax or bluetooth on s390
+%if ! 0%{?rhel}
 %ifnarch s390 s390x
 BuildRequires: wimax-devel
+%endif
 %endif
 BuildRequires: systemd >= 200-3 systemd-devel
 %if 0%{?fedora} && 0%{?fedora} < 17
@@ -104,6 +106,7 @@ It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
 
 
+%if ! 0%{?rhel}
 %ifnarch s390 s390x
 %package wimax
 Summary: Intel WiMAX device support for NetworkManager
@@ -114,6 +117,7 @@ Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 %description wimax
 This package contains NetworkManager support for Intel WiMAX mobile broadband
 devices.
+%endif
 %endif
 
 
@@ -178,8 +182,10 @@ NetworkManager functionality from applications that use glib.
 	--enable-more-warnings=yes \
 	--enable-ppp=yes \
 	--enable-vala=yes \
+%if ! 0%{?rhel}
 %ifnarch s390 s390x
 	--enable-wimax=yes \
+%endif
 %endif
 %if %{regen_docs}
 	--enable-gtk-doc \
@@ -311,10 +317,12 @@ exit 0
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
 
+%if ! 0%{?rhel}
 %ifnarch s390 s390x
 %files wimax
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wimax.so
+%endif
 %endif
 
 %files devel
@@ -360,6 +368,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Tue Jun 25 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-4.git20130603
+- disable building WiMax for RHEL
+
 * Mon Jun  3 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-3.git20130603
 - Update to new 0.9.10 snapshot
 
