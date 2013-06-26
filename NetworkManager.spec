@@ -23,7 +23,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -98,6 +98,7 @@ BuildRequires: systemd >= 200-3 systemd-devel
 # systemd.pc is in systemd-units for F16 and below
 BuildRequires: systemd-units
 %endif
+BuildRequires: libsoup-devel
 
 %description
 NetworkManager is a system network service that manages your network devices
@@ -192,6 +193,7 @@ NetworkManager functionality from applications that use glib.
 %endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
+	--enable-concheck \
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
 	--with-system-ca-path=/etc/pki/tls/certs \
@@ -368,6 +370,9 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
+* Wed Jun 26 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-4
+- build support for connectivity checking (rh #810457)
+
 * Tue Jun 25 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-4.git20130603
 - disable building WiMax for RHEL
 
