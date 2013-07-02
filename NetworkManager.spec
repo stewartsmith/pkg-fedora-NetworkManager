@@ -13,8 +13,10 @@
 
 %if 0%{?fedora} && 0%{?fedora} < 17
 %define systemd_dir /lib/systemd/system
+%define udev_dir /lib/udev
 %else
 %define systemd_dir %{_prefix}/lib/systemd/system
+%define udev_dir %{_prefix}/lib/udev
 %endif
 
 %global _hardened_build 1
@@ -23,7 +25,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 5%{snapshot}%{?dist}
+Release: 6%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -196,6 +198,8 @@ NetworkManager functionality from applications that use glib.
 	--enable-concheck \
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
+	--with-systemdsystemunitdir=%{systemd_dir} \
+	--with-udev-dir=%{udev_dir} \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
@@ -311,7 +315,7 @@ exit 0
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
-/lib/udev/rules.d/*.rules
+%{udev_dir}/rules.d/*.rules
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
@@ -370,7 +374,11 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Wed Jun 26 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-4
+* Tue Jul  2 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-6
+- Belatedly update udev directory for UsrMove
+- Fix incorrect dates in old changelog entries to avoid rpm warnings
+
+* Wed Jun 26 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-5
 - build support for connectivity checking (rh #810457)
 
 * Tue Jun 25 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-4.git20130603
@@ -562,7 +570,7 @@ exit 0
 * Thu Nov 24 2011 Daniel Drake <dsd@laptop.org> - 0.9.2-2
 - Rebuild for libgnome-bluetooth.so.9
 
-* Thu Nov 09 2011 Dan Williams <dcbw@redhat.com> - 0.9.2-1
+* Wed Nov 09 2011 Dan Williams <dcbw@redhat.com> - 0.9.2-1
 - core: fix possible crash when talking to ModemManager
 - core: improve handling of rfkill on some machines (eeepc 1005HA and others)
 - ifcfg-rh: don't use spaces in ifcfg file names (rh #742273)
@@ -786,7 +794,7 @@ exit 0
 * Fri Dec  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.2-2.git20101117
 - Rebuild against newer gtk
 
-* Wed Nov  27 2010 Dan Williams <dcbw@redhat.com> - 0.8.2-1.git20101117
+* Sat Nov 27 2010 Dan Williams <dcbw@redhat.com> - 0.8.2-1.git20101117
 - Update to 0.8.2
 
 * Wed Nov  3 2010 Matthias Clasen <mclasen@redhat.com> - 0.8.1-10.1
@@ -902,7 +910,7 @@ exit 0
 - bluetooth: fix bad timeout on PAN connections (rh #586961)
 - applet: updated translations
 
-* Wed May  4 2010 Dan Williams <dcbw@redhat.com> - 0.8-12.git20100504
+* Tue May  4 2010 Dan Williams <dcbw@redhat.com> - 0.8-12.git20100504
 - core: treat missing IPv6 configuration as ignored (rh #588814)
 - core: don't flush IPv6 link-local routes (rh #587836)
 - cli: update output formatting
@@ -1407,7 +1415,7 @@ exit 0
 - Read global gateway from /etc/sysconfig/network if missing (rh #446527)
 - nm-system-settings now terminates when dbus goes away (rh #444976)
 
-* Tue May 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3669
+* Wed May 14 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3669
 - Fix initial carrier state detection on devices that are already up (rh #134886)
 
 * Tue May 13 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.3.svn3667
@@ -1743,7 +1751,7 @@ exit 0
 * Mon Aug 13 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-9
 - Update the license tag
 
-* Tue Aug  8 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-8
+* Wed Aug  8 2007 Christopher Aillon <caillon@redhat.com> 1:0.6.5-8
 - Own /etc/NetworkManager/dispatcher.d and /etc/NetworkManager/VPN (#234004)
 
 * Wed Jun 27 2007 Dan Williams <dcbw@redhat.com> 1:0.6.5-7
@@ -2083,7 +2091,7 @@ exit 0
 * Mon Apr  4 2005 Dan Williams <dcbw@redhat.com> 0.4-6.cvs20050404
 - #rh153234# NetworkManager quits/cores just as a connection is made
 
-* Fri Apr  2 2005 Dan Williams <dcbw@redhat.com> 0.4-5.cvs20050402
+* Sat Apr  2 2005 Dan Williams <dcbw@redhat.com> 0.4-5.cvs20050402
 - Update from latest CVS HEAD
 
 * Fri Mar 25 2005 Christopher Aillon <caillon@redhat.com> 0.4-4.cvs20050315
@@ -2150,7 +2158,7 @@ exit 0
 * Mon Jan 24 2005 Than Ngo <than@redhat.com> 0.3.3-1.cvs20050112.4
 - rebuilt against new wireless tool
 
-* Thu Jan 21 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050118
+* Fri Jan 21 2005 <dcbw@redhat.com> - 0.3.3-1.cvs20050118
 - Fix issue where NM wouldn't recognize that access points were
 	encrypted, and then would try to connect without encryption
 - Refine packaging to put client library in separate package
@@ -2183,7 +2191,7 @@ exit 0
 - Better detection of non-ESSID-broadcasting access points
 - Don't dialog-spam the user if a connection fails
 
-* Mon Nov 11 2004 <dcbw@redhat.com> - 0.3.2-2.cvs20041115
+* Thu Nov 11 2004 <dcbw@redhat.com> - 0.3.2-2.cvs20041115
 - Update to CVS
 - Much better link detection, works with Open System authentication
 - Blacklist wireless cards rather than whitelisting them
