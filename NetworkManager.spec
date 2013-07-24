@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130603
+%define snapshot .git20130724
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -25,7 +25,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 6%{snapshot}%{?dist}
+Release: 7%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -101,6 +101,7 @@ BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: systemd-units
 %endif
 BuildRequires: libsoup-devel
+BuildRequires: libndp-devel >= 0.1-3
 
 %description
 NetworkManager is a system network service that manages your network devices
@@ -374,11 +375,14 @@ exit 0
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %changelog
-* Tue Jul  2 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-6
+* Wed Jul 24 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-7.git20130724
+- Update to git snapshot
+
+* Tue Jul  2 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-6
 - Belatedly update udev directory for UsrMove
 - Fix incorrect dates in old changelog entries to avoid rpm warnings
 
-* Wed Jun 26 2013 Dan Winship <danw@redhat.com> - 0.9.8.2-5
+* Wed Jun 26 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-5
 - build support for connectivity checking (rh #810457)
 
 * Tue Jun 25 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-4.git20130603
