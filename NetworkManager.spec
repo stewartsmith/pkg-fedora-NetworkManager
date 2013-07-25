@@ -25,13 +25,14 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 7%{snapshot}%{?dist}
+Release: 8%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
 Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
+Source2: 00-server.conf
 Patch1: explain-dns1-dns2.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -162,6 +163,20 @@ Requires: dbus-glib-devel >= %{dbus_glib_version}
 This package contains the header and pkg-config files for development applications using
 NetworkManager functionality from applications that use glib.
 
+%package config-server
+Summary: NetworkManager config file for "server-like" defaults
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description config-server
+This adds a NetworkManager configuration file to make it behave more
+like the old "network" service. In particular, it stops NetworkManager
+from automatically running DHCP on unconfigured ethernet devices, and
+allows connections with static IP addresses to be brought up even on
+ethernet devices with no carrier.
+
+This package is intended to be installed by default for server
+deployments.
 
 %prep
 %setup -q -n NetworkManager-%{realversion}
@@ -215,6 +230,9 @@ make %{?_smp_mflags}
 make install DESTDIR=$RPM_BUILD_ROOT
 
 %{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
+
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
+%{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 
 # create a VPN directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
@@ -374,7 +392,14 @@ exit 0
 %dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
 
+%files config-server
+%defattr(-,root,root,0755)
+%config %{_sysconfdir}/%{name}/conf.d/00-server.conf
+
 %changelog
+* Thu Jul 25 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-8.git20130724
+- Create NetworkManager-config-server package
+
 * Wed Jul 24 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-7.git20130724
 - Update to git snapshot
 
