@@ -6,7 +6,7 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130724
+%define snapshot .git20130807
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -25,7 +25,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 8%{snapshot}%{?dist}
+Release: 9%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -198,7 +198,7 @@ deployments.
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-crypto=nss \
-	--enable-more-warnings=yes \
+	--enable-more-warnings=error \
 	--enable-ppp=yes \
 	--enable-vala=yes \
 %if ! 0%{?rhel}
@@ -218,6 +218,9 @@ deployments.
 	--with-udev-dir=%{udev_dir} \
 	--with-system-ca-path=/etc/pki/tls/certs \
 	--with-tests=yes \
+	--with-valgrind=no \
+	--enable-ifcfg-rh=yes \
+	--with-system-libndp=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release}
 
@@ -397,6 +400,15 @@ exit 0
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Wed Aug  7 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-9.git20130807
+- core: fix assert on multi-hop routes (rh #989022)
+- core: fix dispatcher systemd unit enabling (rh #948433)
+- ifcfg-rh: ignore emacs temporary lockfiles (rh #987629)
+- core: fix various routing issues and interaction with kernel events
+- cli: confirm saving connections when autoconnect is enabled (rh #953296)
+- cli: automatically change method when static IP addresses are added
+- core: preserve externally added IPv4 routes and addresses
+
 * Thu Jul 25 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-8.git20130724
 - Create NetworkManager-config-server package
 
