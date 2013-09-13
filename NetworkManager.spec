@@ -2,22 +2,16 @@
 %define dbus_glib_version 0.94
 
 %define glib2_version	2.24.0
-%define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20130807
+%define snapshot .git20130913
 %define realversion 0.9.9.0
 
 %global regen_docs 0
 
-%if 0%{?fedora} && 0%{?fedora} < 17
-%define systemd_dir /lib/systemd/system
-%define udev_dir /lib/udev
-%else
 %define systemd_dir %{_prefix}/lib/systemd/system
 %define udev_dir %{_prefix}/lib/udev
-%endif
 
 %global _hardened_build 1
 
@@ -25,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 9%{snapshot}%{?dist}
+Release: 11%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -37,8 +31,6 @@ Patch1: explain-dns1-dns2.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Requires(post): chkconfig
-Requires(preun): chkconfig
 Requires(post): systemd-sysv
 Requires(post): systemd
 Requires(preun): systemd
@@ -67,7 +59,9 @@ Conflicts: kde-plasma-networkmanagement < 1:0.9-0.49.20110527git.nm09
 
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
-BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
+%if 0%{?fedora}
+BuildRequires: wireless-tools-devel >= 1:28-0pre9
+%endif
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
@@ -97,12 +91,9 @@ BuildRequires: wimax-devel
 %endif
 %endif
 BuildRequires: systemd >= 200-3 systemd-devel
-%if 0%{?fedora} && 0%{?fedora} < 17
-# systemd.pc is in systemd-units for F16 and below
-BuildRequires: systemd-units
-%endif
 BuildRequires: libsoup-devel
-BuildRequires: libndp-devel >= 0.1-3
+BuildRequires: libndp-devel >= 1.0
+BuildRequires: ModemManager-glib-devel >= 1.0
 
 %description
 NetworkManager is a system network service that manages your network devices
@@ -200,6 +191,7 @@ deployments.
 	--with-crypto=nss \
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
+	--with-modem-manager-1=yes \
 	--enable-vala=yes \
 %if ! 0%{?rhel}
 %ifnarch s390 s390x
@@ -208,6 +200,11 @@ deployments.
 %endif
 %if %{regen_docs}
 	--enable-gtk-doc \
+%endif
+%if 0%{?fedora}
+	--with-wext=yes \
+%else
+	--with-wext=no \
 %endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
@@ -287,21 +284,6 @@ fi
 %postun
 %systemd_postun
 
-%triggerun -- NetworkManager < 1:0.8.990
-# Save the current service runlevel info
-# User must manually run systemd-sysv-convert --apply NetworkManager
-# to migrate them to systemd targets
-/usr/bin/systemd-sysv-convert --save NetworkManager >/dev/null 2>&1 ||:
-/bin/systemctl --no-reload enable NetworkManager.service >/dev/null 2>&1 ||:
-# Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del NetworkManager >/dev/null 2>&1 || :
-/bin/systemctl try-restart NetworkManager.service >/dev/null 2>&1 || :
-
-
-%triggerun -- NetworkManager < 1:0.7.0-0.9.2.svn3614
-/sbin/service NetworkManagerDispatcher stop >/dev/null 2>&1
-/sbin/chkconfig --del NetworkManagerDispatcher
-exit 0
 
 %post	glib -p /sbin/ldconfig
 %postun	glib -p /sbin/ldconfig
@@ -400,6 +382,43 @@ exit 0
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Fri Sep 13 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-11.git20130913
+- core: actually enable ModemManager 1.0 support
+- libnm-glib: fix nm_remote_connection_delete() not calling callback (rh #997568)
+- cli: ensure terminal is reset after quitting
+- cli: set wep-key-type properly when editing (rh #1003945)
+- man: fix typo in nmcli examples manpage (rh #1004117)
+- core: fix setting VLAN ingress/egress mappings
+- core: allow creating VLANs from interfaces other than Ethernet (rh #1003180)
+- cli: fix input/output format conversion (rh #998929)
+
+* Fri Sep  6 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-10.git20130906
+- core: fix bug which disallowed deleting connections (rh #997568)
+- core: add support for Team devices
+- core: enable NetworkManager-wait-online by default (rh #816655)
+- core: fix crash when 'gre' and 'macvlan' links change (rh #997396)
+- core: fail activation when invalid static routes are configured (rh #999544)
+- core: enhance connectivity checking to include portal detection
+- core: allow hyphens for MAC addresses (rh #1002553)
+- core: remove NetworkManager-created software devices when they are deactivated (rh #953300)
+- core: fix handling of some DHCP client identifiers (rh #999503)
+- core: correctly handle Open vSwitch interfaces as generic interfaces (rh #1004356)
+- core: better handle Layer-2-only connections (rh #979288)
+- cli: enhanced bash completion
+- cli: make the 'describe' command more visible (rh #998002)
+- cli: fix bug rejecting changes to Wi-Fi channels (rh #999999)
+- cli: update bash completion to suggest connection names (rh #997997)
+- cli: fix tab completion for aliases in edit mode
+- cli: ask whether to switch IP method to 'auto' when all addresses are deleted (rh #998137)
+- cli: request missing information when --ask is passed (rh #953291)
+- cli: add 'remove' command to edit mode
+- cli: fix creation of secure Wi-Fi connections (rh #997969) (rh #997555)
+- cli: default autoconnect to no and ask whether to activate on save (rh #953296)
+- man: clarify manpage text (rh #960071) (rh #953299)
+- man: fix errors in the nmcli help output and manpage (rh #997566)
+- ifcfg-rh: only write IPV6_DEFAULTGW when there's actually a default gateway (rh #997759)
+- ifcfg-rh: fix handling of legacy-format routes file with missing gateway
+
 * Wed Aug  7 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-9.git20130807
 - core: fix assert on multi-hop routes (rh #989022)
 - core: fix dispatcher systemd unit enabling (rh #948433)
