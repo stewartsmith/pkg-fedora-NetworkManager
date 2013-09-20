@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 11%{snapshot}%{?dist}
+Release: 12%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -84,12 +84,6 @@ BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
-# No wimax or bluetooth on s390
-%if ! 0%{?rhel}
-%ifnarch s390 s390x
-BuildRequires: wimax-devel
-%endif
-%endif
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
@@ -100,21 +94,6 @@ NetworkManager is a system network service that manages your network devices
 and connections, attempting to keep active network connectivity when available.
 It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
-
-
-%if ! 0%{?rhel}
-%ifnarch s390 s390x
-%package wimax
-Summary: Intel WiMAX device support for NetworkManager
-Group: System Environment/Base
-Requires: wimax
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-
-%description wimax
-This package contains NetworkManager support for Intel WiMAX mobile broadband
-devices.
-%endif
-%endif
 
 
 %package devel
@@ -193,11 +172,6 @@ deployments.
 	--enable-ppp=yes \
 	--with-modem-manager-1=yes \
 	--enable-vala=yes \
-%if ! 0%{?rhel}
-%ifnarch s390 s390x
-	--enable-wimax=yes \
-%endif
-%endif
 %if %{regen_docs}
 	--enable-gtk-doc \
 %endif
@@ -327,14 +301,6 @@ fi
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
 
-%if ! 0%{?rhel}
-%ifnarch s390 s390x
-%files wimax
-%defattr(-,root,root,0755)
-%{_libdir}/%{name}/libnm-device-plugin-wimax.so
-%endif
-%endif
-
 %files devel
 %defattr(-,root,root,0755)
 %doc ChangeLog docs/api/html/*
@@ -382,6 +348,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Fri Sep 20 2013 Bill Nottingham <notting@redhat.com> - 0.9.9.0-12.git20130913
+- drop wimax subpackage
+
 * Fri Sep 13 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-11.git20130913
 - core: actually enable ModemManager 1.0 support
 - libnm-glib: fix nm_remote_connection_delete() not calling callback (rh #997568)
