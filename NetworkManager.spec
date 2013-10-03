@@ -5,7 +5,7 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20131001
+%define snapshot .git20131003
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 13%{snapshot}%{?dist}
+Release: 14%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -171,6 +171,8 @@ deployments.
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
 	--with-modem-manager-1=yes \
+	--enable-bluez4=no \
+	--enable-wimax=no \
 	--enable-vala=yes \
 %if %{regen_docs}
 	--enable-gtk-doc \
@@ -348,6 +350,14 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Thu Oct  3 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-14.git20131003
+- core: fix DHCPv6 address prefix length (rh #1013583)
+- cli: enhance bonding questionaire (rh #1007355)
+- core: fix crash with Bluez5 if PAN connection is not defined (rh #1014770)
+- libnm-glib: fix various memory leaks that could cause UIs to mis-report state
+- core: fix issues with mis-configured IPv6 router advertisements (rh #1008104)
+- cli: fix potential crash editing connections (rh #1011942)
+
 * Tue Oct  1 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-13.git20131001
 - core: fix bridge device creation (#1012532)
 - core,settings: do not call functions with connection==NULL (rh #1008151)
@@ -360,7 +370,7 @@ fi
 - infiniband: only check the last 8 bytes when doing hwaddr matches (rh #1008566)
 - bluez: merge adding support for BlueZ 5 (bgo #701078)
 - api: clarify lifetime and behavior of ActiveConnection's SpecificObject property (rh #1012309)
-- vpn: fix connecting to VPN (bgo #708255)
+- vpn: fix connecting to VPN (bgo #708255) (rh #1014716)
 - rdisc: do not crash on NDP init failures (rh #1012151)
 - cli: be more verbose when adding IP addresses in questionnaire (rh #1006450)
 - team: chain up parent dispose() in NMDeviceTeam dispose() (rh #1013593)
