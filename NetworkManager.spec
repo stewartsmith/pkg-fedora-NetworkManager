@@ -350,6 +350,8 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+1023571 got fixed in git master on 2013-10-29
+
 * Thu Oct  3 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-14.git20131003
 - core: fix DHCPv6 address prefix length (rh #1013583)
 - cli: enhance bonding questionaire (rh #1007355)
