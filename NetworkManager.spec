@@ -350,7 +350,8 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
-1023571 got fixed in git master on 2013-10-29
+#- core: fix crash in ifcfg-rh plugin when reloading connections (rh #1023571)
+#- core: fix crash when having connections with NEVER_DEFAULT (rh #1021112)
 
 * Thu Oct  3 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-14.git20131003
 - core: fix DHCPv6 address prefix length (rh #1013583)
