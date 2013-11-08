@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 14%{snapshot}%{?dist}
+Release: 15%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -28,6 +28,11 @@ Source: %{name}-%{realversion}%{snapshot}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Patch1: explain-dns1-dns2.patch
+Patch2: rh1023571-fix-crash-ifcfg-rh-reload.patch
+Patch3: rh1021112-fix-crash-never-default.patch 
+Patch4: rh1019021-fix-crash-ip6-routing.patch
+Patch5: rh1025007-fix-crash-ifcfg-rh.patch 
+Patch6: rh1012151-ipv6-disable.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -152,6 +157,11 @@ deployments.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .explain-dns1-dns2
+%patch2 -p1 -b .patch2
+%patch3 -p1 -b .patch3
+%patch4 -p1 -b .patch4
+%patch5 -p1 -b .patch5
+%patch6 -p1 -b .patch6
 
 %build
 
@@ -350,8 +360,12 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
-#- core: fix crash in ifcfg-rh plugin when reloading connections (rh #1023571)
-#- core: fix crash when having connections with NEVER_DEFAULT (rh #1021112)
+* Fri Nov  8 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-15.git20131003
+- ifcfg-rh: fix crash in ifcfg-rh plugin when reloading connections (rh #1023571)
+- ifcfg-rh: fix crash when having connections with NEVER_DEFAULT (rh #1021112)
+- core: fix segfault in nm-policy when setting default route for vpn (rh #1019021)
+- ifcfg-rh: fix crash when reading connection (assert) (rh #1025007)
+- core: allow IPv4 to proceed if IPv6 is globally disabled but set to "auto" (rh #1012151)
 
 * Thu Oct  3 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-14.git20131003
 - core: fix DHCPv6 address prefix length (rh #1013583)

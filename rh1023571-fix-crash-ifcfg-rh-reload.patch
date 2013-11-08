@@ -1,0 +1,55 @@
+commit 912152cf85d29db45f706522c8e3ce13eaf13197
+Author: Jiří Klimeš <jklimes@redhat.com>
+Date:   Tue Oct 29 15:02:30 2013 +0100
+
+    ifcfg-rh: fix crash when doing managed->unmanaged transition
+    
+    Testcase:
+    * add 'NM_CONTROLLED=no' to /etc/sysconfig/network-scripts/ifcfg-ABC
+    * sudo nmcli con reload
+    * ... NM asserts ...
+    
+    We need to ref() 'existing' connection before nm_settings_connection_signal_remove(),
+    because the function  unref()s ithe connection via connection_removed_cb().
+    
+    Backtrace:
+     ...
+     #4  0x00007fbcf0ea0cba in g_assertion_message_expr (domain=domain@entry=0x0,
+         file=file@entry=0x7fbcf4e5805d "nm-dbus-manager.c", line=line@entry=848,
+         func=func@entry=0x7fbcf4e585e0 <__FUNCTION__.15088> "nm_dbus_manager_unregister_object", expr=expr@entry=0x7fbcf4e5820b "G_IS_OBJECT (object)")
+         at gtestutils.c:2293
+     #5  0x00007fbcf4de69d9 in nm_dbus_manager_unregister_object (
+         self=0x7fbcf6fdc9c0, object=0x7fbcf70235c0) at nm-dbus-manager.c:848
+     #6  0x00007fbcf4dd6a23 in nm_settings_connection_signal_remove (
+         self=<optimized out>) at settings/nm-settings-connection.c:1541
+     #7  0x00007fbce6fee884 in connection_new_or_changed (
+         self=self@entry=0x7fbcf7006f80,
+         path=path@entry=0x7fbcf70c3f80 "/etc/sysconfig/network-scripts/ifcfg-ABC",
+         existing=existing@entry=0x7fbcf70235c0,
+         out_old_path=out_old_path@entry=0x7fff2b7b8988) at plugin.c:327
+     #8  0x00007fbce6feeca2 in read_connections (plugin=0x7fbcf7006f80)
+         at plugin.c:453
+     #9  0x00007fbcf4dd8e98 in impl_settings_reload_connections (
+         self=0x7fbcf6fd98c0, context=0x7fbcf70bcb30) at settings/nm-settings.c:1262
+     ...
+
+diff --git a/src/settings/plugins/ifcfg-rh/plugin.c b/src/settings/plugins/ifcfg-rh/plugin.c
+index dbfc496..5cd24b0 100644
+--- a/src/settings/plugins/ifcfg-rh/plugin.c
++++ b/src/settings/plugins/ifcfg-rh/plugin.c
+@@ -320,6 +320,7 @@ connection_new_or_changed (SCPluginIfcfg *self,
+ 
+ 	if (new_unmanaged) {
+ 		if (!old_unmanaged) {
++			g_object_ref (existing);
+ 			/* Unexport the connection by telling the settings service it's
+ 			 * been removed, and notify the settings service by signalling that
+ 			 * unmanaged specs have changed.
+@@ -331,6 +332,7 @@ connection_new_or_changed (SCPluginIfcfg *self,
+ 
+ 			g_object_set (existing, NM_IFCFG_CONNECTION_UNMANAGED, new_unmanaged, NULL);
+ 			g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
++			g_object_unref (existing);
+ 		}
+ 	} else {
+ 		if (old_unmanaged) {  /* now managed */

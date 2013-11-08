@@ -1,0 +1,27 @@
+commit 9543e45afe0746ac1c9c10e4f78f43264fd288b4
+Author: Dan Williams <dcbw@redhat.com>
+Date:   Mon Oct 7 11:40:16 2013 -0500
+
+    core: allow IPv4 to proceed if IPv6 is globally disabled but set to "auto" (rh #1012151)
+    
+    If the user disabled IPv6 support in the kernel with "ipv6.disable=1" on the
+    kernel boot line, then any attempts to open IPv6 sockets (which libndp does)
+    will fail.  This failed the entire connection, even if IPv6's "may-fail"
+    property was TRUE.  Instead, just fail IPv6 and allow IPv4 to proceed.  If
+    IPv4 fails or is disabled, then other logic will fail the entire connection.
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index d99b3d7..6810afc 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3329,8 +3329,8 @@ act_stage3_ip6_config_start (NMDevice *self,
+ 	if (   strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_AUTO) == 0
+ 	    || strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL) == 0) {
+ 		if (!addrconf6_start (self)) {
+-			*reason = NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE;
+-			ret = NM_ACT_STAGE_RETURN_FAILURE;
++			/* IPv6 might be disabled; allow IPv4 to proceed */
++			ret = NM_ACT_STAGE_RETURN_STOP;
+ 		} else
+ 			ret = NM_ACT_STAGE_RETURN_POSTPONE;
+ 	} else if (strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_DHCP) == 0) {

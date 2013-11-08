@@ -1,0 +1,35 @@
+commit 25428882839ff17c531887bfc58f6669c9708fc8
+Author: Thomas Haller <thaller@redhat.com>
+Date:   Thu Oct 31 12:42:01 2013 +0100
+
+    ifcfg-rh: fix crash when reading connection (assert in connection_new_or_changed)
+    
+    rh #1025007 reports a crash on g_assert_no_error() in
+    connection_new_or_changed() of src/settings/plugins/ifcfg-rh/plugin.c.
+    From the back trace I am not 100% sure, what the problem was, but I
+    think that nm_settings_connection_replace_settings failed because of
+    nm_connection_update_secrets. Apparently such a situation can
+    happen and it should simply be accepted as valid.
+    
+    What might have happened, is that the connection used to have
+    secrets (maybe it had 802.1x configured?) and then it got changed,
+    so update_secrets() fails because the connection no longer has a
+    setting to which the secrets would apply.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=1025007
+    
+    Signed-off-by: Thomas Haller <thaller@redhat.com>
+
+diff --git a/src/settings/nm-settings-connection.c b/src/settings/nm-settings-connection.c
+index 59b29ad..7dce397 100644
+--- a/src/settings/nm-settings-connection.c
++++ b/src/settings/nm-settings-connection.c
+@@ -462,7 +462,7 @@ nm_settings_connection_replace_settings (NMSettingsConnection *self,
+ 		if (priv->agent_secrets) {
+ 			hash = nm_connection_to_hash (priv->agent_secrets, NM_SETTING_HASH_FLAG_ONLY_SECRETS);
+ 			if (hash) {
+-				success = nm_connection_update_secrets (NM_CONNECTION (self), NULL, hash, error);
++				nm_connection_update_secrets (NM_CONNECTION (self), NULL, hash, NULL);
+ 				g_hash_table_destroy (hash);
+ 			}
+ 		}
