@@ -1,0 +1,19 @@
+commit 0a557ac01d28340e43247eef52007a8b18bb24d8
+Author: Dan Winship <danw@gnome.org>
+Date:   Thu Oct 24 15:15:02 2013 -0400
+
+    core: fix crash when activating a never-default IPv4 connection
+
+diff --git a/src/nm-ip4-config.c b/src/nm-ip4-config.c
+index 81c003e..ed1728d 100644
+--- a/src/nm-ip4-config.c
++++ b/src/nm-ip4-config.c
+@@ -583,7 +583,7 @@ nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relev
+ 	/* never_default */
+ 	if (src_priv->never_default != dst_priv->never_default) {
+ 		dst_priv->never_default = src_priv->never_default;
+-		has_relevant_changes = TRUE;
++		has_minor_changes = TRUE;
+ 	}
+ 
+ 	/* default gateway */

@@ -1,0 +1,62 @@
+commit 19b040236ec59fe8f9730d9da6d9262921d28936
+Author: Thomas Haller <thaller@redhat.com>
+Date:   Wed Oct 30 20:18:58 2013 +0100
+
+    core: fix segfault in nm-policy when setting default route for vpn
+    
+    nm_vpn_connection_get_ip6_internal_gateway might return NULL. In this
+    case, we add a device route (to gateway '::') over the vpn.
+    
+    Before, in such a case, NM crashed with SEGFAULT.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=1019021
+    
+    Signed-off-by: Thomas Haller <thaller@redhat.com>
+
+diff --git a/src/nm-policy.c b/src/nm-policy.c
+index 6d15e01..49c005c 100644
+--- a/src/nm-policy.c
++++ b/src/nm-policy.c
+@@ -860,12 +860,15 @@ update_ip6_routing (NMPolicy *policy, gboolean force_update)
+ 		int parent_ifindex = nm_device_get_ip_ifindex (parent);
+ 		NMIP6Config *parent_ip6 = nm_device_get_ip6_config (parent);
+ 		guint32 parent_mss = parent_ip6 ? nm_ip6_config_get_mss (parent_ip6) : 0;
+-		struct in6_addr int_gw = *nm_vpn_connection_get_ip6_internal_gateway (vpn);
++		const struct in6_addr *int_gw = nm_vpn_connection_get_ip6_internal_gateway (vpn);
+ 		int mss = nm_ip6_config_get_mss (ip6_config);
+ 
+-		if (!nm_platform_ip6_route_add (ip_ifindex, in6addr_any, 0, int_gw, 0, mss)) {
++		if (!int_gw)
++			int_gw = &in6addr_any;
++
++		if (!nm_platform_ip6_route_add (ip_ifindex, in6addr_any, 0, *int_gw, 0, mss)) {
+ 			nm_platform_ip6_route_add (parent_ifindex, *gw_addr, 128, in6addr_any, 0, parent_mss);
+-			if (!nm_platform_ip6_route_add (ip_ifindex, in6addr_any, 0, int_gw, 0, mss)) {
++			if (!nm_platform_ip6_route_add (ip_ifindex, in6addr_any, 0, *int_gw, 0, mss)) {
+ 				nm_log_err (LOGD_IP6 | LOGD_VPN, "Failed to set default route.");
+ 			}
+ 		}
+commit 886ca75ac33de252158a63074cc7cf9d0215c962
+Author: Thomas Haller <thaller@redhat.com>
+Date:   Fri Nov 1 10:57:18 2013 +0100
+
+    core: fix crash when reading routes from VPN Ip6Config (bgo #706332)
+    
+    https://bugzilla.gnome.org/show_bug.cgi?id=706332
+    
+    Reported-by: Nicolas Iooss <nicolas.iooss.2010_nm@m4x.org>
+    Signed-off-by: Thomas Haller <thaller@redhat.com>
+
+diff --git a/src/vpn-manager/nm-vpn-connection.c b/src/vpn-manager/nm-vpn-connection.c
+index 6962e30..263f253 100644
+--- a/src/vpn-manager/nm-vpn-connection.c
++++ b/src/vpn-manager/nm-vpn-connection.c
+@@ -1084,7 +1084,7 @@ nm_vpn_connection_ip6_config_get (DBusGProxy *proxy,
+ 			 * the VPN server, we want to use the NM created route instead of
+ 			 * whatever the server provides.
+ 			 */
+-			if (IN6_ARE_ADDR_EQUAL (&route.network, priv->ip6_external_gw) && route.plen == 128)
++			if (priv->ip6_external_gw && IN6_ARE_ADDR_EQUAL (&route.network, priv->ip6_external_gw) && route.plen == 128)
+ 				continue;
+ 
+ 			/* Otherwise accept the VPN-provided route */
