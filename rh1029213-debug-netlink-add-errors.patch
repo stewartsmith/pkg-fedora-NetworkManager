@@ -1,0 +1,50 @@
+From 2086cab1273b26630840e3a0c092e8b1617e803b Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Wed, 13 Nov 2013 20:06:39 -0600
+Subject: [PATCH] platform: dump objects that fail to be added (rh #1029213)
+
+Attempt to figure out why the objects fail.
+---
+ src/platform/nm-linux-platform.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/platform/nm-linux-platform.c b/src/platform/nm-linux-platform.c
+index a35b0cc..d13abbe 100644
+--- a/src/platform/nm-linux-platform.c
++++ b/src/platform/nm-linux-platform.c
+@@ -1100,27 +1100,32 @@ refresh_object (NMPlatform *platform, struct nl_object *object, gboolean removed
+ /* Decreases the reference count if @obj for convenience */
+ static gboolean
+ add_object (NMPlatform *platform, struct nl_object *obj)
+ {
+ 	auto_nl_object struct nl_object *object = obj;
+ 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+ 	int nle;
++	struct nl_dump_params dp = {
++		.dp_type = NL_DUMP_DETAILS,
++		.dp_fd = stderr,
++	};
+ 
+ 	nle = add_kernel_object (priv->nlh, object);
+ 
+ 	/* NLE_EXIST is considered equivalent to success to avoid race conditions. You
+ 	 * never know when something sends an identical object just before
+ 	 * NetworkManager.
+ 	 */
+ 	switch (nle) {
+ 	case -NLE_SUCCESS:
+ 	case -NLE_EXIST:
+ 		break;
+ 	default:
+ 		error ("Netlink error: %s", nl_geterror (nle));
++		nl_object_dump (object, &dp);
+ 		return FALSE;
+ 	}
+ 
+ 	return refresh_object (platform, object, FALSE, NM_PLATFORM_REASON_INTERNAL);
+ }
+ 
+ /* Decreases the reference count if @obj for convenience */
+-- 
+1.8.3.1
+

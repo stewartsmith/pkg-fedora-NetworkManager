@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 15%{snapshot}%{?dist}
+Release: 16%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -33,6 +33,7 @@ Patch3: rh1021112-fix-crash-never-default.patch
 Patch4: rh1019021-fix-crash-ip6-routing.patch
 Patch5: rh1025007-fix-crash-ifcfg-rh.patch 
 Patch6: rh1012151-ipv6-disable.patch
+Patch7: rh1029213-debug-netlink-add-errors.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -162,6 +163,7 @@ deployments.
 %patch4 -p1 -b .patch4
 %patch5 -p1 -b .patch5
 %patch6 -p1 -b .patch6
+%patch7 -p1 -b .patch7
 
 %build
 
@@ -360,6 +362,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Wed Nov 13 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-16.git20131003
+- core: add some debugging to help diagnose netlink errors (rh #1029213)
+
 * Fri Nov  8 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-15.git20131003
 - ifcfg-rh: fix crash in ifcfg-rh plugin when reloading connections (rh #1023571)
 - ifcfg-rh: fix crash when having connections with NEVER_DEFAULT (rh #1021112)
