@@ -1,0 +1,74 @@
+From 473018d8b2628ce946cc35db432ac2bc68f6f912 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Wed, 16 Oct 2013 12:29:13 -0500
+Subject: [PATCH] platform: detect non-mac80211 WiFi devices as WiFi (rh
+ #1015598)
+
+Before NMPlatform landed, the old NMManager code looked at either
+DEVTYPE=wlan or asked the internal wifi utilities whether the
+device was WiFi or not.  This got lost when moving to NMPlatform.
+
+It turns out that only mac80211-based drivers set the DEVTYPE=wlan
+flag in sysfs, while older WEXT, out-of-tree, and staging drivers
+often do not (though they should).
+
+To avoid breaking recognition of these crappy drivers that used
+to work, re-add the wifi utils checks.
+---
+ src/platform/nm-linux-platform.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/platform/nm-linux-platform.c b/src/platform/nm-linux-platform.c
+index 0bea01b..82286ec 100644
+--- a/src/platform/nm-linux-platform.c
++++ b/src/platform/nm-linux-platform.c
+@@ -41,14 +41,15 @@
+ #include <netlink/route/link/vlan.h>
+ #include <netlink/route/addr.h>
+ #include <netlink/route/route.h>
+ #include <gudev/gudev.h>
+ 
+ #include "nm-linux-platform.h"
+ #include "nm-logging.h"
++#include "wifi/wifi-utils.h"
+ 
+ /* This is only included for the translation of VLAN flags */
+ #include "nm-setting-vlan.h"
+ 
+ #define debug(...) nm_log_dbg (LOGD_PLATFORM, __VA_ARGS__)
+ #define warning(...) nm_log_warn (LOGD_PLATFORM, __VA_ARGS__)
+ #define error(...) nm_log_err (LOGD_PLATFORM, __VA_ARGS__)
+@@ -473,26 +474,28 @@ type_to_string (NMLinkType type)
+ 	} G_STMT_END
+ 
+ static NMLinkType
+ link_type_from_udev (NMPlatform *platform, int ifindex, int arptype, const char **out_name)
+ {
+ 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+ 	GUdevDevice *udev_device;
+-	const char *prop;
++	const char *prop, *name, *sysfs_path;
+ 
+ 	udev_device = g_hash_table_lookup (priv->udev_devices, GINT_TO_POINTER (ifindex));
+ 	if (!udev_device)
+ 		return_type (NM_LINK_TYPE_UNKNOWN, "unknown");
+ 
+ 	prop = g_udev_device_get_property (udev_device, "ID_NM_OLPC_MESH");
+ 	if (prop)
+ 		return_type (NM_LINK_TYPE_OLPC_MESH, "olpc-mesh");
+ 
+ 	prop = g_udev_device_get_property (udev_device, "DEVTYPE");
+-	if (g_strcmp0 (prop, "wlan") == 0)
++	name = g_udev_device_get_name (udev_device);
++	sysfs_path = g_udev_device_get_sysfs_path (udev_device);
++	if (g_strcmp0 (prop, "wlan") == 0 || wifi_utils_is_wifi (name, sysfs_path))
+ 		return_type (NM_LINK_TYPE_WIFI, "wifi");
+ 	else if (g_strcmp0 (prop, "wwan") == 0)
+ 		return_type (NM_LINK_TYPE_WWAN_ETHERNET, "wwan");
+ 
+ 	if (arptype == ARPHRD_ETHER)
+ 		return_type (NM_LINK_TYPE_ETHERNET, "ethernet");
+ 
+-- 
+1.8.3.1
+

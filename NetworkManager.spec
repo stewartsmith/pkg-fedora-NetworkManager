@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 16%{snapshot}%{?dist}
+Release: 17%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -34,6 +34,7 @@ Patch4: rh1019021-fix-crash-ip6-routing.patch
 Patch5: rh1025007-fix-crash-ifcfg-rh.patch 
 Patch6: rh1012151-ipv6-disable.patch
 Patch7: rh1029213-debug-netlink-add-errors.patch
+Patch8: rh1015598-wifi-detect.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -164,6 +165,7 @@ deployments.
 %patch5 -p1 -b .patch5
 %patch6 -p1 -b .patch6
 %patch7 -p1 -b .patch7
+%patch8 -p1 -b .patch8
 
 %build
 
@@ -362,6 +364,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Thu Nov 14 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-17.git20131003
+- core: fix detection of non-mac80211 devices that do not set DEVTYPE (rh #1015598)
+
 * Wed Nov 13 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-16.git20131003
 - core: add some debugging to help diagnose netlink errors (rh #1029213)
 
