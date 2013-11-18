@@ -1,0 +1,492 @@
+diff -up NetworkManager-0.9.9.0/cli/completion/nmcli.nmcli-con-load NetworkManager-0.9.9.0/cli/completion/nmcli
+--- NetworkManager-0.9.9.0/cli/completion/nmcli.nmcli-con-load	2013-10-03 14:14:44.000000000 -0400
++++ NetworkManager-0.9.9.0/cli/completion/nmcli	2013-11-18 11:02:56.187304537 -0500
+@@ -833,6 +833,12 @@ _nmcli()
+                             _nmcli_complete_COMMAND_CONNECTION
+                         fi
+                         ;;
++                    l|lo|loa|load)
++                        if [[ ${#words[@]} -gt 2 ]]; then
++                            compopt -o default
++                            COMPREPLY=()
++                        fi
++                        ;;
+                 esac
+             fi
+             ;;
+diff -up NetworkManager-0.9.9.0/cli/src/connections.c.nmcli-con-load NetworkManager-0.9.9.0/cli/src/connections.c
+--- NetworkManager-0.9.9.0/cli/src/connections.c.nmcli-con-load	2013-10-03 15:00:47.000000000 -0400
++++ NetworkManager-0.9.9.0/cli/src/connections.c	2013-11-18 11:02:56.188304537 -0500
+@@ -222,7 +222,8 @@ usage (void)
+ 	         "  modify [ id | uuid | path ] <ID> <setting>.<property> <value>\n\n"
+ 	         "  edit [ id | uuid | path ] <ID>  |  [type <new_con_type>] [con-name <new_con_name>]\n\n"
+ 	         "  delete [ id | uuid | path ] <ID>\n\n"
+-	         "  reload\n\n\n"
++	         "  reload\n\n"
++	         "  load <filename> [ <filename>... ]\n\n\n"
+ 	         ));
+ }
+ 
+@@ -308,6 +309,7 @@ static const char *real_con_commands[] =
+ 	"edit",
+ 	"delete",
+ 	"reload",
++	"load",
+ 	NULL
+ };
+ 
+@@ -7006,6 +7008,50 @@ do_connection_reload (NmCli *nmc, int ar
+ 	return nmc->return_value;
+ }
+ 
++static NMCResultCode
++do_connection_load (NmCli *nmc, int argc, char **argv)
++{
++	GError *error = NULL;
++	char **filenames, **failures = NULL;
++	int i;
++
++	nmc->return_value = NMC_RESULT_SUCCESS;
++	nmc->should_wait = FALSE;
++
++	if (!nm_client_get_manager_running (nmc->client)) {
++		g_string_printf (nmc->return_text, _("Error: NetworkManager is not running."));
++		nmc->return_value = NMC_RESULT_ERROR_NM_NOT_RUNNING;
++		return nmc->return_value;
++	}
++
++	if (argc == 0) {
++		g_string_printf (nmc->return_text, _("Error: No connection specified."));
++		nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
++		return nmc->return_value;
++	}
++
++	filenames = g_new (char *, argc + 1);
++	for (i = 0; i < argc; i++)
++		filenames[i] = argv[i];
++	filenames[i] = NULL;
++
++	nm_remote_settings_load_connections (nmc->system_settings, filenames, &failures, &error);
++	g_free (filenames);
++	if (error) {
++		g_string_printf (nmc->return_text, _("Error: %s."), error->message);
++		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
++		g_error_free (error);
++	}
++
++	if (failures) {
++		for (i = 0; failures[i]; i++)
++			fprintf (stderr, _("Could not load file '%s'\n"), failures[i]);
++		g_strfreev (failures);
++	}
++
++	return nmc->return_value;
++}
++
+ 
+ typedef struct {
+ 	NmCli *nmc;
+@@ -7087,6 +7133,9 @@ parse_cmd (NmCli *nmc, int argc, char **
+ 		else if (matches(*argv, "reload") == 0) {
+ 			nmc->return_value = do_connection_reload (nmc, argc-1, argv+1);
+ 		}
++		else if (matches(*argv, "load") == 0) {
++			nmc->return_value = do_connection_load (nmc, argc-1, argv+1);
++		}
+ 		else if (matches (*argv, "modify") == 0) {
+ 			nmc->return_value = do_connection_modify (nmc, argc-1, argv+1);
+ 		}
+diff -up NetworkManager-0.9.9.0/introspection/nm-settings.xml.nmcli-con-load NetworkManager-0.9.9.0/introspection/nm-settings.xml
+--- NetworkManager-0.9.9.0/introspection/nm-settings.xml.nmcli-con-load	2013-09-27 23:40:17.000000000 -0400
++++ NetworkManager-0.9.9.0/introspection/nm-settings.xml	2013-11-18 11:02:56.188304537 -0500
+@@ -82,6 +82,40 @@
+       </arg>
+     </method>
+ 
++    <method name="LoadConnections">
++      <tp:docstring>
++        Loads or reloads the indicated connections from disk. You
++        should call this after making changes directly to an on-disk
++        connection file to make sure that NetworkManager sees the
++        changes. (If "monitor-connection-files" in NetworkManager.conf
++        is "true", then this will have no real effect, but is
++        harmless.) As with AddConnection(), this operation does not
++        necessarily start the network connection.
++      </tp:docstring>
++      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_settings_load_connections"/>
++      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
++      <arg name="filenames" type="as" direction="in">
++        <tp:docstring>
++          Array of paths to on-disk connection profiles in directories
++          monitored by NetworkManager.
++        </tp:docstring>
++      </arg>
++      <arg name="status" type="b" direction="out">
++        <tp:docstring>
++          Success or failure of the operation as a whole. True if
++          NetworkManager at least tried to load the indicated
++          connections, even if it did not succeed. False if an error
++          occurred before trying to load the connections (eg,
++          permission denied).
++        </tp:docstring>
++      </arg>
++      <arg name="failures" type="as" direction="out">
++        <tp:docstring>
++          Paths of connection files that could not be loaded.
++        </tp:docstring>
++      </arg>
++    </method>
++
+     <method name="ReloadConnections">
+       <tp:docstring>
+         Tells NetworkManager to reload all connection files from disk,
+diff -up NetworkManager-0.9.9.0/libnm-glib/libnm-glib.ver.nmcli-con-load NetworkManager-0.9.9.0/libnm-glib/libnm-glib.ver
+--- NetworkManager-0.9.9.0/libnm-glib/libnm-glib.ver.nmcli-con-load	2013-10-01 14:43:57.000000000 -0400
++++ NetworkManager-0.9.9.0/libnm-glib/libnm-glib.ver	2013-11-18 11:02:56.188304537 -0500
+@@ -243,6 +243,7 @@ global:
+ 	nm_remote_settings_get_connection_by_uuid;
+ 	nm_remote_settings_get_type;
+ 	nm_remote_settings_list_connections;
++	nm_remote_settings_load_connections;
+ 	nm_remote_settings_new;
+ 	nm_remote_settings_new_async;
+ 	nm_remote_settings_new_finish;
+diff -up NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.c.nmcli-con-load NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.c
+--- NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.c.nmcli-con-load	2013-09-27 23:40:17.000000000 -0400
++++ NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.c	2013-11-18 11:02:56.188304537 -0500
+@@ -630,6 +630,72 @@ nm_remote_settings_add_connection_unsave
+ }
+ 
+ /**
++ * nm_remote_settings_load_connections:
++ * @settings: the %NMRemoteSettings
++ * @filenames: %NULL-terminated array of filenames to load
++ * @failures: (out) (transfer full): on return, a %NULL-terminated array of
++ *   filenames that failed to load
++ * @error: return location for #GError
++ *
++ * Requests that the remote settings service load or reload the given files,
++ * adding or updating the connections described within.
++ *
++ * The changes to the indicated files will not yet be reflected in
++ * @settings's connections array when the function returns.
++ *
++ * If all of the indicated files were successfully loaded, the
++ * function will return %TRUE, and @failures will be set to %NULL. If
++ * NetworkManager tried to load the files, but some (or all) failed,
++ * then @failures will be set to a %NULL-terminated array of the
++ * filenames that failed to load.
++
++ * Returns: %TRUE if NetworkManager at least tried to load @filenames,
++ * %FALSE if an error occurred (eg, permission denied).
++ *
++ * Since: 0.9.10
++ **/
++gboolean
++nm_remote_settings_load_connections (NMRemoteSettings *settings,
++                                     char **filenames,
++                                     char ***failures,
++                                     GError **error)
++{
++	NMRemoteSettingsPrivate *priv;
++	char **my_failures = NULL;
++	gboolean ret = FALSE;
++
++	g_return_val_if_fail (NM_IS_REMOTE_SETTINGS (settings), NULL);
++	g_return_val_if_fail (filenames != NULL, NULL);
++
++	priv = NM_REMOTE_SETTINGS_GET_PRIVATE (settings);
++
++	_nm_remote_settings_ensure_inited (settings);
++
++	if (!priv->service_running) {
++		g_set_error_literal (error, NM_REMOTE_SETTINGS_ERROR,
++		                     NM_REMOTE_SETTINGS_ERROR_SERVICE_UNAVAILABLE,
++		                     "NetworkManager is not running.");
++		return FALSE;
++	}
++
++	dbus_g_proxy_call (priv->proxy, "LoadConnections", error,
++	                   G_TYPE_STRV, filenames,
++	                   G_TYPE_INVALID,
++	                   G_TYPE_BOOLEAN, &ret,
++	                   G_TYPE_STRV, &my_failures,
++	                   G_TYPE_INVALID);
++
++	if (failures) {
++		if (my_failures && !*my_failures)
++			g_clear_pointer (&my_failures, g_free);
++		*failures = my_failures;
++	} else
++		g_strfreev (my_failures);
++
++	return ret;
++}
++
++/**
+  * nm_remote_settings_reload_connections:
+  * @settings: the #NMRemoteSettings
+  * @error: return location for #GError
+diff -up NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.h.nmcli-con-load NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.h
+--- NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.h.nmcli-con-load	2013-09-27 23:40:17.000000000 -0400
++++ NetworkManager-0.9.9.0/libnm-glib/nm-remote-settings.h	2013-11-18 11:02:56.188304537 -0500
+@@ -79,6 +79,11 @@ typedef void (*NMRemoteSettingsAddConnec
+                                                    GError *error,
+                                                    gpointer user_data);
+ 
++typedef void (*NMRemoteSettingsLoadConnectionsFunc) (NMRemoteSettings *settings,
++                                                     char **failures,
++                                                     GError *error,
++                                                     gpointer user_data);
++
+ typedef void (*NMRemoteSettingsSaveHostnameFunc) (NMRemoteSettings *settings,
+                                                   GError *error,
+                                                   gpointer user_data);
+@@ -135,6 +140,11 @@ gboolean nm_remote_settings_add_connecti
+                                                     NMRemoteSettingsAddConnectionFunc callback,
+                                                     gpointer user_data);
+ 
++gboolean nm_remote_settings_load_connections (NMRemoteSettings *settings,
++                                              char **filenames,
++                                              char ***failures,
++                                              GError **error);
++
+ gboolean nm_remote_settings_reload_connections (NMRemoteSettings *settings,
+                                                 GError **error);
+ 
+diff -up NetworkManager-0.9.9.0/src/settings/nm-settings.c.nmcli-con-load NetworkManager-0.9.9.0/src/settings/nm-settings.c
+--- NetworkManager-0.9.9.0/src/settings/nm-settings.c.nmcli-con-load	2013-10-01 14:43:57.000000000 -0400
++++ NetworkManager-0.9.9.0/src/settings/nm-settings.c	2013-11-18 11:10:31.800329234 -0500
+@@ -104,6 +104,10 @@ static void impl_settings_add_connection
+                                                   GHashTable *settings,
+                                                   DBusGMethodInvocation *context);
+ 
++static void impl_settings_load_connections (NMSettings *self,
++                                            char **filenames,
++                                            DBusGMethodInvocation *context);
++
+ static void impl_settings_reload_connections (NMSettings *self,
+                                               DBusGMethodInvocation *context);
+ 
+@@ -1226,33 +1230,78 @@ impl_settings_add_connection_unsaved (NM
+ 	impl_settings_add_connection_helper (self, settings, FALSE, context);
+ }
+ 
+-static void
+-impl_settings_reload_connections (NMSettings *self,
+-                                  DBusGMethodInvocation *context)
++static gboolean
++ensure_root (NMDBusManager         *dbus_mgr,
++             DBusGMethodInvocation *context)
+ {
+-	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+-	GSList *iter;
+ 	gulong caller_uid;
+ 	GError *error = NULL;
+ 
+-	if (!nm_dbus_manager_get_caller_info (priv->dbus_mgr, context, NULL, &caller_uid)) {
++	if (!nm_dbus_manager_get_caller_info (dbus_mgr, context, NULL, &caller_uid)) {
+ 		error = g_error_new_literal (NM_SETTINGS_ERROR,
+-		                             NM_SETTINGS_ERROR_PERMISSION_DENIED,
+-		                             "Unable to determine request UID.");
++									 NM_SETTINGS_ERROR_PERMISSION_DENIED,
++									 "Unable to determine request UID.");
+ 		dbus_g_method_return_error (context, error);
+ 		g_error_free (error);
+-		return;
++		return FALSE;
+ 	}
+ 	if (caller_uid != 0) {
+-		nm_log_warn (LOGD_SETTINGS, "ReloadConnections: permission denied to %lu", caller_uid);
+ 		error = g_error_new_literal (NM_SETTINGS_ERROR,
+ 		                             NM_SETTINGS_ERROR_PERMISSION_DENIED,
+ 		                             "Permission denied");
+ 		dbus_g_method_return_error (context, error);
+ 		g_error_free (error);
++		return FALSE;
++	}
++
++	return TRUE;
++}
++
++static void
++impl_settings_load_connections (NMSettings *self,
++                                char **filenames,
++                                DBusGMethodInvocation *context)
++{
++	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
++	GPtrArray *failures;
++	GSList *iter;
++	int i;
++
++	if (!ensure_root (priv->dbus_mgr, context))
+ 		return;
++
++	failures = g_ptr_array_new ();
++
++	for (i = 0; filenames[i]; i++) {
++		for (iter = priv->plugins; iter; iter = g_slist_next (iter)) {
++			NMSystemConfigInterface *plugin = NM_SYSTEM_CONFIG_INTERFACE (iter->data);
++
++			if (nm_system_config_interface_load_connection (plugin, filenames[i]))
++				break;
++		}
++
++		if (!iter) {
++			if (!g_path_is_absolute (filenames[i]))
++				nm_log_warn (LOGD_SETTINGS, "Connection filename '%s' is not an absolute path", filenames[i]);
++			g_ptr_array_add (failures, (char *) filenames[i]);
++		}
+ 	}
+ 
++	g_ptr_array_add (failures, NULL);
++	dbus_g_method_return (context, failures->len == 1, failures->pdata);
++	g_ptr_array_unref (failures);
++}
++
++static void
++impl_settings_reload_connections (NMSettings *self,
++                                  DBusGMethodInvocation *context)
++{
++	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
++	GSList *iter;
++
++	if (!ensure_root (priv->dbus_mgr, context))
++		return;
++
+ 	if (!priv->connections_loaded) {
+ 		load_connections (self);
+ 	} else {
+diff -up NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.c.nmcli-con-load NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.c
+--- NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.c.nmcli-con-load	2013-09-27 23:40:17.000000000 -0400
++++ NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.c	2013-11-18 11:02:56.189304537 -0500
+@@ -137,6 +137,17 @@ nm_system_config_interface_get_connectio
+ 	return NULL;
+ }
+ 
++gboolean
++nm_system_config_interface_load_connection (NMSystemConfigInterface *config,
++                                            const char *filename)
++{
++	g_return_val_if_fail (config != NULL, NULL);
++
++	if (NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->load_connection)
++		return NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->load_connection (config, filename);
++	return FALSE;
++}
++
+ void
+ nm_system_config_interface_reload_connections (NMSystemConfigInterface *config)
+ {
+diff -up NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.h.nmcli-con-load NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.h
+--- NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.h.nmcli-con-load	2013-09-27 23:40:17.000000000 -0400
++++ NetworkManager-0.9.9.0/src/settings/nm-system-config-interface.h	2013-11-18 11:02:56.189304537 -0500
+@@ -89,6 +89,12 @@ struct _NMSystemConfigInterface {
+ 	 */
+ 	GSList * (*get_connections) (NMSystemConfigInterface *config);
+ 
++	/* Requests that the plugin load/reload a single connection, if it
++	 * recognizes the filename. Returns success or failure.
++	 */
++	gboolean (*load_connection) (NMSystemConfigInterface *config,
++	                             const char *filename);
++
+ 	/* Requests that the plugin reload all connection files from disk,
+ 	 * and emit signals reflecting new, changed, and removed connections.
+ 	 */
+@@ -142,6 +148,8 @@ void nm_system_config_interface_init (NM
+ 
+ GSList *nm_system_config_interface_get_connections (NMSystemConfigInterface *config);
+ 
++gboolean nm_system_config_interface_load_connection (NMSystemConfigInterface *config,
++                                                     const char *filename);
+ void nm_system_config_interface_reload_connections (NMSystemConfigInterface *config);
+ 
+ GSList *nm_system_config_interface_get_unmanaged_specs (NMSystemConfigInterface *config);
+diff -up NetworkManager-0.9.9.0/src/settings/plugins/ifcfg-rh/plugin.c.nmcli-con-load NetworkManager-0.9.9.0/src/settings/plugins/ifcfg-rh/plugin.c
+--- NetworkManager-0.9.9.0/src/settings/plugins/ifcfg-rh/plugin.c.nmcli-con-load	2013-11-18 11:02:56.177304536 -0500
++++ NetworkManager-0.9.9.0/src/settings/plugins/ifcfg-rh/plugin.c	2013-11-18 11:05:18.187312234 -0500
+@@ -500,6 +500,30 @@ get_connections (NMSystemConfigInterface
+ 	return list;
+ }
+ 
++static gboolean
++load_connection (NMSystemConfigInterface *config,
++                 const char *filename)
++{
++	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (config);
++	NMIfcfgConnection *connection;
++	int dir_len = strlen (IFCFG_DIR);
++
++	if (   strncmp (filename, IFCFG_DIR, dir_len) != 0
++	    || filename[dir_len] != '/'
++	    || strchr (filename + dir_len + 1, '/') != NULL)
++		return FALSE;
++
++	if (utils_should_ignore_file (filename + dir_len + 1, TRUE))
++		return FALSE;
++
++	connection = find_by_path (plugin, filename);
++	connection_new_or_changed (plugin, filename, connection, NULL);
++	if (!connection)
++		connection = find_by_path (plugin, filename);
++
++	return (connection != NULL);
++}
++
+ static void
+ reload_connections (NMSystemConfigInterface *config)
+ {
+@@ -939,6 +963,7 @@ system_config_interface_init (NMSystemCo
+ 	/* interface implementation */
+ 	system_config_interface_class->get_connections = get_connections;
+ 	system_config_interface_class->add_connection = add_connection;
++	system_config_interface_class->load_connection = load_connection;
+ 	system_config_interface_class->reload_connections = reload_connections;
+ 	system_config_interface_class->get_unmanaged_specs = get_unmanaged_specs;
+ 	system_config_interface_class->init = init;
+diff -up NetworkManager-0.9.9.0/src/settings/plugins/keyfile/plugin.c.nmcli-con-load NetworkManager-0.9.9.0/src/settings/plugins/keyfile/plugin.c
+--- NetworkManager-0.9.9.0/src/settings/plugins/keyfile/plugin.c.nmcli-con-load	2013-10-01 14:43:58.000000000 -0400
++++ NetworkManager-0.9.9.0/src/settings/plugins/keyfile/plugin.c	2013-11-18 11:02:56.189304537 -0500
+@@ -403,6 +403,33 @@ get_connections (NMSystemConfigInterface
+ 	return list;
+ }
+ 
++static gboolean
++load_connection (NMSystemConfigInterface *config,
++                 const char *filename)
++{
++	SCPluginKeyfile *self = SC_PLUGIN_KEYFILE (config);
++	NMKeyfileConnection *connection;
++	int dir_len = strlen (KEYFILE_DIR);
++
++	if (   strncmp (filename, KEYFILE_DIR, dir_len) != 0
++	    || filename[dir_len] != '/'
++	    || strchr (filename + dir_len + 1, '/') != NULL)
++		return FALSE;
++
++	if (nm_keyfile_plugin_utils_should_ignore_file (filename + dir_len + 1))
++		return FALSE;
++
++	connection = find_by_path (self, filename);
++	if (connection)
++		update_connection (self, connection, filename);
++	else {
++		new_connection (self, filename, NULL);
++		connection = find_by_path (self, filename);
++	}
++
++	return (connection != NULL);
++}
++
+ static void
+ reload_connections (NMSystemConfigInterface *config)
+ {
+@@ -701,6 +728,7 @@ system_config_interface_init (NMSystemCo
+ {
+ 	/* interface implementation */
+ 	system_config_interface_class->get_connections = get_connections;
++	system_config_interface_class->load_connection = load_connection;
+ 	system_config_interface_class->reload_connections = reload_connections;
+ 	system_config_interface_class->add_connection = add_connection;
+ 	system_config_interface_class->get_unmanaged_specs = get_unmanaged_specs;
