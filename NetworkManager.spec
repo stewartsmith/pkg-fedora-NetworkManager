@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 17%{snapshot}%{?dist}
+Release: 18%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -35,6 +35,9 @@ Patch5: rh1025007-fix-crash-ifcfg-rh.patch
 Patch6: rh1012151-ipv6-disable.patch
 Patch7: rh1029213-debug-netlink-add-errors.patch
 Patch8: rh1015598-wifi-detect.patch
+Patch9: nmcli-con-load.patch
+Patch10: rh1018317-vpn-logging.patch
+Patch11: rh1031170-bridge-port-crash.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -166,6 +169,9 @@ deployments.
 %patch6 -p1 -b .patch6
 %patch7 -p1 -b .patch7
 %patch8 -p1 -b .patch8
+%patch9 -p1 -b .nmcli-con-load
+%patch10 -p1 -b .vpn-log
+%patch11 -p1 -b .bridge-port
 
 %build
 
@@ -364,6 +370,11 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Mon Nov 18 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-18.git20131003
+- nmcli: add "con load" to manually load an ifcfg file
+- vpn: fix logging to help debug rh #1018317
+- bridge: fix crash with bridge ports with empty settings (rh #1031170)
+
 * Thu Nov 14 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-17.git20131003
 - core: fix detection of non-mac80211 devices that do not set DEVTYPE (rh #1015598)
 
