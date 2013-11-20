@@ -1,0 +1,53 @@
+From 87041545b40fd0c0cfae16a8e605552b7715dc15 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Fri, 4 Oct 2013 23:38:31 -0500
+Subject: [PATCH] ifcfg-rh: fix ignoring updates that don't change anything
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+connection_from_file() requires the 'error' parameter.  Not passing a
+valid 'error' parameter causes the function to fail and return NULL,
+which mean that commit_changes() would always re-write the connection
+instead of ignoring commits where nothing has actually changed.
+
+connection_from_file() no longer requires the unmanaged, keyfile,
+or routefile parameters, so remove them.
+
+Signed-off-by: Jiří Klimeš <jklimes@redhat.com>
+---
+ src/settings/plugins/ifcfg-rh/nm-ifcfg-connection.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/src/settings/plugins/ifcfg-rh/nm-ifcfg-connection.c b/src/settings/plugins/ifcfg-rh/nm-ifcfg-connection.c
+index 3788149..d3b93c9 100644
+--- a/src/settings/plugins/ifcfg-rh/nm-ifcfg-connection.c
++++ b/src/settings/plugins/ifcfg-rh/nm-ifcfg-connection.c
+@@ -246,7 +246,6 @@ commit_changes (NMSettingsConnection *connection,
+ 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (connection);
+ 	GError *error = NULL;
+ 	NMConnection *reread;
+-	char *unmanaged = NULL, *keyfile = NULL, *routefile = NULL, *route6file = NULL;
+ 	gboolean same = FALSE, success = FALSE;
+ 	char *ifcfg_path = NULL;
+ 
+@@ -256,13 +255,9 @@ commit_changes (NMSettingsConnection *connection,
+ 	 */
+ 	if (priv->path) {
+ 		reread = connection_from_file (priv->path, NULL, NULL, NULL,
+-		                               &unmanaged, &keyfile, &routefile, &route6file,
+-		                               NULL, NULL);
+-		g_free (unmanaged);
+-		g_free (keyfile);
+-		g_free (routefile);
+-		g_free (route6file);
+-
++		                               NULL, NULL, NULL, NULL,
++		                               &error, NULL);
++		g_clear_error (&error);
+ 		if (reread) {
+ 			same = nm_connection_compare (NM_CONNECTION (connection),
+ 			                              reread,
+-- 
+1.7.11.7
+

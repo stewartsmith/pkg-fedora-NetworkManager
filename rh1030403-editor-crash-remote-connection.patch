@@ -1,0 +1,45 @@
+From fbcabeb7f72b710a790ca8617f7406a1ba7cf5be Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Mon, 18 Nov 2013 22:20:05 +0100
+Subject: [PATCH] libnm-glib: fix crash by taking additional ref in
+ nm-remote-connection/result_cb
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+result_cb invokes a function pointer provided by the user. Nothing prevents
+the user from destroying the NMRemoteConnection in the callback, which leads
+to a crash. Take an additional ref of NMRemoteConnection to keep it
+alive.
+
+This probably caused a crash for nm-applet:
+https://bugzilla.redhat.com/show_bug.cgi?id=1030403
+
+Signed-off-by: Thomas Haller <thaller@redhat.com>
+Signed-off-by: Jiří Klimeš <jklimes@redhat.com>
+---
+ libnm-glib/nm-remote-connection.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/libnm-glib/nm-remote-connection.c b/libnm-glib/nm-remote-connection.c
+index a03a44b..73a2cc8 100644
+--- a/libnm-glib/nm-remote-connection.c
++++ b/libnm-glib/nm-remote-connection.c
+@@ -137,12 +137,14 @@ result_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
+ 	RemoteCall *call = user_data;
+ 	NMRemoteConnectionResultFunc func = (NMRemoteConnectionResultFunc) call->callback;
+ 	GError *error = NULL;
++	NMRemoteConnection *self = g_object_ref (call->self);
+ 
+ 	dbus_g_proxy_end_call (proxy, proxy_call, &error, G_TYPE_INVALID);
+ 	if (func)
+ 		(*func) (call->self, error, call->user_data);
+ 	g_clear_error (&error);
+ 	remote_call_complete (call->self, call);
++	g_object_unref (self);
+ }
+ 
+ /**
+-- 
+1.7.11.7
+
