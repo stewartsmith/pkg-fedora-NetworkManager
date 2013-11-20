@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 18%{snapshot}%{?dist}
+Release: 19%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -38,6 +38,11 @@ Patch8: rh1015598-wifi-detect.patch
 Patch9: nmcli-con-load.patch
 Patch10: rh1018317-vpn-logging.patch
 Patch11: rh1031170-bridge-port-crash.patch
+Patch12: rh1017884-dispatcher-crash-on-exit.patch
+Patch13: rh1025371-wifi-potential-crash.patch
+Patch14: rh1029053-fix-crash-device-no-MAC.patch
+Patch15: rh1030403-editor-crash-remote-connection.patch
+Patch16: fix-ifcfg-rh-con-update.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -172,6 +177,11 @@ deployments.
 %patch9 -p1 -b .nmcli-con-load
 %patch10 -p1 -b .vpn-log
 %patch11 -p1 -b .bridge-port
+%patch12 -p1 -b .dispatcher
+%patch13 -p1 -b .wifi-crash
+%patch14 -p1 -b .device-no-MAC
+%patch15 -p1 -b .libnm-glib-editor
+%patch16 -p1 -b .ifcfg-rh-update
 
 %build
 
@@ -370,6 +380,13 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Wed Nov 20 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-19.git20131003
+- dispatcher: fix crash on exit while logging from signal handler (rh #1017884)
+- core: workaround crash when connecting to wifi (rh #1025371)
+- ethernet: don't crash if device doesn't have a MAC address (rh #1029053)
+- libnm-glib: fix crash by taking additional ref in result_cb() (rh #1030403)
+- ifcfg-rh: fix ignoring updates that don't change anything
+
 * Mon Nov 18 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-18.git20131003
 - nmcli: add "con load" to manually load an ifcfg file
 - vpn: fix logging to help debug rh #1018317
