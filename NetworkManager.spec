@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 19%{snapshot}%{?dist}
+Release: 20%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -43,6 +43,8 @@ Patch13: rh1025371-wifi-potential-crash.patch
 Patch14: rh1029053-fix-crash-device-no-MAC.patch
 Patch15: rh1030403-editor-crash-remote-connection.patch
 Patch16: fix-ifcfg-rh-con-update.patch
+Patch17: rh1018317-prereq.patch
+Patch18: rh1018317-openvpn-ptp.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -182,6 +184,8 @@ deployments.
 %patch14 -p1 -b .device-no-MAC
 %patch15 -p1 -b .libnm-glib-editor
 %patch16 -p1 -b .ifcfg-rh-update
+%patch17 -p1 -b .ipv6-flags
+%patch18 -p1 -b .openvpn-ptp
 
 %build
 
@@ -380,6 +384,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Mon Dec  2 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-20.git20131003
+- core: Fix PtP/peer address support, for OpenVPN (rh #1018317)
+
 * Wed Nov 20 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-19.git20131003
 - dispatcher: fix crash on exit while logging from signal handler (rh #1017884)
 - core: workaround crash when connecting to wifi (rh #1025371)

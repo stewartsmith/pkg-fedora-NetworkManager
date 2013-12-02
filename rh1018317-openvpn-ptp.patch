@@ -1,0 +1,857 @@
+From fec50bd5fad633e57bfd6f9ee480e6192504ca5f Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@gnome.org>
+Date: Mon, 2 Dec 2013 10:20:26 -0500
+Subject: [PATCH] platform/core: add back support for PtP/peer addresses (rh
+ #1018317)
+
+In the migration to NMPlatform, support for ptp/peer addresses was
+accidentally dropped. This broke OpenVPN configurations using 'p2p'
+topology, which send a different peer address than the local address
+for tunX, plus the server may also push routes that use the peer
+address as the next hop. NetworkManager was unable to add these
+routes, because the kernel had no idea how to talk to the peer,
+because the peer's address was not assigned to any interface or
+reachable over any routes.
+
+Partly based on a patch from Dan Williams.
+---
+ src/nm-ip4-config.c                 | 44 +---------------------------
+ src/nm-ip4-config.h                 |  4 ---
+ src/nm-ip6-config.c                 | 49 -------------------------------
+ src/nm-ip6-config.h                 |  4 ---
+ src/platform/nm-fake-platform.c     | 10 +++++--
+ src/platform/nm-linux-platform.c    | 58 ++++++++++++++++++++++++++++++++-----
+ src/platform/nm-platform.c          | 26 +++++++++++++----
+ src/platform/nm-platform.h          | 14 ++++++---
+ src/platform/tests/platform.c       |  4 +--
+ src/platform/tests/test-address.c   | 12 ++++----
+ src/platform/tests/test-cleanup.c   |  4 +--
+ src/ppp-manager/nm-ppp-manager.c    |  2 +-
+ src/tests/test-dhcp-options.c       |  5 ++--
+ src/tests/test-ip4-config.c         | 12 ++++----
+ src/tests/test-ip6-config.c         | 13 ++++-----
+ src/vpn-manager/nm-vpn-connection.c | 10 +++----
+ 16 files changed, 118 insertions(+), 153 deletions(-)
+
+diff --git a/src/nm-ip4-config.c b/src/nm-ip4-config.c
+index 7aff888..640a1e1 100644
+--- a/src/nm-ip4-config.c
++++ b/src/nm-ip4-config.c
+@@ -47,7 +47,6 @@ typedef struct {
+ 	GPtrArray *domains;
+ 	GPtrArray *searches;
+ 	guint32 mss;
+-	guint32 ptp_address;
+ 	GArray *nis;
+ 	char *nis_domain;
+ 	GArray *wins;
+@@ -454,10 +453,6 @@ nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src)
+ 	for (i = 0; i < nm_ip4_config_get_num_addresses (src); i++)
+ 		nm_ip4_config_add_address (dst, nm_ip4_config_get_address (src, i));
+ 
+-	/* ptp address; only replace if src doesn't have one */
+-	if (!nm_ip4_config_get_ptp_address (dst))
+-		nm_ip4_config_set_ptp_address (dst, nm_ip4_config_get_ptp_address (src));
+-
+ 	/* nameservers */
+ 	for (i = 0; i < nm_ip4_config_get_num_nameservers (src); i++)
+ 		nm_ip4_config_add_nameserver (dst, nm_ip4_config_get_nameserver (src, i));
+@@ -527,10 +522,6 @@ nm_ip4_config_subtract (NMIP4Config *dst, const NMIP4Config *src)
+ 		}
+ 	}
+ 
+-	/* ptp address */
+-	if (nm_ip4_config_get_ptp_address (src) == nm_ip4_config_get_ptp_address (dst))
+-		nm_ip4_config_set_ptp_address (dst, 0);
+-
+ 	/* nameservers */
+ 	for (i = 0; i < nm_ip4_config_get_num_nameservers (src); i++) {
+ 		guint32 src_ns = nm_ip4_config_get_nameserver (src, i);
+@@ -788,12 +779,6 @@ nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relev
+ 		has_minor_changes = TRUE;
+ 	}
+ 
+-	/* ptp address */
+-	if (src_priv->ptp_address != dst_priv->ptp_address) {
+-		dst_priv->ptp_address = src_priv->ptp_address;
+-		has_relevant_changes = TRUE;
+-	}
+-
+ 	/* nis */
+ 	num = nm_ip4_config_get_num_nis_servers (src);
+ 	are_equal = num == nm_ip4_config_get_num_nis_servers (dst);
+@@ -873,11 +858,6 @@ nm_ip4_config_dump (const NMIP4Config *config, const char *detail)
+ 		}
+ 	}
+ 
+-	/* ptp address */
+-	tmp = nm_ip4_config_get_ptp_address (config);
+-	if (inet_ntop (AF_INET, (void *) &tmp, buf, sizeof (buf)))
+-		g_message ("    ptp: %s", buf);
+-
+ 	/* default gateway */
+ 	tmp = nm_ip4_config_get_gateway (config);
+ 	if (inet_ntop (AF_INET, (void *) &tmp, buf, sizeof (buf)))
+@@ -1314,24 +1294,6 @@ nm_ip4_config_get_mss (const NMIP4Config *config)
+ /******************************************************************/
+ 
+ void
+-nm_ip4_config_set_ptp_address (NMIP4Config *config, guint32 ptp_addr)
+-{
+-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+-
+-	priv->ptp_address = ptp_addr;
+-}
+-
+-guint32
+-nm_ip4_config_get_ptp_address (const NMIP4Config *config)
+-{
+-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+-
+-	return priv->ptp_address;
+-}
+-
+-/******************************************************************/
+-
+-void
+ nm_ip4_config_reset_nis_servers (NMIP4Config *config)
+ {
+ 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+@@ -1480,7 +1442,7 @@ hash_u32 (GChecksum *sum, guint32 n)
+ void
+ nm_ip4_config_hash (const NMIP4Config *config, GChecksum *sum, gboolean dns_only)
+ {
+-	guint32 i, n;
++	guint32 i;
+ 	const char *s;
+ 
+ 	g_return_if_fail (config);
+@@ -1504,10 +1466,6 @@ nm_ip4_config_hash (const NMIP4Config *config, GChecksum *sum, gboolean dns_only
+ 			hash_u32 (sum, route->metric);
+ 		}
+ 
+-		n = nm_ip4_config_get_ptp_address (config);
+-		if (n)
+-			hash_u32 (sum, n);
+-
+ 		for (i = 0; i < nm_ip4_config_get_num_nis_servers (config); i++)
+ 			hash_u32 (sum, nm_ip4_config_get_nis_server (config, i));
+ 
+diff --git a/src/nm-ip4-config.h b/src/nm-ip4-config.h
+index 5b76fb4..d57cd52 100644
+--- a/src/nm-ip4-config.h
++++ b/src/nm-ip4-config.h
+@@ -117,10 +117,6 @@ const char * nm_ip4_config_get_search (const NMIP4Config *config, guint i);
+ void nm_ip4_config_set_mss (NMIP4Config *config, guint32 mss);
+ guint32 nm_ip4_config_get_mss (const NMIP4Config *config);
+ 
+-/* PTP */
+-void nm_ip4_config_set_ptp_address (NMIP4Config *config, guint32 ptp_addr);
+-guint32 nm_ip4_config_get_ptp_address (const NMIP4Config *config);
+-
+ /* NIS */
+ void nm_ip4_config_reset_nis_servers (NMIP4Config *config);
+ void nm_ip4_config_add_nis_server (NMIP4Config *config, guint32 nis);
+diff --git a/src/nm-ip6-config.c b/src/nm-ip6-config.c
+index 65cbd0b..8eb79f2 100644
+--- a/src/nm-ip6-config.c
++++ b/src/nm-ip6-config.c
+@@ -47,7 +47,6 @@ typedef struct {
+ 	GPtrArray *domains;
+ 	GPtrArray *searches;
+ 	guint32 mss;
+-	struct in6_addr ptp_address;
+ } NMIP6ConfigPrivate;
+ 
+ 
+@@ -457,10 +456,6 @@ nm_ip6_config_merge (NMIP6Config *dst, const NMIP6Config *src)
+ 	for (i = 0; i < nm_ip6_config_get_num_addresses (src); i++)
+ 		nm_ip6_config_add_address (dst, nm_ip6_config_get_address (src, i));
+ 
+-	/* ptp address; only replace if src doesn't have one */
+-	if (!nm_ip6_config_get_ptp_address (dst))
+-		nm_ip6_config_set_ptp_address (dst, nm_ip6_config_get_ptp_address (src));
+-
+ 	/* nameservers */
+ 	for (i = 0; i < nm_ip6_config_get_num_nameservers (src); i++)
+ 		nm_ip6_config_add_nameserver (dst, nm_ip6_config_get_nameserver (src, i));
+@@ -535,12 +530,6 @@ nm_ip6_config_subtract (NMIP6Config *dst, const NMIP6Config *src)
+ 		}
+ 	}
+ 
+-	/* ptp address */
+-	src_tmp = nm_ip6_config_get_ptp_address (src);
+-	dst_tmp = nm_ip6_config_get_ptp_address (dst);
+-	if (src_tmp && dst_tmp && IN6_ARE_ADDR_EQUAL (src_tmp, dst_tmp))
+-		nm_ip6_config_set_ptp_address (dst, NULL);
+-
+ 	/* nameservers */
+ 	for (i = 0; i < nm_ip6_config_get_num_nameservers (src); i++) {
+ 		const struct in6_addr *src_ns = nm_ip6_config_get_nameserver (src, i);
+@@ -769,12 +758,6 @@ nm_ip6_config_replace (NMIP6Config *dst, const NMIP6Config *src, gboolean *relev
+ 		has_minor_changes = TRUE;
+ 	}
+ 
+-	/* ptp address */
+-	if (!IN6_ARE_ADDR_EQUAL (&src_priv->ptp_address, &dst_priv->ptp_address)) {
+-		nm_ip6_config_set_ptp_address (dst, &src_priv->ptp_address);
+-		has_relevant_changes = TRUE;
+-	}
+-
+ 	/* config_equal does not compare *all* the fields, therefore, we might have has_minor_changes
+ 	 * regardless of config_equal. But config_equal must correspond to has_relevant_changes. */
+ 	g_assert (config_equal == !has_relevant_changes);
+@@ -1219,28 +1197,6 @@ nm_ip6_config_get_mss (const NMIP6Config *config)
+ 
+ /******************************************************************/
+ 
+-void
+-nm_ip6_config_set_ptp_address (NMIP6Config *config, const struct in6_addr *ptp_address)
+-{
+-	NMIP6ConfigPrivate *priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+-
+-	if (ptp_address)
+-		priv->ptp_address = *ptp_address;
+-	else
+-		memset (&priv->ptp_address, 0, sizeof (priv->ptp_address));
+-
+-}
+-
+-const struct in6_addr *
+-nm_ip6_config_get_ptp_address (const NMIP6Config *config)
+-{
+-	NMIP6ConfigPrivate *priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+-
+-	return IN6_IS_ADDR_UNSPECIFIED (&priv->ptp_address) ? NULL : &priv->ptp_address;
+-}
+-
+-/******************************************************************/
+-
+ static inline void
+ hash_u32 (GChecksum *sum, guint32 n)
+ {
+@@ -1260,7 +1216,6 @@ void
+ nm_ip6_config_hash (const NMIP6Config *config, GChecksum *sum, gboolean dns_only)
+ {
+ 	guint32 i;
+-	const struct in6_addr *in6a;
+ 	const char *s;
+ 
+ 	g_return_if_fail (config);
+@@ -1284,10 +1239,6 @@ nm_ip6_config_hash (const NMIP6Config *config, GChecksum *sum, gboolean dns_only
+ 			hash_in6addr (sum, &route->gateway);
+ 			hash_u32 (sum, route->metric);
+ 		}
+-
+-		in6a = nm_ip6_config_get_ptp_address (config);
+-		if (in6a)
+-			hash_in6addr (sum, in6a);
+ 	}
+ 
+ 	for (i = 0; i < nm_ip6_config_get_num_nameservers (config); i++)
+diff --git a/src/nm-ip6-config.h b/src/nm-ip6-config.h
+index aecdab2..eb93d07 100644
+--- a/src/nm-ip6-config.h
++++ b/src/nm-ip6-config.h
+@@ -116,10 +116,6 @@ const char * nm_ip6_config_get_search (const NMIP6Config *config, guint i);
+ void nm_ip6_config_set_mss (NMIP6Config *config, guint32 mss);
+ guint32 nm_ip6_config_get_mss (const NMIP6Config *config);
+ 
+-/* PTP */
+-void nm_ip6_config_set_ptp_address (NMIP6Config *config, const struct in6_addr *ptp_addr);
+-const struct in6_addr *nm_ip6_config_get_ptp_address (const NMIP6Config *config);
+-
+ void nm_ip6_config_hash (const NMIP6Config *config, GChecksum *sum, gboolean dns_only);
+ gboolean nm_ip6_config_equal (const NMIP6Config *a, const NMIP6Config *b);
+ 
+diff --git a/src/platform/nm-fake-platform.c b/src/platform/nm-fake-platform.c
+index df5d5b8..dcbf932 100644
+--- a/src/platform/nm-fake-platform.c
++++ b/src/platform/nm-fake-platform.c
+@@ -739,7 +739,9 @@ get_time (void)
+ }
+ 
+ static gboolean
+-ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, guint32 lifetime, guint32 preferred)
++ip4_address_add (NMPlatform *platform, int ifindex,
++                 in_addr_t addr, in_addr_t peer_addr,
++                 int plen, guint32 lifetime, guint32 preferred)
+ {
+ 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+ 	NMPlatformIP4Address address;
+@@ -748,6 +750,7 @@ ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, gu
+ 	memset (&address, 0, sizeof (address));
+ 	address.ifindex = ifindex;
+ 	address.address = addr;
++	address.peer_address = peer_addr;
+ 	address.plen = plen;
+ 	address.timestamp = get_time ();
+ 	address.lifetime = lifetime;
+@@ -775,7 +778,9 @@ ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, gu
+ }
+ 
+ static gboolean
+-ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
++ip6_address_add (NMPlatform *platform, int ifindex,
++                 struct in6_addr addr, struct in6_addr peer_addr,
++                 int plen, guint32 lifetime, guint32 preferred, guint flags)
+ {
+ 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+ 	NMPlatformIP6Address address;
+@@ -784,6 +789,7 @@ ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int pl
+ 	memset (&address, 0, sizeof (address));
+ 	address.ifindex = ifindex;
+ 	address.address = addr;
++	address.peer_address = peer_addr;
+ 	address.plen = plen;
+ 	address.timestamp = get_time ();
+ 	address.lifetime = lifetime;
+diff --git a/src/platform/nm-linux-platform.c b/src/platform/nm-linux-platform.c
+index d13abbe..50b027a 100644
+--- a/src/platform/nm-linux-platform.c
++++ b/src/platform/nm-linux-platform.c
+@@ -764,6 +764,7 @@ static void
+ init_ip4_address (NMPlatformIP4Address *address, struct rtnl_addr *rtnladdr)
+ {
+ 	struct nl_addr *nladdr = rtnl_addr_get_local (rtnladdr);
++	struct nl_addr *nlpeer = rtnl_addr_get_peer (rtnladdr);
+ 
+ 	g_assert (nladdr);
+ 
+@@ -776,12 +777,17 @@ init_ip4_address (NMPlatformIP4Address *address, struct rtnl_addr *rtnladdr)
+ 	address->preferred = rtnl_addr_get_preferred_lifetime (rtnladdr);
+ 	g_assert (nl_addr_get_len (nladdr) == sizeof (address->address));
+ 	memcpy (&address->address, nl_addr_get_binary_addr (nladdr), sizeof (address->address));
++	if (nlpeer) {
++		g_assert (nl_addr_get_len (nlpeer) == sizeof (address->peer_address));
++		memcpy (&address->peer_address, nl_addr_get_binary_addr (nlpeer), sizeof (address->peer_address));
++	}
+ }
+ 
+ static void
+ init_ip6_address (NMPlatformIP6Address *address, struct rtnl_addr *rtnladdr)
+ {
+ 	struct nl_addr *nladdr = rtnl_addr_get_local (rtnladdr);
++	struct nl_addr *nlpeer = rtnl_addr_get_peer (rtnladdr);
+ 
+ 	memset (address, 0, sizeof (*address));
+ 
+@@ -793,6 +799,10 @@ init_ip6_address (NMPlatformIP6Address *address, struct rtnl_addr *rtnladdr)
+ 	address->flags = rtnl_addr_get_flags (rtnladdr);
+ 	g_assert (nl_addr_get_len (nladdr) == sizeof (address->address));
+ 	memcpy (&address->address, nl_addr_get_binary_addr (nladdr), sizeof (address->address));
++	if (nlpeer) {
++		g_assert (nl_addr_get_len (nlpeer) == sizeof (address->peer_address));
++		memcpy (&address->peer_address, nl_addr_get_binary_addr (nlpeer), sizeof (address->peer_address));
++	}
+ }
+ 
+ static gboolean
+@@ -2208,7 +2218,14 @@ ip6_address_get_all (NMPlatform *platform, int ifindex)
+ }
+ 
+ static struct nl_object *
+-build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
++build_rtnl_addr (int family,
++                 int ifindex,
++                 gconstpointer addr,
++                 gconstpointer peer_addr,
++                 int plen,
++                 guint32 lifetime,
++                 guint32 preferred,
++                 guint flags)
+ {
+ 	struct rtnl_addr *rtnladdr = rtnl_addr_alloc ();
+ 	int addrlen = family == AF_INET ? sizeof (in_addr_t) : sizeof (struct in6_addr);
+@@ -2220,6 +2237,14 @@ build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32
+ 	rtnl_addr_set_ifindex (rtnladdr, ifindex);
+ 	nle = rtnl_addr_set_local (rtnladdr, nladdr);
+ 	g_assert (!nle);
++
++	if (peer_addr) {
++		auto_nl_addr struct nl_addr *nlpeer = nl_addr_build (family, peer_addr, addrlen);
++
++		nle = rtnl_addr_set_peer (rtnladdr, nlpeer);
++		g_assert (!nle);
++	}
++
+ 	rtnl_addr_set_prefixlen (rtnladdr, plen);
+ 	if (lifetime) {
+ 		rtnl_addr_set_valid_lifetime (rtnladdr, lifetime);
+@@ -2232,33 +2257,50 @@ build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32
+ }
+ 
+ static gboolean
+-ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, guint32 lifetime, guint32 preferred)
++ip4_address_add (NMPlatform *platform,
++                 int ifindex,
++                 in_addr_t addr,
++                 in_addr_t peer_addr,
++                 int plen,
++                 guint32 lifetime,
++                 guint32 preferred)
+ {
+-	return add_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, lifetime, preferred, 0));
++	return add_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr,
++	                                              peer_addr ? &peer_addr : NULL,
++	                                              plen, lifetime, preferred, 0));
+ }
+ 
+ static gboolean
+-ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
++ip6_address_add (NMPlatform *platform,
++                 int ifindex,
++                 struct in6_addr addr,
++                 struct in6_addr peer_addr,
++                 int plen,
++                 guint32 lifetime,
++                 guint32 preferred,
++                 guint flags)
+ {
+-	return add_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, lifetime, preferred, flags));
++	return add_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr,
++	                                              memcmp (&peer_addr, &in6addr_any, sizeof (struct in6_addr)) == 0 ? NULL : &peer_addr,
++	                                              plen, lifetime, preferred, flags));
+ }
+ 
+ static gboolean
+ ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, int plen)
+ {
+-	return delete_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, 0, 0, 0));
++	return delete_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, NULL, plen, 0, 0, 0));
+ }
+ 
+ static gboolean
+ ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen)
+ {
+-	return delete_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, 0, 0, 0));
++	return delete_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, NULL, plen, 0, 0, 0));
+ }
+ 
+ static gboolean
+ ip_address_exists (NMPlatform *platform, int family, int ifindex, gconstpointer addr, int plen)
+ {
+-	auto_nl_object struct nl_object *object = build_rtnl_addr (family, ifindex, addr, plen, 0, 0, 0);
++	auto_nl_object struct nl_object *object = build_rtnl_addr (family, ifindex, addr, NULL, plen, 0, 0, 0);
+ 	auto_nl_object struct nl_object *cached_object = nl_cache_search (choose_cache (platform, object), object);
+ 
+ 	return !!cached_object;
+diff --git a/src/platform/nm-platform.c b/src/platform/nm-platform.c
+index 3f7f054..4e9c8fc 100644
+--- a/src/platform/nm-platform.c
++++ b/src/platform/nm-platform.c
+@@ -1165,7 +1165,12 @@ nm_platform_ip6_address_get_all (int ifindex)
+ }
+ 
+ gboolean
+-nm_platform_ip4_address_add (int ifindex, in_addr_t address, int plen, guint32 lifetime, guint32 preferred)
++nm_platform_ip4_address_add (int ifindex,
++                             in_addr_t address,
++                             in_addr_t peer_address,
++                             int plen,
++                             guint32 lifetime,
++                             guint32 preferred)
+ {
+ 	reset_error ();
+ 
+@@ -1175,11 +1180,17 @@ nm_platform_ip4_address_add (int ifindex, in_addr_t address, int plen, guint32 l
+ 	g_return_val_if_fail (klass->ip4_address_add, FALSE);
+ 
+ 	debug ("address: adding or updating IPv4 address");
+-	return klass->ip4_address_add (platform, ifindex, address, plen, lifetime, preferred);
++	return klass->ip4_address_add (platform, ifindex, address, peer_address, plen, lifetime, preferred);
+ }
+ 
+ gboolean
+-nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen, guint32 lifetime, guint32 preferred, guint flags)
++nm_platform_ip6_address_add (int ifindex,
++                             struct in6_addr address,
++                             struct in6_addr peer_address,
++                             int plen,
++                             guint32 lifetime,
++                             guint32 preferred,
++                             guint flags)
+ {
+ 	reset_error ();
+ 
+@@ -1189,7 +1200,7 @@ nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen, gui
+ 	g_return_val_if_fail (klass->ip6_address_add, FALSE);
+ 
+ 	debug ("address: adding or updating IPv6 address");
+-	return klass->ip6_address_add (platform, ifindex, address, plen, lifetime, preferred, flags);
++	return klass->ip6_address_add (platform, ifindex, address, peer_address, plen, lifetime, preferred, flags);
+ }
+ 
+ gboolean
+@@ -1350,7 +1361,7 @@ nm_platform_ip4_address_sync (int ifindex, const GArray *known_addresses)
+ 		} else
+ 			lifetime = preferred = NM_PLATFORM_LIFETIME_PERMANENT;
+ 
+-		if (!nm_platform_ip4_address_add (ifindex, known_address->address, known_address->plen, lifetime, preferred))
++		if (!nm_platform_ip4_address_add (ifindex, known_address->address, known_address->peer_address, known_address->plen, lifetime, preferred))
+ 			return FALSE;
+ 	}
+ 
+@@ -1407,7 +1418,8 @@ nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses)
+ 		} else
+ 			lifetime = preferred = NM_PLATFORM_LIFETIME_PERMANENT;
+ 
+-		if (!nm_platform_ip6_address_add (ifindex, known_address->address, known_address->plen,
++		if (!nm_platform_ip6_address_add (ifindex, known_address->address,
++		                                  known_address->peer_address, known_address->plen,
+ 		                                  lifetime, preferred, known_address->flags))
+ 			return FALSE;
+ 	}
+@@ -1843,6 +1855,7 @@ nm_platform_ip4_address_cmp (const NMPlatformIP4Address *a, const NMPlatformIP4A
+ {
+ 	_CMP_POINTER (a, b);
+ 	_CMP_FIELD_MEMCMP (a, b, address);
++	_CMP_FIELD_MEMCMP (a, b, peer_address);
+ 	_CMP_FIELD (a, b, ifindex);
+ 	_CMP_FIELD (a, b, plen);
+ 	_CMP_FIELD (a, b, timestamp);
+@@ -1857,6 +1870,7 @@ nm_platform_ip6_address_cmp (const NMPlatformIP6Address *a, const NMPlatformIP6A
+ 	_CMP_POINTER (a, b);
+ 	_CMP_FIELD (a, b, ifindex);
+ 	_CMP_FIELD_MEMCMP (a, b, address);
++	_CMP_FIELD_MEMCMP (a, b, peer_address);
+ 	_CMP_FIELD (a, b, plen);
+ 	_CMP_FIELD (a, b, timestamp);
+ 	_CMP_FIELD (a, b, lifetime);
+diff --git a/src/platform/nm-platform.h b/src/platform/nm-platform.h
+index ff338fc..b742c39 100644
+--- a/src/platform/nm-platform.h
++++ b/src/platform/nm-platform.h
+@@ -122,6 +122,7 @@ typedef struct {
+ typedef struct {
+ 	int ifindex;
+ 	in_addr_t address;
++	in_addr_t peer_address;  /* PTP peer address */
+ 	int plen;
+ 	guint32 timestamp;
+ 	guint32 lifetime;
+@@ -131,6 +132,7 @@ typedef struct {
+ typedef struct {
+ 	int ifindex;
+ 	struct in6_addr address;
++	struct in6_addr peer_address;
+ 	int plen;
+ 	guint32 timestamp;
+ 	guint32 lifetime;
+@@ -280,9 +282,11 @@ typedef struct {
+ 
+ 	GArray * (*ip4_address_get_all) (NMPlatform *, int ifindex);
+ 	GArray * (*ip6_address_get_all) (NMPlatform *, int ifindex);
+-	gboolean (*ip4_address_add) (NMPlatform *, int ifindex, in_addr_t address, int plen,
+-			guint32 lifetime, guint32 preferred_lft);
+-	gboolean (*ip6_address_add) (NMPlatform *, int ifindex, struct in6_addr address, int plen,
++	gboolean (*ip4_address_add) (NMPlatform *, int ifindex,
++	                             in_addr_t address, in_addr_t peer_address, int plen,
++	                             guint32 lifetime, guint32 preferred_lft);
++	gboolean (*ip6_address_add) (NMPlatform *, int ifindex,
++	                             struct in6_addr address, struct in6_addr peer_address, int plen,
+ 	                             guint32 lifetime, guint32 preferred_lft, guint flags);
+ 	gboolean (*ip4_address_delete) (NMPlatform *, int ifindex, in_addr_t address, int plen);
+ 	gboolean (*ip6_address_delete) (NMPlatform *, int ifindex, struct in6_addr address, int plen);
+@@ -402,9 +406,11 @@ gboolean nm_platform_gre_get_properties (int ifindex, NMPlatformGreProperties *p
+ 
+ GArray *nm_platform_ip4_address_get_all (int ifindex);
+ GArray *nm_platform_ip6_address_get_all (int ifindex);
+-gboolean nm_platform_ip4_address_add (int ifindex, in_addr_t address, int plen,
+-		guint32 lifetime, guint32 preferred_lft);
+-gboolean nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen,
++gboolean nm_platform_ip4_address_add (int ifindex,
++                                      in_addr_t address, in_addr_t peer_address, int plen,
++                                      guint32 lifetime, guint32 preferred_lft);
++gboolean nm_platform_ip6_address_add (int ifindex,
++                                      struct in6_addr address, struct in6_addr peer_address, int plen,
+                                       guint32 lifetime, guint32 preferred_lft, guint flags);
+ gboolean nm_platform_ip4_address_delete (int ifindex, in_addr_t address, int plen);
+ gboolean nm_platform_ip6_address_delete (int ifindex, struct in6_addr address, int plen);
+diff --git a/src/platform/tests/platform.c b/src/platform/tests/platform.c
+index c0b2c02..7ca2cb5 100644
+--- a/src/platform/tests/platform.c
++++ b/src/platform/tests/platform.c
+@@ -523,7 +523,7 @@ do_ip4_address_add (char **argv)
+ 		guint32 lifetime = strtol (*argv++, NULL, 10);
+ 		guint32 preferred = strtol (*argv++, NULL, 10);
+ 
+-		gboolean value = nm_platform_ip4_address_add (ifindex, address, plen, lifetime, preferred);
++		gboolean value = nm_platform_ip4_address_add (ifindex, address, 0, plen, lifetime, preferred);
+ 		return value;
+ 	} else
+ 		return FALSE;
+@@ -541,7 +541,7 @@ do_ip6_address_add (char **argv)
+ 		guint32 preferred = strtol (*argv++, NULL, 10);
+ 		guint flags = (*argv) ? rtnl_addr_str2flags (*argv++) : 0;
+ 
+-		gboolean value = nm_platform_ip6_address_add (ifindex, address, plen, lifetime, preferred, flags);
++		gboolean value = nm_platform_ip6_address_add (ifindex, address, in6addr_any, plen, lifetime, preferred, flags);
+ 		return value;
+ 	} else
+ 		return FALSE;
+diff --git a/src/platform/tests/test-address.c b/src/platform/tests/test-address.c
+index 52952c3..0f0ccc8 100644
+--- a/src/platform/tests/test-address.c
++++ b/src/platform/tests/test-address.c
+@@ -60,14 +60,14 @@ test_ip4_address (void)
+ 	/* Add address */
+ 	g_assert (!nm_platform_ip4_address_exists (ifindex, addr, IP4_PLEN));
+ 	no_error ();
+-	g_assert (nm_platform_ip4_address_add (ifindex, addr, IP4_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip4_address_add (ifindex, addr, 0, IP4_PLEN, lifetime, preferred));
+ 	no_error ();
+ 	g_assert (nm_platform_ip4_address_exists (ifindex, addr, IP4_PLEN));
+ 	no_error ();
+ 	accept_signal (address_added);
+ 
+ 	/* Add address again (aka update) */
+-	g_assert (nm_platform_ip4_address_add (ifindex, addr, IP4_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip4_address_add (ifindex, addr, 0, IP4_PLEN, lifetime, preferred));
+ 	no_error ();
+ 	accept_signal (address_changed);
+ 
+@@ -116,14 +116,14 @@ test_ip6_address (void)
+ 	/* Add address */
+ 	g_assert (!nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	no_error ();
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, in6addr_any, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	g_assert (nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	no_error ();
+ 	accept_signal (address_added);
+ 
+ 	/* Add address again (aka update) */
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, in6addr_any, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	accept_signal (address_changed);
+ 
+@@ -183,7 +183,7 @@ test_ip4_address_external (void)
+ 	/* Add/delete conflict */
+ 	run_command ("ip address add %s/%d dev %s valid_lft %d preferred_lft %d",
+ 			IP4_ADDRESS, IP4_PLEN, DEVICE_NAME, lifetime, preferred);
+-	g_assert (nm_platform_ip4_address_add (ifindex, addr, IP4_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip4_address_add (ifindex, addr, 0, IP4_PLEN, lifetime, preferred));
+ 	no_error ();
+ 	g_assert (nm_platform_ip4_address_exists (ifindex, addr, IP4_PLEN));
+ 	accept_signal (address_added);
+@@ -222,7 +222,7 @@ test_ip6_address_external (void)
+ 	/* Add/delete conflict */
+ 	run_command ("ip address add %s/%d dev %s valid_lft %d preferred_lft %d", 
+ 			IP6_ADDRESS, IP6_PLEN, DEVICE_NAME, lifetime, preferred);
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, in6addr_any, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	g_assert (nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	accept_signal (address_added);
+diff --git a/src/platform/tests/test-cleanup.c b/src/platform/tests/test-cleanup.c
+index f102870..d94b359 100644
+--- a/src/platform/tests/test-cleanup.c
++++ b/src/platform/tests/test-cleanup.c
+@@ -41,8 +41,8 @@ test_cleanup_internal ()
+ 	g_assert (ifindex > 0);
+ 
+ 	/* Add routes and addresses */
+-	g_assert (nm_platform_ip4_address_add (ifindex, addr4, plen4, lifetime, preferred));
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr6, plen6, lifetime, preferred, flags));
++	g_assert (nm_platform_ip4_address_add (ifindex, addr4, 0, plen4, lifetime, preferred));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr6, in6addr_any, plen6, lifetime, preferred, flags));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, gateway4, 32, INADDR_ANY, metric, mss));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, network4, plen4, gateway4, metric, mss));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, 0, 0, gateway4, metric, mss));
+diff --git a/src/ppp-manager/nm-ppp-manager.c b/src/ppp-manager/nm-ppp-manager.c
+index ffb1e74..b2f2326 100644
+--- a/src/ppp-manager/nm-ppp-manager.c
++++ b/src/ppp-manager/nm-ppp-manager.c
+@@ -538,7 +538,7 @@ impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
+ 	val = (GValue *) g_hash_table_lookup (config_hash, NM_PPP_IP4_CONFIG_GATEWAY);
+ 	if (val) {
+ 		nm_ip4_config_set_gateway (config, g_value_get_uint (val));
+-		nm_ip4_config_set_ptp_address (config, g_value_get_uint (val));
++		address.peer_address = g_value_get_uint (val);
+ 	}
+ 
+ 	val = (GValue *) g_hash_table_lookup (config_hash, NM_PPP_IP4_CONFIG_ADDRESS);
+diff --git a/src/tests/test-dhcp-options.c b/src/tests/test-dhcp-options.c
+index effe658..6ef599e 100644
+--- a/src/tests/test-dhcp-options.c
++++ b/src/tests/test-dhcp-options.c
+@@ -129,6 +129,8 @@ test_generic_options (const char *client)
+ 	        "dhcp-generic", "couldn't convert expected IP address");
+ 	ASSERT (address->address == tmp,
+ 	        "dhcp-generic", "unexpected IP address");
++	ASSERT (address->peer_address == 0,
++	        "dhcp-generic", "unexpected PTP address");
+ 
+ 	ASSERT (address->plen == 24,
+ 	        "dhcp-generic", "unexpected IP address prefix length");
+@@ -139,9 +141,6 @@ test_generic_options (const char *client)
+ 	ASSERT (nm_ip4_config_get_gateway (ip4_config) == tmp,
+ 	        "dhcp-generic", "unexpected IP gateway");
+ 
+-	ASSERT (nm_ip4_config_get_ptp_address (ip4_config) == 0,
+-	        "dhcp-generic", "unexpected PTP address");
+-
+ 	ASSERT (nm_ip4_config_get_num_wins (ip4_config) == 0,
+ 	        "dhcp-generic", "unexpected number of WINS servers");
+ 
+diff --git a/src/tests/test-ip4-config.c b/src/tests/test-ip4-config.c
+index 331897c..fde4a40 100644
+--- a/src/tests/test-ip4-config.c
++++ b/src/tests/test-ip4-config.c
+@@ -25,10 +25,12 @@
+ #include "nm-ip4-config.h"
+ 
+ static void
+-addr_init (NMPlatformIP4Address *a, const char *addr, guint plen)
++addr_init (NMPlatformIP4Address *a, const char *addr, const char *peer, guint plen)
+ {
+ 	memset (a, 0, sizeof (*a));
+ 	g_assert (inet_pton (AF_INET, addr, (void *) &a->address) == 1);
++	if (peer)
++		g_assert (inet_pton (AF_INET, peer, (void *) &a->peer_address) == 1);
+ 	a->plen = plen;
+ }
+ 
+@@ -68,7 +70,7 @@ build_test_config (void)
+ 	/* Build up the config to subtract */
+ 	config = nm_ip4_config_new ();
+ 
+-	addr_init (&addr, "192.168.1.10", 24);
++	addr_init (&addr, "192.168.1.10", "1.2.3.4", 24);
+ 	nm_ip4_config_add_address (config, &addr);
+ 	
+ 	route_new (&route, "10.0.0.0", 8, "192.168.1.1");
+@@ -86,8 +88,6 @@ build_test_config (void)
+ 	nm_ip4_config_add_search (config, "blahblah.com");
+ 	nm_ip4_config_add_search (config, "beatbox.com");
+ 
+-	nm_ip4_config_set_ptp_address (config, addr_to_num ("1.2.3.4"));
+-
+ 	nm_ip4_config_add_nis_server (config, addr_to_num ("1.2.3.9"));
+ 	nm_ip4_config_add_nis_server (config, addr_to_num ("1.2.3.10"));
+ 
+@@ -121,7 +121,7 @@ test_subtract (void)
+ 
+ 	/* add a couple more things to the test config */
+ 	dst = build_test_config ();
+-	addr_init (&addr, expected_addr, expected_addr_plen);
++	addr_init (&addr, expected_addr, NULL, expected_addr_plen);
+ 	nm_ip4_config_add_address (dst, &addr);
+ 	
+ 	route_new (&route, expected_route_dest, expected_route_plen, expected_route_next_hop);
+@@ -142,9 +142,9 @@ test_subtract (void)
+ 	test_addr = nm_ip4_config_get_address (dst, 0);
+ 	g_assert (test_addr != NULL);
+ 	g_assert_cmpuint (test_addr->address, ==, addr_to_num (expected_addr));
++	g_assert_cmpuint (test_addr->peer_address, ==, 0);
+ 	g_assert_cmpuint (test_addr->plen, ==, expected_addr_plen);
+ 
+-	g_assert_cmpuint (nm_ip4_config_get_ptp_address (dst), ==, 0);
+ 	g_assert_cmpuint (nm_ip4_config_get_gateway (dst), ==, 0);
+ 
+ 	g_assert_cmpuint (nm_ip4_config_get_num_routes (dst), ==, 1);
+diff --git a/src/tests/test-ip6-config.c b/src/tests/test-ip6-config.c
+index 10ce3bf..b8b9c7b 100644
+--- a/src/tests/test-ip6-config.c
++++ b/src/tests/test-ip6-config.c
+@@ -25,10 +25,12 @@
+ #include "nm-ip6-config.h"
+ 
+ static void
+-addr_init (NMPlatformIP6Address *a, const char *addr, guint plen)
++addr_init (NMPlatformIP6Address *a, const char *addr, const char *peer, guint plen)
+ {
+ 	memset (a, 0, sizeof (*a));
+ 	g_assert (inet_pton (AF_INET6, addr, (void *) &a->address) == 1);
++	if (peer)
++		g_assert (inet_pton (AF_INET6, peer, (void *) &a->peer_address) == 1);
+ 	a->plen = plen;
+ }
+ 
+@@ -61,7 +63,7 @@ build_test_config (void)
+ 	/* Build up the config to subtract */
+ 	config = nm_ip6_config_new ();
+ 
+-	addr_init (&addr, "abcd:1234:4321::cdde", 64);
++	addr_init (&addr, "abcd:1234:4321::cdde", "1:2:3:4::5", 64);
+ 	nm_ip6_config_add_address (config, &addr);
+ 
+ 	route_new (&route, "abcd:1234:4321::", 24, "abcd:1234:4321:cdde::2");
+@@ -82,9 +84,6 @@ build_test_config (void)
+ 	nm_ip6_config_add_search (config, "blahblah.com");
+ 	nm_ip6_config_add_search (config, "beatbox.com");
+ 
+-	addr_to_num ("1:2:3:4::5", &tmp);
+-	nm_ip6_config_set_ptp_address (config, &tmp);
+-
+ 	return config;
+ }
+ 
+@@ -111,7 +110,7 @@ test_subtract (void)
+ 
+ 	/* add a couple more things to the test config */
+ 	dst = build_test_config ();
+-	addr_init (&addr, expected_addr, expected_addr_plen);
++	addr_init (&addr, expected_addr, NULL, expected_addr_plen);
+ 	nm_ip6_config_add_address (dst, &addr);
+ 
+ 	route_new (&route, expected_route_dest, expected_route_plen, expected_route_next_hop);
+@@ -133,9 +132,9 @@ test_subtract (void)
+ 	g_assert (test_addr != NULL);
+ 	addr_to_num (expected_addr, &tmp);
+ 	g_assert (memcmp (&test_addr->address, &tmp, sizeof (tmp)) == 0);
++	g_assert (memcmp (&test_addr->peer_address, &in6addr_any, sizeof (tmp)) == 0);
+ 	g_assert_cmpuint (test_addr->plen, ==, expected_addr_plen);
+ 
+-	g_assert (nm_ip6_config_get_ptp_address (dst) == NULL);
+ 	g_assert (nm_ip6_config_get_gateway (dst) == NULL);
+ 
+ 	g_assert_cmpuint (nm_ip6_config_get_num_routes (dst), ==, 1);
+diff --git a/src/vpn-manager/nm-vpn-connection.c b/src/vpn-manager/nm-vpn-connection.c
+index a3b09f2..2d53449 100644
+--- a/src/vpn-manager/nm-vpn-connection.c
++++ b/src/vpn-manager/nm-vpn-connection.c
+@@ -569,8 +569,7 @@ print_vpn_config (NMVPNConnection *connection)
+ 			nm_log_info (LOGD_VPN, "  Internal Gateway: %s", ip_address_to_string (priv->ip4_internal_gw));
+ 		nm_log_info (LOGD_VPN, "  Internal Address: %s", ip_address_to_string (address4->address));
+ 		nm_log_info (LOGD_VPN, "  Internal Prefix: %d", address4->plen);
+-		nm_log_info (LOGD_VPN, "  Internal Point-to-Point Address: %s",
+-					 ip_address_to_string (nm_ip4_config_get_ptp_address (priv->ip4_config)));
++		nm_log_info (LOGD_VPN, "  Internal Point-to-Point Address: %s", ip_address_to_string (address4->peer_address));
+ 		nm_log_info (LOGD_VPN, "  Maximum Segment Size (MSS): %d", nm_ip4_config_get_mss (priv->ip4_config));
+ 
+ 		num = nm_ip4_config_get_num_routes (priv->ip4_config);
+@@ -610,8 +609,7 @@ print_vpn_config (NMVPNConnection *connection)
+ 			nm_log_info (LOGD_VPN, "  Internal Gateway: %s", ip6_address_to_string (priv->ip6_internal_gw));
+ 		nm_log_info (LOGD_VPN, "  Internal Address: %s", ip6_address_to_string (&address6->address));
+ 		nm_log_info (LOGD_VPN, "  Internal Prefix: %d", address6->plen);
+-		nm_log_info (LOGD_VPN, "  Internal Point-to-Point Address: %s",
+-					 ip6_address_to_string (nm_ip6_config_get_ptp_address (priv->ip6_config)));
++		nm_log_info (LOGD_VPN, "  Internal Point-to-Point Address: %s", ip6_address_to_string (&address6->peer_address));
+ 		nm_log_info (LOGD_VPN, "  Maximum Segment Size (MSS): %d", nm_ip6_config_get_mss (priv->ip6_config));
+ 
+ 		num = nm_ip6_config_get_num_routes (priv->ip6_config);
+@@ -876,7 +874,7 @@ nm_vpn_connection_ip4_config_get (DBusGProxy *proxy,
+ 
+ 	val = (GValue *) g_hash_table_lookup (config_hash, NM_VPN_PLUGIN_IP4_CONFIG_PTP);
+ 	if (val)
+-		nm_ip4_config_set_ptp_address (config, g_value_get_uint (val));
++		address.peer_address = g_value_get_uint (val);
+ 
+ 	val = (GValue *) g_hash_table_lookup (config_hash, NM_VPN_PLUGIN_IP4_CONFIG_PREFIX);
+ 	if (val)
+@@ -1024,7 +1022,7 @@ nm_vpn_connection_ip6_config_get (DBusGProxy *proxy,
+ 		GByteArray *ba = g_value_get_boxed (val);
+ 
+ 		if (ba->len == sizeof (struct in6_addr))
+-			nm_ip6_config_set_ptp_address (config, (struct in6_addr *)ba->data);
++			address.peer_address = *(struct in6_addr *) ba->data;
+ 	}
+ 
+ 	val = (GValue *) g_hash_table_lookup (config_hash, NM_VPN_PLUGIN_IP6_CONFIG_PREFIX);
+-- 
+1.8.4.2
+
