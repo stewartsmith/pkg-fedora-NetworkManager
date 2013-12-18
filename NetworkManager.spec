@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 20%{snapshot}%{?dist}
+Release: 21%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -45,6 +45,9 @@ Patch15: rh1030403-editor-crash-remote-connection.patch
 Patch16: fix-ifcfg-rh-con-update.patch
 Patch17: rh1018317-prereq.patch
 Patch18: rh1018317-openvpn-ptp.patch
+Patch19: rh1034921-startup-link-wait.patch
+Patch20: rh1029213-ignore-RA-default-routes.patch
+Patch21: rh1032819-set-broadcast-address.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -186,6 +189,9 @@ deployments.
 %patch16 -p1 -b .ifcfg-rh-update
 %patch17 -p1 -b .ipv6-flags
 %patch18 -p1 -b .openvpn-ptp
+%patch19 -p1 -b .startup-linkwait
+%patch20 -p1 -b .ignore-RA-default-routes
+%patch21 -p1 -b .broadcast-addr
 
 %build
 
@@ -384,6 +390,11 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Thu Dec 12 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-21.git20131003
+- core: wait for link before declaring startup complete (rh #1034921)
+- core: ignore RA-provided IPv6 default routes (rh #1029213)
+- core: set IPv4 broadcast address correctly (rh #1032819)
+
 * Mon Dec  2 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-20.git20131003
 - core: Fix PtP/peer address support, for OpenVPN (rh #1018317)
 
