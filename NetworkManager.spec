@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 21%{snapshot}%{?dist}
+Release: 22%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -48,6 +48,7 @@ Patch18: rh1018317-openvpn-ptp.patch
 Patch19: rh1034921-startup-link-wait.patch
 Patch20: rh1029213-ignore-RA-default-routes.patch
 Patch21: rh1032819-set-broadcast-address.patch
+Patch22: rh1044757-ipv6-solicit-infinity.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -192,6 +193,7 @@ deployments.
 %patch19 -p1 -b .startup-linkwait
 %patch20 -p1 -b .ignore-RA-default-routes
 %patch21 -p1 -b .broadcast-addr
+%patch22 -p1 -b .ipv6-solicit-infinity
 
 %build
 
@@ -390,6 +392,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Thu Dec 19 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-22.git20131003
+- core: fix IPv6 router solicitation loop (rh #1044757)
+
 * Thu Dec 12 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-21.git20131003
 - core: wait for link before declaring startup complete (rh #1034921)
 - core: ignore RA-provided IPv6 default routes (rh #1029213)
