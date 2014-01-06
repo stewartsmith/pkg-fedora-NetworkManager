@@ -19,7 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 22%{snapshot}%{?dist}
+Release: 23%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -49,6 +49,7 @@ Patch19: rh1034921-startup-link-wait.patch
 Patch20: rh1029213-ignore-RA-default-routes.patch
 Patch21: rh1032819-set-broadcast-address.patch
 Patch22: rh1044757-ipv6-solicit-infinity.patch
+Patch23: rh1048711-bluez-crash.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -194,6 +195,7 @@ deployments.
 %patch20 -p1 -b .ignore-RA-default-routes
 %patch21 -p1 -b .broadcast-addr
 %patch22 -p1 -b .ipv6-solicit-infinity
+%patch23 -p1 -b .bluez-crash
 
 %build
 
@@ -392,6 +394,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Mon Jan  6 2014 Dan Winship <danw@redhat.com> - 0.9.9.0-23.git20131003
+- bluez-manager: fix a crash (rh #1048711)
+
 * Thu Dec 19 2013 Dan Williams <dcbw@redhat.com> - 0.9.9.0-22.git20131003
 - core: fix IPv6 router solicitation loop (rh #1044757)
 
