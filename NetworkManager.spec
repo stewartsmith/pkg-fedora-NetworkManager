@@ -19,11 +19,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-<<<<<<< HEAD
-Release: 19%{snapshot}%{?dist}
-=======
 Release: 23%{snapshot}%{?dist}
->>>>>>> d9c5764ddb7a90f57a3d13b542bafada9beb6d92
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -47,8 +43,6 @@ Patch13: rh1025371-wifi-potential-crash.patch
 Patch14: rh1029053-fix-crash-device-no-MAC.patch
 Patch15: rh1030403-editor-crash-remote-connection.patch
 Patch16: fix-ifcfg-rh-con-update.patch
-<<<<<<< HEAD
-=======
 Patch17: rh1018317-prereq.patch
 Patch18: rh1018317-openvpn-ptp.patch
 Patch19: rh1034921-startup-link-wait.patch
@@ -56,7 +50,6 @@ Patch20: rh1029213-ignore-RA-default-routes.patch
 Patch21: rh1032819-set-broadcast-address.patch
 Patch22: rh1044757-ipv6-solicit-infinity.patch
 Patch23: rh1048711-bluez-crash.patch
->>>>>>> d9c5764ddb7a90f57a3d13b542bafada9beb6d92
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -196,8 +189,6 @@ deployments.
 %patch14 -p1 -b .device-no-MAC
 %patch15 -p1 -b .libnm-glib-editor
 %patch16 -p1 -b .ifcfg-rh-update
-<<<<<<< HEAD
-=======
 %patch17 -p1 -b .ipv6-flags
 %patch18 -p1 -b .openvpn-ptp
 %patch19 -p1 -b .startup-linkwait
@@ -205,7 +196,6 @@ deployments.
 %patch21 -p1 -b .broadcast-addr
 %patch22 -p1 -b .ipv6-solicit-infinity
 %patch23 -p1 -b .bluez-crash
->>>>>>> d9c5764ddb7a90f57a3d13b542bafada9beb6d92
 
 %build
 
@@ -404,8 +394,6 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
-<<<<<<< HEAD
-=======
 * Mon Jan  6 2014 Dan Winship <danw@redhat.com> - 0.9.9.0-23.git20131003
 - bluez-manager: fix a crash (rh #1048711)
 
@@ -420,7 +408,6 @@ fi
 * Mon Dec  2 2013 Dan Winship <danw@redhat.com> - 0.9.9.0-20.git20131003
 - core: Fix PtP/peer address support, for OpenVPN (rh #1018317)
 
->>>>>>> d9c5764ddb7a90f57a3d13b542bafada9beb6d92
 * Wed Nov 20 2013 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-19.git20131003
 - dispatcher: fix crash on exit while logging from signal handler (rh #1017884)
 - core: workaround crash when connecting to wifi (rh #1025371)
