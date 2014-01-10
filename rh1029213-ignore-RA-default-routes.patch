@@ -1,0 +1,98 @@
+From 8586353b09460ec0a619058421743dd7d424a75d Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Wed, 20 Nov 2013 13:40:07 -0600
+Subject: [PATCH] core: ignore RA-provided default routes (rh #1029213)
+
+The router has no idea what the local configuration or user preferences are,
+so sending routes with a prefix length of 0 is at best misinformed and at
+worst breaks things.  The kernel also ignores plen=0 routes in its in-kernel
+RA processing code in net/ipv6/ndisc.c.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1029213
+---
+ src/devices/nm-device.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index f03ecbb..d92a94b 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3283,20 +3283,26 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, NMDevice *device
+ 		/* Rebuild route list from router discovery cache. */
+ 		nm_ip6_config_reset_routes (priv->ac_ip6_config);
+ 
+ 		for (i = 0; i < rdisc->routes->len; i++) {
+ 			NMRDiscRoute *discovered_route = &g_array_index (rdisc->routes, NMRDiscRoute, i);
+ 			NMPlatformIP6Route route;
+ 
+-			memset (&route, 0, sizeof (route));
+-			route.network = discovered_route->network;
+-			route.plen = discovered_route->plen;
+-			route.gateway = discovered_route->gateway;
++			/* Only accept non-default routes.  The router has no idea what the
++			 * local configuration or user preferences are, so sending routes
++			 * with a prefix length of 0 is quite rude and thus ignored.
++			 */
++			if (discovered_route->plen > 0) {
++				memset (&route, 0, sizeof (route));
++				route.network = discovered_route->network;
++				route.plen = discovered_route->plen;
++				route.gateway = discovered_route->gateway;
+ 
+-			nm_ip6_config_add_route (priv->ac_ip6_config, &route);
++				nm_ip6_config_add_route (priv->ac_ip6_config, &route);
++			}
+ 		}
+ 	}
+ 
+ 	if (changed & NM_RDISC_CONFIG_DNS_SERVERS) {
+ 		/* Rebuild DNS server list from router discovery cache. */
+ 		nm_ip6_config_reset_nameservers (priv->ac_ip6_config);
+ 
+-- 
+1.8.3.1
+
+From 6e73f01b6e69f44f8d9da4872fb796b9d80acac1 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Tue, 3 Dec 2013 14:12:55 -0600
+Subject: [PATCH] platform: fix possible out-of-bounds access with RA route
+ masking
+
+If the prefix length was 128, that could cause an access beyond the
+end of the array.  Found by Thomas Haller.
+---
+ src/rdisc/nm-lndp-rdisc.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/src/rdisc/nm-lndp-rdisc.c b/src/rdisc/nm-lndp-rdisc.c
+index abcc3c2..3299b32 100644
+--- a/src/rdisc/nm-lndp-rdisc.c
++++ b/src/rdisc/nm-lndp-rdisc.c
+@@ -411,17 +411,21 @@ set_address_masked (struct in6_addr *dst, struct in6_addr *src, guint8 plen)
+ 	guint nbytes = plen / 8;
+ 	guint nbits = plen % 8;
+ 
+ 	g_return_if_fail (plen <= 128);
+ 	g_assert (src);
+ 	g_assert (dst);
+ 
+-	memset (dst, 0, sizeof (*dst));
+-	memcpy (dst, src, nbytes);
+-	dst->s6_addr[nbytes] = (src->s6_addr[nbytes] & (0xFF << (8 - nbits)));
++	if (plen >= 128)
++		*dst = *src;
++	else {
++		memset (dst, 0, sizeof (*dst));
++		memcpy (dst, src, nbytes);
++		dst->s6_addr[nbytes] = (src->s6_addr[nbytes] & (0xFF << (8 - nbits)));
++	}
+ }
+ 
+ static int
+ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
+ {
+ 	NMRDisc *rdisc = (NMRDisc *) user_data;
+ 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
+-- 
+1.8.3.1
+

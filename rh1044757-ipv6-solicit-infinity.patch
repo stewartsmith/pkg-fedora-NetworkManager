@@ -1,0 +1,431 @@
+From 8d3618a07baccc8abd9cfe7cf5b000b5d8c3340b Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 23 Oct 2013 18:37:02 +0200
+Subject: [PATCH] rdisc: emit config_change signal for update of address
+ lifetime
+
+Signed-off-by: Thomas Haller <thaller@redhat.com>
+---
+ src/rdisc/nm-lndp-rdisc.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/rdisc/nm-lndp-rdisc.c b/src/rdisc/nm-lndp-rdisc.c
+index 3299b32..f94d82a 100644
+--- a/src/rdisc/nm-lndp-rdisc.c
++++ b/src/rdisc/nm-lndp-rdisc.c
+@@ -101,16 +101,19 @@ add_address (NMRDisc *rdisc, const NMRDiscAddress *new)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->addresses->len; i++) {
+ 		NMRDiscAddress *item = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
+ 
+ 		if (IN6_ARE_ADDR_EQUAL (&item->address, &new->address)) {
+-			memcpy (item, new, sizeof (*new));
+-			return FALSE;
++			gboolean changed = item->timestamp + item->lifetime  != new->timestamp + new->lifetime ||
++			                   item->timestamp + item->preferred != new->timestamp + new->preferred;
++
++			*item = *new;
++			return changed;
+ 		}
+ 	}
+ 
+ 	g_array_insert_val (rdisc->addresses, i, *new);
+ 	return TRUE;
+ }
+ 
+-- 
+1.8.3.1
+
+From 4f3f789fa5dad459a2aecabd77ef4a595dec5013 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Thu, 19 Dec 2013 10:58:46 -0600
+Subject: [PATCH] rdisc: ensure RDNSS and DNSSL lifetimes are updated (rh
+ #1044757) (bgo #720760)
+
+The DNS server and domain timestamps and lifetimes weren't updated
+when a new RA was received. When half the lifetime for either of
+them had passed, clean_dns_servers() and clean_domains() request a
+Router Solicitation to ensure the DNS information does not expire.
+
+This obviously results in a new Router Advertisement, but since the
+timestamps don't get updated, clean_dns_servers() and clean_domains()
+simply request another solicitation because 'now' is still greater
+than half the old lifetime.  This casues another solicit request,
+which causes another RA, which... etc.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1044757
+https://bugzilla.gnome.org/show_bug.cgi?id=720760
+---
+ src/devices/nm-device.c   |  9 +++--
+ src/rdisc/nm-lndp-rdisc.c | 97 +++++++++++++++++++++++++++++------------------
+ 2 files changed, 67 insertions(+), 39 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 74d443d..6f2383b 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3315,14 +3315,17 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, NMDevice *device
+ 			NMRDiscDNSServer *discovered_server = &g_array_index (rdisc->dns_servers, NMRDiscDNSServer, i);
+ 
+ 			nm_ip6_config_add_nameserver (priv->ac_ip6_config, &discovered_server->address);
+ 		}
+ 	}
+ 
+ 	if (changed & NM_RDISC_CONFIG_DNS_DOMAINS) {
++		/* Rebuild domain list from router discovery cache. */
++		nm_ip6_config_reset_domains (priv->ac_ip6_config);
++
+ 		for (i = 0; i < rdisc->dns_domains->len; i++) {
+ 			NMRDiscDNSDomain *discovered_domain = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
+ 
+ 			nm_ip6_config_add_domain (priv->ac_ip6_config, discovered_domain->domain);
+ 		}
+ 	}
+ 
+@@ -3357,28 +3360,29 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, NMDevice *device
+ 
+ static gboolean
+ addrconf6_start (NMDevice *self)
+ {
+ 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
+ 	NMConnection *connection;
++	const char *ip_iface = nm_device_get_ip_iface (self);
+ 
+ 	connection = nm_device_get_connection (self);
+ 	g_assert (connection);
+ 
+ 	g_warn_if_fail (priv->ac_ip6_config == NULL);
+ 	if (priv->ac_ip6_config) {
+ 		g_object_unref (priv->ac_ip6_config);
+ 		priv->ac_ip6_config = NULL;
+ 	}
+ 
+-	priv->rdisc = nm_lndp_rdisc_new (nm_device_get_ip_ifindex (self), nm_device_get_ip_iface (self));
++	priv->rdisc = nm_lndp_rdisc_new (nm_device_get_ip_ifindex (self), ip_iface);
+ 	nm_platform_sysctl_set (priv->ip6_accept_ra_path, "0");
+ 
+ 	if (!priv->rdisc) {
+-		nm_log_err (LOGD_IP6, "Failed to start router discovery.");
++		nm_log_err (LOGD_IP6, "(%s): failed to start router discovery.", ip_iface);
+ 		return FALSE;
+ 	}
+ 
+ 	priv->rdisc_config_changed_sigid = g_signal_connect (
+ 			priv->rdisc, NM_RDISC_CONFIG_CHANGED, G_CALLBACK (rdisc_config_changed), self);
+ 
+ 	/* FIXME: what if interface has no lladdr, like PPP? */
+diff --git a/src/rdisc/nm-lndp-rdisc.c b/src/rdisc/nm-lndp-rdisc.c
+index f94d82a..2e22fd9 100644
+--- a/src/rdisc/nm-lndp-rdisc.c
++++ b/src/rdisc/nm-lndp-rdisc.c
+@@ -140,44 +140,68 @@ add_route (NMRDisc *rdisc, const NMRDiscRoute *new)
+ 	}
+ 
+ 	g_array_insert_val (rdisc->routes, i, *new);
+ 	return TRUE;
+ }
+ 
+ static gboolean
+-add_server (NMRDisc *rdisc, const NMRDiscDNSServer *new)
++add_dns_server (NMRDisc *rdisc, const NMRDiscDNSServer *new)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->dns_servers->len; i++) {
+ 		NMRDiscDNSServer *item = &g_array_index (rdisc->dns_servers, NMRDiscDNSServer, i);
+ 
+-		if (IN6_ARE_ADDR_EQUAL (&item->address, &new->address))
+-			return FALSE;
++		if (IN6_ARE_ADDR_EQUAL (&item->address, &new->address)) {
++			gboolean changed = item->timestamp != new->timestamp ||
++			                   item->lifetime != new->lifetime;
++			if (changed) {
++				item->timestamp = new->timestamp;
++				item->lifetime = new->lifetime;
++			}
++			return changed;
++		}
+ 	}
+ 
++	/* DNS server should no longer be used */
++	if (new->lifetime == 0)
++		return FALSE;
++
+ 	g_array_insert_val (rdisc->dns_servers, i, *new);
+-
+ 	return TRUE;
+ }
+ 
++/* Always copies new->domain */
+ static gboolean
+ add_domain (NMRDisc *rdisc, const NMRDiscDNSDomain *new)
+ {
++	NMRDiscDNSDomain *item;
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->dns_domains->len; i++) {
+-		NMRDiscDNSDomain *item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
++		item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
+ 
+-		if (!g_strcmp0 (item->domain, new->domain))
+-			return FALSE;
++		if (!g_strcmp0 (item->domain, new->domain)) {
++			gboolean changed = item->timestamp != new->timestamp ||
++			                   item->lifetime != new->lifetime;
++			if (changed) {
++				item->timestamp = new->timestamp;
++				item->lifetime = new->lifetime;
++			}
++			return changed;
++		}
+ 	}
+ 
++	/* Domain should no longer be used */
++	if (new->lifetime == 0)
++		return FALSE;
++
+ 	g_array_insert_val (rdisc->dns_domains, i, *new);
+-
++	item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
++	item->domain = g_strdup (new->domain);
+ 	return TRUE;
+ }
+ 
+ #define RETRY 10
+ 
+ static gboolean
+ send_rs (NMRDisc *rdisc)
+@@ -186,15 +210,15 @@ send_rs (NMRDisc *rdisc)
+ 	struct ndp_msg *msg;
+ 	int error;
+ 
+ 	error = ndp_msg_new (&msg, NDP_MSG_RS);
+ 	g_assert (!error);
+ 	ndp_msg_ifindex_set (msg, rdisc->ifindex);
+ 
+-	debug ("(%s): sending router solicitation: %d", rdisc->ifname, rdisc->ifindex);
++	debug ("(%s): sending router solicitation", rdisc->ifname);
+ 
+ 	error = ndp_msg_send (priv->ndp, msg);
+ 	if (error)
+ 		error ("(%s): cannot send router solicitation: %d.", rdisc->ifname, error);
+ 
+ 	ndp_msg_destroy (msg);
+ 
+@@ -218,139 +242,140 @@ solicit (NMRDisc *rdisc)
+ static void
+ clean_gateways (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->gateways->len; i++) {
+ 		NMRDiscGateway *item = &g_array_index (rdisc->gateways, NMRDiscGateway, i);
+-		guint32 expiry = item->timestamp + item->lifetime;
++		guint64 expiry = item->timestamp + item->lifetime;
+ 
+-		if (item->lifetime == UINT_MAX)
++		if (item->lifetime == G_MAXUINT32)
+ 			continue;
+ 
+ 		if (now >= expiry) {
+ 			g_array_remove_index (rdisc->gateways, i--);
+ 			*changed |= NM_RDISC_CONFIG_GATEWAYS;
+ 		} else if (*nextevent > expiry)
+-			*nextevent = expiry;
++			*nextevent = (guint32) expiry;
+ 	}
+ }
+ 
+ static void
+ clean_addresses (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->addresses->len; i++) {
+ 		NMRDiscAddress *item = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
+-		guint32 expiry = item->timestamp + item->lifetime;
++		guint64 expiry = item->timestamp + item->lifetime;
+ 
+-		if (item->lifetime == UINT_MAX)
++		if (item->lifetime == G_MAXUINT32)
+ 			continue;
+ 
+ 		if (now >= expiry) {
+ 			g_array_remove_index (rdisc->addresses, i--);
+ 			*changed |= NM_RDISC_CONFIG_ADDRESSES;
+ 		} else if (*nextevent > expiry)
+-			*nextevent = expiry;
++			*nextevent = (guint32) expiry;
+ 	}
+ }
+ 
+ static void
+ clean_routes (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->routes->len; i++) {
+ 		NMRDiscRoute *item = &g_array_index (rdisc->routes, NMRDiscRoute, i);
+-		guint32 expiry = item->timestamp + item->lifetime;
++		guint64 expiry = item->timestamp + item->lifetime;
+ 
+-		if (item->lifetime == UINT_MAX)
++		if (item->lifetime == G_MAXUINT32)
+ 			continue;
+ 
+ 		if (now >= expiry) {
+ 			g_array_remove_index (rdisc->routes, i--);
+ 			*changed |= NM_RDISC_CONFIG_ROUTES;
+ 		} else if (*nextevent > expiry)
+-			*nextevent = expiry;
++			*nextevent = (guint32) expiry;
+ 	}
+ }
+ 
+ static void
+-clean_servers (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
++clean_dns_servers (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->dns_servers->len; i++) {
+ 		NMRDiscDNSServer *item = &g_array_index (rdisc->dns_servers, NMRDiscDNSServer, i);
+-		guint32 expiry = item->timestamp + item->lifetime;
+-		guint32 refresh = item->timestamp + item->lifetime / 2;
++		guint64 expiry = item->timestamp + item->lifetime;
++		guint64 refresh = item->timestamp + item->lifetime / 2;
+ 
+-		if (item->lifetime == UINT_MAX)
++		if (item->lifetime == G_MAXUINT32)
+ 			continue;
+ 
+ 		if (now >= expiry) {
+ 			g_array_remove_index (rdisc->dns_servers, i--);
+-			*changed |= NM_RDISC_CONFIG_ROUTES;
++			*changed |= NM_RDISC_CONFIG_DNS_SERVERS;
+ 		} else if (now >= refresh)
+ 			solicit (rdisc);
+ 		else if (*nextevent > refresh)
+-			*nextevent = refresh;
++			*nextevent = (guint32) refresh;
+ 	}
+ }
+ 
+ static void
+ clean_domains (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap *changed, guint32 *nextevent)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < rdisc->dns_domains->len; i++) {
+ 		NMRDiscDNSDomain *item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
+-		guint32 expiry = item->timestamp + item->lifetime;
+-		guint32 refresh = item->timestamp + item->lifetime / 2;
++		guint64 expiry = item->timestamp + item->lifetime;
++		guint64 refresh = item->timestamp + item->lifetime / 2;
+ 
+-		if (item->lifetime == UINT_MAX)
++		if (item->lifetime == G_MAXUINT32)
+ 			continue;
+ 
+ 		if (now >= expiry) {
++			g_free (item->domain);
+ 			g_array_remove_index (rdisc->dns_domains, i--);
+-			*changed |= NM_RDISC_CONFIG_ROUTES;
++			*changed |= NM_RDISC_CONFIG_DNS_DOMAINS;
+ 		} else if (now >= refresh)
+ 			solicit (rdisc);
+ 		else if (*nextevent >=refresh)
+-			*nextevent = refresh;
++			*nextevent = (guint32) refresh;
+ 	}
+ }
+ 
+ static gboolean timeout_cb (gpointer user_data);
+ 
+ static void
+ check_timestamps (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap changed)
+ {
+ 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
+-	/* Use a magic date in distant enough future as there's no guint32 max macro. */
+-	guint32 never = G_MAXINT32;
++	/* Use a magic date in the distant future (~68 years) */
++	guint32 never = G_MAXINT32;
+ 	guint32 nextevent = never;
+ 
+ 	if (priv->timeout_id) {
+ 		g_source_remove (priv->timeout_id);
+ 		priv->timeout_id = 0;
+ 	}
+ 
+ 	clean_gateways (rdisc, now, &changed, &nextevent);
+ 	clean_addresses (rdisc, now, &changed, &nextevent);
+ 	clean_routes (rdisc, now, &changed, &nextevent);
+-	clean_servers (rdisc, now, &changed, &nextevent);
++	clean_dns_servers (rdisc, now, &changed, &nextevent);
+ 	clean_domains (rdisc, now, &changed, &nextevent);
+ 
+ 	if (changed)
+ 		g_signal_emit_by_name (rdisc, NM_RDISC_CONFIG_CHANGED, changed);
+ 
+ 	if (nextevent != never) {
+-		debug ("Scheduling next now/lifetime check: %d seconds", (int) nextevent);
++		debug ("(%s): scheduling next now/lifetime check: %u seconds", rdisc->ifname, nextevent);
+ 		priv->timeout_id = g_timeout_add_seconds (nextevent, timeout_cb, rdisc);
+ 	}
+ }
+ 
+ static guint32
+ get_time (void)
+ {
+@@ -450,15 +475,15 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
+ 	 *
+ 	 * The biggest difference from good old DHCP is that all configuration
+ 	 * items have their own lifetimes and they are merged from various
+ 	 * sources. Router discovery is *not* contract-based, so there is *no*
+ 	 * single time when the configuration is finished and updates can
+ 	 * come at any time.
+ 	 */
+-	debug ("Recieved router advertisement: %d at %d", rdisc->ifindex, (int) now);
++	debug ("(%s): received router advertisement at %u", rdisc->ifname, now);
+ 
+ 	if (priv->send_rs_id) {
+ 		g_source_remove (priv->send_rs_id);
+ 		priv->send_rs_id = 0;
+ 	}
+ 
+ 	/* DHCP level:
+@@ -559,27 +584,27 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
+ 			/* Pad the lifetime somewhat to give a bit of slack in cases
+ 			 * where one RA gets lost or something (which can happen on unreliable
+ 			 * links like WiFi where certain types of frames are not retransmitted).
+ 			 * Note that 0 has special meaning and is therefore not adjusted.
+ 			 */
+ 			if (dns_server.lifetime && dns_server.lifetime < 7200)
+ 				dns_server.lifetime = 7200;
+-			if (add_server (rdisc, &dns_server))
++			if (add_dns_server (rdisc, &dns_server))
+ 				changed |= NM_RDISC_CONFIG_DNS_SERVERS;
+ 		}
+ 	}
+ 	ndp_msg_opt_for_each_offset(offset, msg, NDP_MSG_OPT_DNSSL) {
+ 		char *domain;
+ 		int domain_index;
+ 
+ 		ndp_msg_opt_dnssl_for_each_domain (domain, domain_index, msg, offset) {
+ 			NMRDiscDNSDomain dns_domain;
+ 
+ 			memset (&dns_domain, 0, sizeof (dns_domain));
+-			dns_domain.domain = g_strdup (domain);
++			dns_domain.domain = domain;
+ 			dns_domain.timestamp = now;
+ 			dns_domain.lifetime = ndp_msg_opt_rdnss_lifetime (msg, offset);
+ 			/* Pad the lifetime somewhat to give a bit of slack in cases
+ 			 * where one RA gets lost or something (which can happen on unreliable
+ 			 * links like WiFi where certain types of frames are not retransmitted).
+ 			 * Note that 0 has special meaning and is therefore not adjusted.
+ 			 */
+-- 
+1.8.3.1
+

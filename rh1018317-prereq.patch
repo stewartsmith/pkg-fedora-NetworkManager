@@ -1,0 +1,321 @@
+From ac94d83f04d87971c8bea4e164d7a5e260720e5c Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 15 Oct 2013 20:44:59 +0200
+Subject: [PATCH] core: add ifa_flags to NMPlatformIP6Address structure
+
+Add a field 'flags' to NMPlatformIP6Address that holds the
+IFA_F_* flags as reported over netlink.
+
+Signed-off-by: Thomas Haller <thaller@redhat.com>
+---
+ src/platform/nm-fake-platform.c   |  3 ++-
+ src/platform/nm-linux-platform.c  | 17 ++++++++++-------
+ src/platform/nm-platform.c        | 20 +++++++++++++++-----
+ src/platform/nm-platform.h        |  6 ++++--
+ src/platform/tests/platform.c     |  6 ++++--
+ src/platform/tests/test-address.c |  8 +++++---
+ src/platform/tests/test-cleanup.c |  3 ++-
+ 7 files changed, 42 insertions(+), 21 deletions(-)
+
+diff --git a/src/platform/nm-fake-platform.c b/src/platform/nm-fake-platform.c
+index 491e23e..df5d5b8 100644
+--- a/src/platform/nm-fake-platform.c
++++ b/src/platform/nm-fake-platform.c
+@@ -775,7 +775,7 @@ ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, gu
+ }
+ 
+ static gboolean
+-ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred)
++ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
+ {
+ 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+ 	NMPlatformIP6Address address;
+@@ -788,6 +788,7 @@ ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int pl
+ 	address.timestamp = get_time ();
+ 	address.lifetime = lifetime;
+ 	address.preferred = preferred;
++	address.flags = flags;
+ 
+ 	for (i = 0; i < priv->ip6_addresses->len; i++) {
+ 		NMPlatformIP6Address *item = &g_array_index (priv->ip6_addresses, NMPlatformIP6Address, i);
+diff --git a/src/platform/nm-linux-platform.c b/src/platform/nm-linux-platform.c
+index 0f67180..e3d6357 100644
+--- a/src/platform/nm-linux-platform.c
++++ b/src/platform/nm-linux-platform.c
+@@ -790,6 +790,7 @@ init_ip6_address (NMPlatformIP6Address *address, struct rtnl_addr *rtnladdr)
+ 	address->timestamp = rtnl_addr_get_create_time (rtnladdr);
+ 	address->lifetime = rtnl_addr_get_valid_lifetime (rtnladdr);
+ 	address->preferred = rtnl_addr_get_preferred_lifetime (rtnladdr);
++	address->flags = rtnl_addr_get_flags (rtnladdr);
+ 	g_assert (nl_addr_get_len (nladdr) == sizeof (address->address));
+ 	memcpy (&address->address, nl_addr_get_binary_addr (nladdr), sizeof (address->address));
+ }
+@@ -2198,7 +2199,7 @@ ip6_address_get_all (NMPlatform *platform, int ifindex)
+ }
+ 
+ static struct nl_object *
+-build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32 lifetime, guint32 preferred)
++build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
+ {
+ 	struct rtnl_addr *rtnladdr = rtnl_addr_alloc ();
+ 	int addrlen = family == AF_INET ? sizeof (in_addr_t) : sizeof (struct in6_addr);
+@@ -2215,6 +2216,8 @@ build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32
+ 		rtnl_addr_set_valid_lifetime (rtnladdr, lifetime);
+ 		rtnl_addr_set_preferred_lifetime (rtnladdr, preferred);
+ 	}
++	if (flags)
++		rtnl_addr_set_flags (rtnladdr, flags);
+ 
+ 	return (struct nl_object *) rtnladdr;
+ }
+@@ -2222,31 +2225,31 @@ build_rtnl_addr (int family, int ifindex, gconstpointer addr, int plen, guint32
+ static gboolean
+ ip4_address_add (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, guint32 lifetime, guint32 preferred)
+ {
+-	return add_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, lifetime, preferred));
++	return add_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, lifetime, preferred, 0));
+ }
+ 
+ static gboolean
+-ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred)
++ip6_address_add (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen, guint32 lifetime, guint32 preferred, guint flags)
+ {
+-	return add_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, lifetime, preferred));
++	return add_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, lifetime, preferred, flags));
+ }
+ 
+ static gboolean
+ ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, int plen)
+ {
+-	return delete_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, 0, 0));
++	return delete_object (platform, build_rtnl_addr (AF_INET, ifindex, &addr, plen, 0, 0, 0));
+ }
+ 
+ static gboolean
+ ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, int plen)
+ {
+-	return delete_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, 0, 0));
++	return delete_object (platform, build_rtnl_addr (AF_INET6, ifindex, &addr, plen, 0, 0, 0));
+ }
+ 
+ static gboolean
+ ip_address_exists (NMPlatform *platform, int family, int ifindex, gconstpointer addr, int plen)
+ {
+-	auto_nl_object struct nl_object *object = build_rtnl_addr (family, ifindex, addr, plen, 0, 0);
++	auto_nl_object struct nl_object *object = build_rtnl_addr (family, ifindex, addr, plen, 0, 0, 0);
+ 	auto_nl_object struct nl_object *cached_object = nl_cache_search (choose_cache (platform, object), object);
+ 
+ 	return !!cached_object;
+diff --git a/src/platform/nm-platform.c b/src/platform/nm-platform.c
+index 5a5e464..3f645ed 100644
+--- a/src/platform/nm-platform.c
++++ b/src/platform/nm-platform.c
+@@ -24,6 +24,7 @@
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <string.h>
++#include <netlink/route/addr.h>
+ 
+ #include "nm-platform.h"
+ #include "nm-logging.h"
+@@ -1100,7 +1101,7 @@ nm_platform_ip4_address_add (int ifindex, in_addr_t address, int plen, guint32 l
+ }
+ 
+ gboolean
+-nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen, guint32 lifetime, guint32 preferred)
++nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen, guint32 lifetime, guint32 preferred, guint flags)
+ {
+ 	reset_error ();
+ 
+@@ -1111,7 +1112,7 @@ nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen, gui
+ 	g_return_val_if_fail (klass->ip6_address_add, FALSE);
+ 
+ 	debug ("address: adding or updating IPv6 address");
+-	return klass->ip6_address_add (platform, ifindex, address, plen, lifetime, preferred);
++	return klass->ip6_address_add (platform, ifindex, address, plen, lifetime, preferred, flags);
+ }
+ 
+ gboolean
+@@ -1329,7 +1330,8 @@ nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses)
+ 		} else
+ 			lifetime = preferred = NM_PLATFORM_LIFETIME_PERMANENT;
+ 
+-		if (!nm_platform_ip6_address_add (ifindex, known_address->address, known_address->plen, lifetime, preferred))
++		if (!nm_platform_ip6_address_add (ifindex, known_address->address, known_address->plen,
++		                                  lifetime, preferred, known_address->flags))
+ 			return FALSE;
+ 	}
+ 
+@@ -1637,8 +1639,10 @@ const char *
+ nm_platform_ip6_address_to_string (const NMPlatformIP6Address *address)
+ {
+ 	static char buffer[256];
++	char s_flags[256];
+ 	char s_address[INET6_ADDRSTRLEN];
+ 	const char *s_dev;
++	char *str_flags;
+ 
+ 	g_return_val_if_fail (address, "(unknown)");
+ 
+@@ -1648,7 +1652,12 @@ nm_platform_ip6_address_to_string (const NMPlatformIP6Address *address)
+ 	s_dev = address->ifindex > 0 ? nm_platform_link_get_name (address->ifindex) : NULL;
+ 
+-	g_snprintf (buffer, sizeof (buffer), "%s/%d lft %u pref %u time %u dev %s",
++	rtnl_addr_flags2str(address->flags, s_flags, sizeof(s_flags));
++	str_flags = s_flags[0] ? g_strconcat (" flags ", s_flags, NULL) : NULL;
++
++	g_snprintf (buffer, sizeof (buffer), "%s/%d lft %u pref %u time %u dev %s%s",
+ 	            s_address, address->plen, (guint)address->lifetime, (guint)address->preferred,
+-	            (guint)address->timestamp, s_dev ? s_dev : "-");
++	            (guint)address->timestamp, s_dev ? s_dev : "-",
++	            str_flags ? str_flags : "");
++	g_free (str_flags);
+ 	return buffer;
+ }
+@@ -1775,6 +1784,7 @@ nm_platform_ip6_address_cmp (const NMPlatformIP6Address *a, const NMPlatformIP6A
+ 	_CMP_FIELD (a, b, timestamp);
+ 	_CMP_FIELD (a, b, lifetime);
+ 	_CMP_FIELD (a, b, preferred);
++	_CMP_FIELD (a, b, flags);
+ 	return 0;
+ }
+ 
+diff --git a/src/platform/nm-platform.h b/src/platform/nm-platform.h
+index eae5465..7de0280 100644
+--- a/src/platform/nm-platform.h
++++ b/src/platform/nm-platform.h
+@@ -24,6 +24,7 @@
+ #include <glib-object.h>
+ #include <netinet/in.h>
+ #include <linux/if.h>
++#include <linux/if_addr.h>
+ 
+ #define NM_TYPE_PLATFORM            (nm_platform_get_type ())
+ #define NM_PLATFORM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_PLATFORM, NMPlatform))
+@@ -134,6 +135,7 @@ typedef struct {
+ 	guint32 timestamp;
+ 	guint32 lifetime;
+ 	guint32 preferred;
++	guint flags; /* ifa_flags from <linux/if_addr.h>, field type "unsigned int" is as used in rtnl_addr_get_flags. */
+ } NMPlatformIP6Address;
+ 
+ typedef struct {
+@@ -281,7 +283,7 @@ typedef struct {
+ 	gboolean (*ip4_address_add) (NMPlatform *, int ifindex, in_addr_t address, int plen,
+			guint32 lifetime, guint32 preferred_lft);
+ 	gboolean (*ip6_address_add) (NMPlatform *, int ifindex, struct in6_addr address, int plen,
+-			guint32 lifetime, guint32 preferred_lft);
++	                             guint32 lifetime, guint32 preferred_lft, guint flags);
+ 	gboolean (*ip4_address_delete) (NMPlatform *, int ifindex, in_addr_t address, int plen);
+ 	gboolean (*ip6_address_delete) (NMPlatform *, int ifindex, struct in6_addr address, int plen);
+ 	gboolean (*ip4_address_exists) (NMPlatform *, int ifindex, in_addr_t address, int plen);
+@@ -402,7 +404,7 @@ GArray *nm_platform_ip6_address_get_all (int ifindex);
+ gboolean nm_platform_ip4_address_add (int ifindex, in_addr_t address, int plen,
+		guint32 lifetime, guint32 preferred_lft);
+ gboolean nm_platform_ip6_address_add (int ifindex, struct in6_addr address, int plen,
+-		guint32 lifetime, guint32 preferred_lft);
++                                      guint32 lifetime, guint32 preferred_lft, guint flags);
+ gboolean nm_platform_ip4_address_delete (int ifindex, in_addr_t address, int plen);
+ gboolean nm_platform_ip6_address_delete (int ifindex, struct in6_addr address, int plen);
+ gboolean nm_platform_ip4_address_exists (int ifindex, in_addr_t address, int plen);
+diff --git a/src/platform/tests/platform.c b/src/platform/tests/platform.c
+index cd274cd..c0b2c02 100644
+--- a/src/platform/tests/platform.c
++++ b/src/platform/tests/platform.c
+@@ -22,6 +22,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <arpa/inet.h>
++#include <netlink/route/addr.h>
+ 
+ #include "nm-platform.h"
+ #include "nm-linux-platform.h"
+@@ -538,8 +539,9 @@ do_ip6_address_add (char **argv)
+ 	if (ifindex && parse_ip6_address (*argv++, &address, &plen)) {
+ 		guint32 lifetime = strtol (*argv++, NULL, 10);
+ 		guint32 preferred = strtol (*argv++, NULL, 10);
++		guint flags = (*argv) ? rtnl_addr_str2flags (*argv++) : 0;
+ 
+-		gboolean value = nm_platform_ip6_address_add (ifindex, address, plen, lifetime, preferred);
++		gboolean value = nm_platform_ip6_address_add (ifindex, address, plen, lifetime, preferred, flags);
+ 		return value;
+ 	} else
+ 		return FALSE;
+@@ -765,7 +767,7 @@ static const command_t commands[] = {
+ 	{ "ip4-address-get-all", "print all IPv4 addresses", do_ip4_address_get_all, 1, "<ifname/ifindex>" },
+ 	{ "ip6-address-get-all", "print all IPv6 addresses", do_ip6_address_get_all, 1, "<ifname/ifindex>" },
+ 	{ "ip4-address-add", "add IPv4 address", do_ip4_address_add, 4, "<ifname/ifindex> <address>/<plen> <lifetime> <>" },
+-	{ "ip6-address-add", "add IPv6 address", do_ip6_address_add, 4, "<ifname/ifindex> <address>/<plen> <lifetime> <>" },
++	{ "ip6-address-add", "add IPv6 address", do_ip6_address_add, 4, "<ifname/ifindex> <address>/<plen> <lifetime> [<flags>] <>" },
+ 	{ "ip4-address-delete", "delete IPv4 address", do_ip4_address_delete, 2,
+ 		"<ifname/ifindex> <address>/<plen>" },
+ 	{ "ip6-address-delete", "delete IPv6 address", do_ip6_address_delete, 2,
+diff --git a/src/platform/tests/test-address.c b/src/platform/tests/test-address.c
+index ff11384..52952c3 100644
+--- a/src/platform/tests/test-address.c
++++ b/src/platform/tests/test-address.c
+@@ -109,20 +109,21 @@ test_ip6_address (void)
+ 	struct in6_addr addr;
+ 	guint32 lifetime = 2000;
+ 	guint32 preferred = 1000;
++	guint flags = 0;
+ 
+ 	inet_pton (AF_INET6, IP6_ADDRESS, &addr);
+ 
+ 	/* Add address */
+ 	g_assert (!nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	no_error ();
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	g_assert (nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	no_error ();
+ 	accept_signal (address_added);
+ 
+ 	/* Add address again (aka update) */
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	accept_signal (address_changed);
+ 
+@@ -205,6 +206,7 @@ test_ip6_address_external (void)
+ 	struct in6_addr addr;
+ 	guint32 lifetime = 2000;
+ 	guint32 preferred = 1000;
++	guint flags = 0;
+ 
+ 	inet_pton (AF_INET6, IP6_ADDRESS, &addr);
+ 
+@@ -220,7 +222,7 @@ test_ip6_address_external (void)
+ 	/* Add/delete conflict */
+ 	run_command ("ip address add %s/%d dev %s valid_lft %d preferred_lft %d", 
+ 			IP6_ADDRESS, IP6_PLEN, DEVICE_NAME, lifetime, preferred);
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr, IP6_PLEN, lifetime, preferred, flags));
+ 	no_error ();
+ 	g_assert (nm_platform_ip6_address_exists (ifindex, addr, IP6_PLEN));
+ 	accept_signal (address_added);
+diff --git a/src/platform/tests/test-cleanup.c b/src/platform/tests/test-cleanup.c
+index cbfebe7..f102870 100644
+--- a/src/platform/tests/test-cleanup.c
++++ b/src/platform/tests/test-cleanup.c
+@@ -23,6 +23,7 @@ test_cleanup_internal ()
+ 	int preferred = NM_PLATFORM_LIFETIME_PERMANENT;
+ 	int metric = 20;
+ 	int mss = 1000;
++	guint flags = 0;
+ 
+ 	inet_pton (AF_INET, "192.0.2.1", &addr4);
+ 	inet_pton (AF_INET, "192.0.3.0", &network4);
+@@ -41,7 +42,7 @@ test_cleanup_internal ()
+ 
+ 	/* Add routes and addresses */
+ 	g_assert (nm_platform_ip4_address_add (ifindex, addr4, plen4, lifetime, preferred));
+-	g_assert (nm_platform_ip6_address_add (ifindex, addr6, plen6, lifetime, preferred));
++	g_assert (nm_platform_ip6_address_add (ifindex, addr6, plen6, lifetime, preferred, flags));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, gateway4, 32, INADDR_ANY, metric, mss));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, network4, plen4, gateway4, metric, mss));
+ 	g_assert (nm_platform_ip4_route_add (ifindex, 0, 0, gateway4, metric, mss));
+-- 
+1.8.4.2
+
