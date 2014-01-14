@@ -5,7 +5,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20131003
+%define snapshot .git20140114
+%define git_sha .4dd6ab8
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -19,37 +20,15 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 23%{snapshot}%{?dist}
+Release: 24%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Patch1: explain-dns1-dns2.patch
-Patch2: rh1023571-fix-crash-ifcfg-rh-reload.patch
-Patch3: rh1021112-fix-crash-never-default.patch 
-Patch4: rh1019021-fix-crash-ip6-routing.patch
-Patch5: rh1025007-fix-crash-ifcfg-rh.patch 
-Patch6: rh1012151-ipv6-disable.patch
-Patch7: rh1029213-debug-netlink-add-errors.patch
-Patch8: rh1015598-wifi-detect.patch
-Patch9: nmcli-con-load.patch
-Patch10: rh1018317-vpn-logging.patch
-Patch11: rh1031170-bridge-port-crash.patch
-Patch12: rh1017884-dispatcher-crash-on-exit.patch
-Patch13: rh1025371-wifi-potential-crash.patch
-Patch14: rh1029053-fix-crash-device-no-MAC.patch
-Patch15: rh1030403-editor-crash-remote-connection.patch
-Patch16: fix-ifcfg-rh-con-update.patch
-Patch17: rh1018317-prereq.patch
-Patch18: rh1018317-openvpn-ptp.patch
-Patch19: rh1034921-startup-link-wait.patch
-Patch20: rh1029213-ignore-RA-default-routes.patch
-Patch21: rh1032819-set-broadcast-address.patch
-Patch22: rh1044757-ipv6-solicit-infinity.patch
-Patch23: rh1048711-bluez-crash.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -174,28 +153,6 @@ deployments.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .explain-dns1-dns2
-%patch2 -p1 -b .patch2
-%patch3 -p1 -b .patch3
-%patch4 -p1 -b .patch4
-%patch5 -p1 -b .patch5
-%patch6 -p1 -b .patch6
-%patch7 -p1 -b .patch7
-%patch8 -p1 -b .patch8
-%patch9 -p1 -b .nmcli-con-load
-%patch10 -p1 -b .vpn-log
-%patch11 -p1 -b .bridge-port
-%patch12 -p1 -b .dispatcher
-%patch13 -p1 -b .wifi-crash
-%patch14 -p1 -b .device-no-MAC
-%patch15 -p1 -b .libnm-glib-editor
-%patch16 -p1 -b .ifcfg-rh-update
-%patch17 -p1 -b .ipv6-flags
-%patch18 -p1 -b .openvpn-ptp
-%patch19 -p1 -b .startup-linkwait
-%patch20 -p1 -b .ignore-RA-default-routes
-%patch21 -p1 -b .broadcast-addr
-%patch22 -p1 -b .ipv6-solicit-infinity
-%patch23 -p1 -b .bluez-crash
 
 %build
 
@@ -394,6 +351,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Tue Jan 14 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-24.git20140114
+- Update to a git snapshot (git20140114)
+
 * Mon Jan  6 2014 Dan Winship <danw@redhat.com> - 0.9.9.0-23.git20131003
 - bluez-manager: fix a crash (rh #1048711)
 
