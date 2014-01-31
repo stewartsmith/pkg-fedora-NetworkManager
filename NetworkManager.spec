@@ -5,8 +5,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140117
-%define git_sha .94c2993
+%define snapshot .git20140131
+%define git_sha .5d6a5f8
 %define realversion 0.9.9.0
 
 %global regen_docs 0
@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 25%{snapshot}%{?dist}
+Release: 26%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -351,6 +351,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Fri Jan 31 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-26.git20140131
+- Update to a git snapshot (git20140131)
+
 * Fri Jan 17 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-25.git20140117
 - Update to a git snapshot (git20140117)
 
