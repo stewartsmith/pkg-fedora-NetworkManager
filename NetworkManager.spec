@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 26%{snapshot}%{?dist}
+Release: 27%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -29,6 +29,7 @@ Source: %{name}-%{realversion}%{snapshot}%{git_sha}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Patch1: 0001-explain-dns1-dns2.patch
+Patch2: 0002-libnm-glib-zero-secrets-to-prevent-crash-getting-sec.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -153,6 +154,7 @@ deployments.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .0001.explain-dns1-dns2.orig
+%patch2 -p1 -b .0002.libnm-glib-secrets.orig
 
 %build
 
@@ -351,6 +353,9 @@ fi
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
 %changelog
+* Sun Feb  2 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-27.git20140131
+- core: fix crash getting secrets in libnm-glib
+
 * Fri Jan 31 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.0-26.git20140131
 - Update to a git snapshot (git20140131)
 
