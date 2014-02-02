@@ -28,7 +28,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}%{git_sha}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
-Patch1: explain-dns1-dns2.patch
+Patch1: 0001-explain-dns1-dns2.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -152,7 +152,7 @@ deployments.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 
-%patch1 -p1 -b .explain-dns1-dns2
+%patch1 -p1 -b .0001.explain-dns1-dns2.orig
 
 %build
 
