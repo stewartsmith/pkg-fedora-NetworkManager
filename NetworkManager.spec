@@ -20,7 +20,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.0
-Release: 27%{snapshot}%{?dist}
+Release: 28%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -90,6 +90,8 @@ BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
 BuildRequires: ModemManager-glib-devel >= 1.0
+BuildRequires: newt-devel
+BuildRequires: teamd-devel
 
 %description
 NetworkManager is a system network service that manages your network devices
@@ -150,11 +152,22 @@ ethernet devices with no carrier.
 This package is intended to be installed by default for server
 deployments.
 
+%package tui
+Summary: NetworkManager curses-based UI
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description tui
+This adds a curses-based "TUI" (Text User Interface) to
+NetworkManager, to allow performing some of the operations supported
+by nm-connection-editor and nm-applet in a non-graphical environment.
+
 %prep
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .0001.explain-dns1-dns2.orig
-%patch2 -p1 -b .0002.libnm-glib-secrets.orig
+%patch2 -p1 -b .0002.secrets.orig
 
 %build
 
@@ -174,7 +187,6 @@ deployments.
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
 	--with-modem-manager-1=yes \
-	--enable-bluez4=no \
 	--enable-wimax=no \
 	--enable-vala=yes \
 %if %{regen_docs}
@@ -352,7 +364,16 @@ fi
 %defattr(-,root,root,0755)
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
+%files tui
+%{_bindir}/nmtui
+%{_bindir}/nmtui-edit
+%{_bindir}/nmtui-connect
+%{_bindir}/nmtui-hostname
+
 %changelog
+* Sat Feb 22 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-28.git20140131
+- add nmtui package
+
 * Sun Feb  2 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-27.git20140131
 - core: fix crash getting secrets in libnm-glib
 
