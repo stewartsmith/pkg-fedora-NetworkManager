@@ -2,6 +2,7 @@
 %define dbus_glib_version 0.94
 
 %define glib2_version	2.24.0
+%define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
@@ -9,10 +10,29 @@
 %define git_sha .5d6a5f8
 %define realversion 0.9.9.0
 
-%global regen_docs 0
+%global with_nmtui 1
+
+%if 0%{?fedora}
+%global regen_docs 1
+%else
+#%global regen_docs 0
+%global regen_docs 1
+%endif
 
 %define systemd_dir %{_prefix}/lib/systemd/system
 %define udev_dir %{_prefix}/lib/udev
+
+%if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
+%ifnarch s390 s390x
+# No wimax or bluetooth on s390
+%global with_wimax 1
+%endif
+%endif
+
+%if 0%{?rhel} || (0%{?fedora} > 19)
+%global with_teamctl 1
+%endif
+
 
 %global _hardened_build 1
 
@@ -28,11 +48,16 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}%{git_sha}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
+
 Patch1: 0001-explain-dns1-dns2.patch
 Patch2: 0002-libnm-glib-zero-secrets-to-prevent-crash-getting-sec.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+%if 0%{?fedora} && 0%{?fedora} < 20
+Requires(post): chkconfig
+Requires(preun): chkconfig
+%endif
 Requires(post): systemd-sysv
 Requires(post): systemd
 Requires(preun): systemd
@@ -62,7 +87,7 @@ Conflicts: kde-plasma-networkmanagement < 1:0.9-0.49.20110527git.nm09
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 %if 0%{?fedora}
-BuildRequires: wireless-tools-devel >= 1:28-0pre9
+BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 %endif
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gobject-introspection-devel >= 0.10.3
@@ -86,18 +111,41 @@ BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
+%if 0%{?with_wimax}
+BuildRequires: wimax-devel
+%endif
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
+%if 0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)
 BuildRequires: ModemManager-glib-devel >= 1.0
+%endif
+%if 0%{?with_nmtui}
 BuildRequires: newt-devel
+%endif
+%if 0%{?with_teamctl}
 BuildRequires: teamd-devel
+%endif
+
 
 %description
 NetworkManager is a system network service that manages your network devices
 and connections, attempting to keep active network connectivity when available.
 It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
+
+
+%if 0%{?with_wimax}
+%package wimax
+Summary: Intel WiMAX device support for NetworkManager
+Group: System Environment/Base
+Requires: wimax
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description wimax
+This package contains NetworkManager support for Intel WiMAX mobile broadband
+devices.
+%endif
 
 
 %package devel
@@ -152,6 +200,7 @@ ethernet devices with no carrier.
 This package is intended to be installed by default for server
 deployments.
 
+%if 0%{with_nmtui}
 %package tui
 Summary: NetworkManager curses-based UI
 Group: System Environment/Base
@@ -162,6 +211,7 @@ Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 This adds a curses-based "TUI" (Text User Interface) to
 NetworkManager, to allow performing some of the operations supported
 by nm-connection-editor and nm-applet in a non-graphical environment.
+%endif
 
 %prep
 %setup -q -n NetworkManager-%{realversion}
@@ -186,16 +236,29 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	--with-crypto=nss \
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
+%if 0%{?rhel} || (0%{?fedora} > 19)
 	--with-modem-manager-1=yes \
+%else
+	--with-modem-manager-1=no \
+%endif
+%if 0%{?with_wimax}
+	--enable-wimax=yes \
+%else
 	--enable-wimax=no \
+%endif
 	--enable-vala=yes \
-%if %{regen_docs}
+%if 0%{?regen_docs}
 	--enable-gtk-doc \
 %endif
 %if 0%{?fedora}
 	--with-wext=yes \
 %else
 	--with-wext=no \
+%endif
+%if 0%{?with_teamctl}
+	--enable-teamctl=yes \
+%else
+	--enable-teamctl=no \
 %endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
@@ -317,6 +380,12 @@ fi
 %{systemd_dir}/NetworkManager-dispatcher.service
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
+
+%if 0%{?with_wimax}
+%files wimax
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-wimax.so
+%endif
 
 %files devel
 %defattr(-,root,root,0755)
