@@ -51,6 +51,7 @@ Source2: 00-server.conf
 
 Patch1: 0001-explain-dns1-dns2.patch
 Patch2: 0002-libnm-glib-zero-secrets-to-prevent-crash-getting-sec.patch
+Patch3: 0003-platform-caching-and-diverse.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -218,6 +219,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %patch1 -p1 -b .0001.explain-dns1-dns2.orig
 %patch2 -p1 -b .0002.secrets.orig
+%patch3 -p1 -b .0003-platform-caching-and-diverse.orig
 
 %build
 
@@ -442,6 +444,8 @@ fi
 %changelog
 * Sat Feb 22 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-28.git20140131
 - add nmtui package
+- bugfix caching of libnl objects (caused error with new libnl3 version when activating bridges) (rh #1063290)
+- fix NMManager:startup tracking (pending action) (rh #1030583)
 
 * Sun Feb  2 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-27.git20140131
 - core: fix crash getting secrets in libnm-glib
