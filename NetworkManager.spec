@@ -6,9 +6,9 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140131
-%define git_sha .5d6a5f8
-%define realversion 0.9.9.0
+%define snapshot .git20140228
+%define git_sha .16bbc90
+%define realversion 0.9.9.1
 
 %global with_nmtui 1
 
@@ -39,8 +39,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.9.0
-Release: 28%{snapshot}%{?dist}
+Version: 0.9.9.1
+Release: 0%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -50,8 +50,6 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 
 Patch1: 0001-explain-dns1-dns2.patch
-Patch2: 0002-libnm-glib-zero-secrets-to-prevent-crash-getting-sec.patch
-Patch3: 0003-platform-caching-and-diverse.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -218,8 +216,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .0001.explain-dns1-dns2.orig
-%patch2 -p1 -b .0002.secrets.orig
-%patch3 -p1 -b .0003-platform-caching-and-diverse.orig
 
 %build
 
@@ -442,6 +438,9 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Fri Feb 28 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.1-0.git20140228
+- new upstream snapshot with development version 0.9.9.1
+
 * Sat Feb 22 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.0-28.git20140131
 - add nmtui package
 - bugfix caching of libnl objects (caused error with new libnl3 version when activating bridges) (rh #1063290)
