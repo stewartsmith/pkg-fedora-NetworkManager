@@ -22,6 +22,10 @@
 %define systemd_dir %{_prefix}/lib/systemd/system
 %define udev_dir %{_prefix}/lib/udev
 
+%global with_atm 1
+%global with_bt 1
+%global with_wwan 1
+
 %if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
 %ifnarch s390 s390x
 # No wimax or bluetooth on s390
@@ -132,6 +136,39 @@ NetworkManager is a system network service that manages your network devices
 and connections, attempting to keep active network connectivity when available.
 It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
+
+
+%if 0%{?with_atm}
+%package atm
+Summary: ADSL device plugin for NetworkManager
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description atm
+This package contains NetworkManager support for ADSL devices.
+%endif
+
+
+%if 0%{?with_bt}
+%package bt
+Summary: Bluetooth device plugin for NetworkManager
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description bt
+This package contains NetworkManager support for Bluetooth devices.
+%endif
+
+
+%if 0%{?with_wwan}
+%package wwan
+Summary: Mobile broadband device plugin for NetworkManager
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description wwan
+This package contains NetworkManager support for mobile broadband (3G) devices.
+%endif
 
 
 %if 0%{?with_wimax}
@@ -378,6 +415,25 @@ fi
 %{systemd_dir}/NetworkManager-dispatcher.service
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
+
+%if 0%{?with_atm}
+%files atm
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-atm.so
+%endif
+
+%if 0%{?with_bt}
+%files bt
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-bt.so
+%endif
+
+%if 0%{?with_wwan}
+%files wwan
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-wwan.so
+%{_libdir}/%{name}/libnm-wwan.so
+%endif
 
 %if 0%{?with_wimax}
 %files wimax
