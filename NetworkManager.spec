@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140228
-%define git_sha .16bbc90
+%define snapshot .git20140310
+%define git_sha .350b6d6
 %define realversion 0.9.9.1
 
 %global with_nmtui 1
@@ -40,7 +40,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.1
-Release: 0%{snapshot}%{?dist}
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -438,6 +438,9 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Mon Mar 10 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-1.git20140310
+- Update to a git snapshot (git20140310 git:350b6d6)
+
 * Fri Feb 28 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.1-0.git20140228
 - new upstream snapshot with development version 0.9.9.1
 
