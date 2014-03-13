@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140310
-%define git_sha .350b6d6
+%define snapshot .git20140314
+%define git_sha .45a326d
 %define realversion 0.9.9.1
 
 %global with_nmtui 1
@@ -44,7 +44,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.1
-Release: 1%{snapshot}%{?dist}
+Release: 2%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -80,6 +80,7 @@ Requires: dnsmasq
 Requires: udev
 Requires: iptables
 Obsoletes: dhcdbd
+Obsoletes: NetworkManager < 1:0.9.9.1-2
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
@@ -143,6 +144,7 @@ provides VPN integration with a variety of different VPN services.
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Obsoletes: NetworkManager < 1:0.9.9.1-2
 
 %description atm
 This package contains NetworkManager support for ADSL devices.
@@ -154,6 +156,8 @@ This package contains NetworkManager support for ADSL devices.
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: NetworkManager-wwan
+Obsoletes: NetworkManager < 1:0.9.9.1-2
 
 %description bt
 This package contains NetworkManager support for Bluetooth devices.
@@ -165,6 +169,7 @@ This package contains NetworkManager support for Bluetooth devices.
 Summary: Mobile broadband device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Obsoletes: NetworkManager < 1:0.9.9.1-2
 
 %description wwan
 This package contains NetworkManager support for mobile broadband (3G) devices.
@@ -494,6 +499,10 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Fri Mar 14 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-2.git20140314
+- Update to a git snapshot (git20140314 git:45a326d)
+- Fix Obsoletes and Requires to perform updates correctly
+
 * Mon Mar 10 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-1.git20140310
 - Update to a git snapshot (git20140310 git:350b6d6)
 
