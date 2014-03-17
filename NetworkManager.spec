@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140314
-%define git_sha .45a326d
+%define snapshot .git20140317
+%define git_sha .a1e89b4
 %define realversion 0.9.9.1
 
 %global with_nmtui 1
@@ -44,7 +44,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.1
-Release: 2%{snapshot}%{?dist}
+Release: 3%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -499,6 +499,11 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Mon Mar 17 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-3.git20140317
+- Update to a git snapshot (git20140317 git:a1e89b4)
+- platform: fix NM crash if link has no name (e.g. for failed VPN connection)
+- libnm-util/cli: fix bridge priority default value (rh #1073664)
+
 * Fri Mar 14 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-2.git20140314
 - Update to a git snapshot (git20140314 git:45a326d)
 - Fix Obsoletes and Requires to perform updates correctly
