@@ -6,8 +6,8 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.5
 
-%define snapshot .git20140317
-%define git_sha .a1e89b4
+%define snapshot .git20140319
+%define git_sha .3980806
 %define realversion 0.9.9.1
 
 %global with_nmtui 1
@@ -22,8 +22,8 @@
 %define systemd_dir %{_prefix}/lib/systemd/system
 %define udev_dir %{_prefix}/lib/udev
 
-%global with_atm 1
-%global with_bt 1
+%global with_adsl 1
+%global with_bluetooth 1
 %global with_wwan 1
 
 %if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
@@ -44,7 +44,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.1
-Release: 3%{snapshot}%{?dist}
+Release: 4%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -139,27 +139,29 @@ It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
 provides VPN integration with a variety of different VPN services.
 
 
-%if 0%{?with_atm}
-%package atm
+%if 0%{?with_adsl}
+%package adsl
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: NetworkManager < 1:0.9.9.1-2
+Obsoletes: NetworkManager-atm
 
-%description atm
+%description adsl
 This package contains NetworkManager support for ADSL devices.
 %endif
 
 
-%if 0%{?with_bt}
-%package bt
+%if 0%{?with_bluetooth}
+%package bluetooth
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: NetworkManager-wwan
 Obsoletes: NetworkManager < 1:0.9.9.1-2
+Obsoletes: NetworkManager-bt
 
-%description bt
+%description bluetooth
 This package contains NetworkManager support for Bluetooth devices.
 %endif
 
@@ -421,16 +423,16 @@ fi
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %{_datadir}/doc/NetworkManager/examples/server.conf
 
-%if 0%{?with_atm}
-%files atm
+%if 0%{?with_adsl}
+%files adsl
 %defattr(-,root,root,0755)
-%{_libdir}/%{name}/libnm-device-plugin-atm.so
+%{_libdir}/%{name}/libnm-device-plugin-adsl.so
 %endif
 
-%if 0%{?with_bt}
-%files bt
+%if 0%{?with_bluetooth}
+%files bluetooth
 %defattr(-,root,root,0755)
-%{_libdir}/%{name}/libnm-device-plugin-bt.so
+%{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
 %endif
 
 %if 0%{?with_wwan}
@@ -499,6 +501,11 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Wed Mar 19 2014 Dan Winship <danw@redhat.com> - 0.9.9.1-4.git20140319
+- Update to a git snapshot (git20140319 git:3980806)
+- Rename NetworkManager-atm package to NetworkManager-adsl
+- Rename NetworkManager-bt package to NetworkManager-bluetooth
+
 * Mon Mar 17 2014 Jiří Klimeš <jklimes@redhat.com> - 0.9.9.1-3.git20140317
 - Update to a git snapshot (git20140317 git:a1e89b4)
 - platform: fix NM crash if link has no name (e.g. for failed VPN connection)
