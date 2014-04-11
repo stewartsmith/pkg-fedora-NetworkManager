@@ -4,7 +4,7 @@
 %define glib2_version	2.24.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.7
-%define ppp_version 2.4.5
+%define ppp_version 2.4.6
 
 %define snapshot .git20140319
 %define git_sha .3980806
@@ -44,7 +44,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
 Version: 0.9.9.1
-Release: 4%{snapshot}%{?dist}
+Release: 5%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -501,6 +501,9 @@ fi
 %{_bindir}/nmtui-hostname
 
 %changelog
+* Fri Apr 11 2014 Dan Williams <dcbw@redhat.com> - 0.9.9.1-5.git20140319
+- Rebuild against pppd 2.4.6
+
 * Wed Mar 19 2014 Dan Winship <danw@redhat.com> - 0.9.9.1-4.git20140319
 - Update to a git snapshot (git20140319 git:3980806)
 - Rename NetworkManager-atm package to NetworkManager-adsl
