@@ -1,14 +1,16 @@
 %define dbus_version 1.1
-%define dbus_glib_version 0.94
+%define dbus_glib_version 0.100
 
-%define glib2_version	2.24.0
+%define glib2_version	2.32.0
 %define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.6
 
-%define snapshot .git20140319
-%define git_sha .3980806
-%define realversion 0.9.9.1
+%define snapshot .git20140609
+%define git_sha .1963adda
+%define realversion 0.9.9.95
+
+%define obsoletes_nmver 1:0.9.9.95-1
 
 %global with_nmtui 1
 
@@ -24,13 +26,27 @@
 
 %global with_adsl 1
 %global with_bluetooth 1
+%global with_wifi 1
+%global with_wimax 0
 %global with_wwan 1
 
+# WiMAX still supported on <= F19
 %if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
-%ifnarch s390 s390x
-# No wimax or bluetooth on s390
 %global with_wimax 1
 %endif
+
+# Bluetooth requires the WWAN plugin
+%if 0%{?with_bluetooth}
+%global with_wwan 1
+%endif
+
+%ifarch s390 s390x
+# No hardware-based plugins on s390
+%global with_adsl 0
+%global with_bluetooth 0
+%global with_wifi 0
+%global with_wimax 0
+%global with_wwan 0
 %endif
 
 %if 0%{?rhel} || (0%{?fedora} > 19)
@@ -43,8 +59,8 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: 1
-Version: 0.9.9.1
-Release: 6%{snapshot}%{?dist}
+Version: 0.9.9.95
+Release: 1%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -71,7 +87,6 @@ Requires: dbus-glib >= %{dbus_glib_version}
 Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
-Requires: wpa_supplicant >= 1:0.7.3-1
 Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
@@ -79,8 +94,9 @@ Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: iptables
+Requires: readline
 Obsoletes: dhcdbd
-Obsoletes: NetworkManager < 1:0.9.9.1-2
+Obsoletes: NetworkManager < %{obsoletes_nmver}
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
@@ -98,7 +114,6 @@ BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
-BuildRequires: wpa_supplicant
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: perl(XML::Parser)
 BuildRequires: automake autoconf intltool libtool
@@ -107,6 +122,7 @@ BuildRequires: ppp-devel = %{ppp_version}
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: polkit-devel
 BuildRequires: dhclient
+BuildRequires: readline-devel
 %if %{regen_docs}
 BuildRequires: gtk-doc
 %endif
@@ -121,7 +137,7 @@ BuildRequires: wimax-devel
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
-%if 0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)
+%if 0%{?with_wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19))
 BuildRequires: ModemManager-glib-devel >= 1.0
 %endif
 %if 0%{?with_nmtui}
@@ -133,10 +149,11 @@ BuildRequires: teamd-devel
 
 
 %description
-NetworkManager is a system network service that manages your network devices
-and connections, attempting to keep active network connectivity when available.
-It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE devices, and
-provides VPN integration with a variety of different VPN services.
+NetworkManager is a system service that manages network interfaces and
+connections based on user or automatic configuration. It supports
+Ethernet, Bridge, Bond, VLAN, Team, InfiniBand, Wi-Fi, mobile broadband
+(WWAN), PPPoE and other devices, and supports a variety of different VPN
+services.
 
 
 %if 0%{?with_adsl}
@@ -144,7 +161,7 @@ provides VPN integration with a variety of different VPN services.
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Obsoletes: NetworkManager < 1:0.9.9.1-2
+Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-atm
 
 %description adsl
@@ -158,11 +175,29 @@ Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: NetworkManager-wwan
-Obsoletes: NetworkManager < 1:0.9.9.1-2
+%if (0%{?fedora} > 19)
+Requires: bluez >= 5.0
+%else
+Requires: bluez >= 4.101-5
+%endif
+Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-bt
 
 %description bluetooth
 This package contains NetworkManager support for Bluetooth devices.
+%endif
+
+
+%if 0%{?with_wifi}
+%package wifi
+Summary: Wifi plugin for NetworkManager
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: wpa_supplicant >= 1:1.1
+Obsoletes: NetworkManager < %{obsoletes_nmver}
+
+%description wifi
+This package contains NetworkManager support for Wifi and OLPC devices.
 %endif
 
 
@@ -171,10 +206,11 @@ This package contains NetworkManager support for Bluetooth devices.
 Summary: Mobile broadband device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Obsoletes: NetworkManager < 1:0.9.9.1-2
+Requires: ModemManager
+Obsoletes: NetworkManager < %{obsoletes_nmver}
 
 %description wwan
-This package contains NetworkManager support for mobile broadband (3G) devices.
+This package contains NetworkManager support for mobile broadband (WWAN) devices.
 %endif
 
 
@@ -291,6 +327,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	--enable-vala=yes \
 %if 0%{?regen_docs}
 	--enable-gtk-doc \
+%else
+	--disable-gtk-doc \
 %endif
 %if 0%{?fedora}
 	--with-wext=yes \
@@ -357,9 +395,6 @@ install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 %{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 %endif
 
-mkdir -p $RPM_BUILD_ROOT%{systemd_dir}/network-online.target.wants
-ln -s ../NetworkManager-wait-online.service $RPM_BUILD_ROOT%{systemd_dir}/network-online.target.wants
-
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -397,13 +432,15 @@ fi
 %{_datadir}/bash-completion/completions/nmcli
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
+%dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
+%dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-avahi-autoipd.action
-%{_libexecdir}/nm-dispatcher.action
+%{_libexecdir}/nm-dispatcher
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/libnm-settings-plugin*.so
 %{_mandir}/man1/*
@@ -428,12 +465,24 @@ fi
 %files adsl
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-adsl.so
+%else
+%exclude %{_libdir}/%{name}/libnm-device-plugin-adsl.so
 %endif
 
 %if 0%{?with_bluetooth}
 %files bluetooth
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
+%else
+%exclude %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
+%endif
+
+%if 0%{?with_wifi}
+%files wifi
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-wifi.so
+%else
+%exclude %{_libdir}/%{name}/libnm-device-plugin-wifi.so
 %endif
 
 %if 0%{?with_wwan}
@@ -441,12 +490,17 @@ fi
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
+%else
+%exclude %{_libdir}/%{name}/libnm-device-plugin-wwan.so
+%exclude %{_libdir}/%{name}/libnm-wwan.so
 %endif
 
 %if 0%{?with_wimax}
 %files wimax
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wimax.so
+%else
+%exclude %{_libdir}/%{name}/libnm-device-plugin-wimax.so
 %endif
 
 %files devel
@@ -496,13 +550,18 @@ fi
 %dir %{_sysconfdir}/%{name}/conf.d
 %config %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
+%if 0%{?with_nmtui}
 %files tui
 %{_bindir}/nmtui
 %{_bindir}/nmtui-edit
 %{_bindir}/nmtui-connect
 %{_bindir}/nmtui-hostname
+%endif
 
 %changelog
+* Fri Jun 06 2014 Dan Williams <dcbw@redhat.com> - 0.9.9.95-1.git20140609.1963adda
+- Update to upstream 0.9.9.95 (0.9.10-beta1) release snapshot
+
 * Fri Jun 06 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.9.1-6.git20140319
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
