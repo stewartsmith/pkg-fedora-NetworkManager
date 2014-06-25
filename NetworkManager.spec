@@ -6,9 +6,9 @@
 %define libnl3_version 3.2.7
 %define ppp_version 2.4.6
 
-%define snapshot .git20140609
-%define git_sha 1963adda
-%define realversion 0.9.9.95
+%define snapshot .git20140620
+%define git_sha 63b0a2f5
+%define realversion 0.9.9.98
 %define release_version 1
 %define epoch_version 1
 
@@ -562,6 +562,9 @@ fi
 %endif
 
 %changelog
+* Wed Jun 25 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.98-1.git20140620
+- Update to upstream 0.9.9.98 (0.9.10-rc1) release snapshot
+
 * Fri Jun 06 2014 Dan Williams <dcbw@redhat.com> - 0.9.9.95-1.git20140609
 - Update to upstream 0.9.9.95 (0.9.10-beta1) release snapshot
 
