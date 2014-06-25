@@ -7,8 +7,10 @@
 %define ppp_version 2.4.6
 
 %define snapshot .git20140609
-%define git_sha .1963adda
+%define git_sha 1963adda
 %define realversion 0.9.9.95
+%define release_version 1
+%define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
 
@@ -17,7 +19,6 @@
 %if 0%{?fedora}
 %global regen_docs 1
 %else
-#%global regen_docs 0
 %global regen_docs 1
 %endif
 
@@ -56,16 +57,18 @@
 
 %global _hardened_build 1
 
+%define git_sha_version %(test -n '%{git_sha}' && echo '.%{git_sha}')
+
 Name: NetworkManager
 Summary: Network connection manager and user applications
-Epoch: 1
-Version: 0.9.9.95
-Release: 1%{snapshot}%{?dist}
+Epoch: %{epoch_version}
+Version: %{realversion}
+Release: %{release_version}%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 
@@ -336,9 +339,9 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	--with-wext=no \
 %endif
 %if 0%{?with_teamctl}
-	--enable-teamctl=yes \
+	--enable-teamdctl=yes \
 %else
-	--enable-teamctl=no \
+	--enable-teamdctl=no \
 %endif
 	--enable-polkit=yes \
 	--enable-modify-system=yes \
@@ -559,7 +562,7 @@ fi
 %endif
 
 %changelog
-* Fri Jun 06 2014 Dan Williams <dcbw@redhat.com> - 0.9.9.95-1.git20140609.1963adda
+* Fri Jun 06 2014 Dan Williams <dcbw@redhat.com> - 0.9.9.95-1.git20140609
 - Update to upstream 0.9.9.95 (0.9.10-beta1) release snapshot
 
 * Fri Jun 06 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.9.1-6.git20140319
