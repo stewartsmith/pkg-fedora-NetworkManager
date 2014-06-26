@@ -1,3 +1,4 @@
+*.makerepo-split.*
 network-manager-applet-0.6.5.tar.bz2
 NetworkManager-0.6.5.tar.bz2
 NetworkManager-0.7.0.svn2736.tar.gz
