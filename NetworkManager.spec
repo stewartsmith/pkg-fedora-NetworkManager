@@ -10,9 +10,9 @@
 %define ppp_version 2.4.6
 %endif
 
-%define snapshot .git20140620
-%define git_sha 63b0a2f5
-%define realversion 0.9.9.98
+%define snapshot .git20140704
+%define git_sha 6eb82acd
+%define realversion 0.9.10.0
 %define release_version 1
 %define epoch_version 1
 
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul  4 2014 Thomas Haller <thaller@redhat.com> - 0.9.10.0-1.git20140704
+- Update to upstream 0.9.10.0 release snapshot
+
 * Wed Jun 25 2014 Thomas Haller <thaller@redhat.com> - 0.9.9.98-1.git20140620
 - Update to upstream 0.9.9.98 (0.9.10-rc1) release snapshot
 
