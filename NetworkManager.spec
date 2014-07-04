@@ -71,6 +71,7 @@ URL: http://www.gnome.org/projects/NetworkManager/
 Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
+Source3: 20-connectivity-fedora.conf
 
 Patch1: 0001-explain-dns1-dns2.patch
 
@@ -267,6 +268,15 @@ Requires: dbus-glib-devel >= %{dbus_glib_version}
 This package contains the header and pkg-config files for development applications using
 NetworkManager functionality from applications that use glib.
 
+%package config-connectivity-fedora
+Summary: NetworkManager config file for connectivity checking via Fedora servers
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description config-connectivity-fedora
+This adds a NetworkManager configuration file to enable connectivity checking
+via Fedora infrastructure.
+
 %package config-server
 Summary: NetworkManager config file for "server-like" defaults
 Group: System Environment/Base
@@ -370,6 +380,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 %{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
+%{__cp} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 
 # create a VPN directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
@@ -547,6 +558,11 @@ fi
 %{_datadir}/gtk-doc/html/libnm-glib/*
 %dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
+
+%files config-connectivity-fedora
+%defattr(-,root,root,0755)
+%dir %{_sysconfdir}/%{name}/conf.d
+%config %{_sysconfdir}/%{name}/conf.d/20-connectivity-fedora.conf
 
 %files config-server
 %defattr(-,root,root,0755)
