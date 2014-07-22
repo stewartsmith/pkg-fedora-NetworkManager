@@ -67,7 +67,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{?dist}
+Release: %{release_version}%{snapshot}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 22 2014 Kalev Lember <kalevlember@gmail.com> - 1:0.9.10.0-1.git20140704.1
+- Rebuilt for gobject-introspection 1.41.4
+
 * Fri Jul  4 2014 Thomas Haller <thaller@redhat.com> - 0.9.10.0-1.git20140704
 - Update to upstream 0.9.10.0 release snapshot
 
