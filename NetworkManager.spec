@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 1
+%define release_version 2
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -67,7 +67,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{?dist}.1
+Release: %{release_version}%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 30 2014 Dan Williams <dcbw@redhat.com> - 1:0.9.10.0-2.git20140704
+- connectivity: ensure interval is set to enable connectivity checking (rh #1123772)
+
 * Tue Jul 22 2014 Kalev Lember <kalevlember@gmail.com> - 1:0.9.10.0-1.git20140704.1
 - Rebuilt for gobject-introspection 1.41.4
 
