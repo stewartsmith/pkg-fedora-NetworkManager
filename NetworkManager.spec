@@ -7,13 +7,13 @@
 
 %define ppp_version 2.4.5
 %if (0%{?fedora} && 0%{?fedora} > 20)
-%define ppp_version 2.4.6
+%define ppp_version 2.4.7
 %endif
 
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 2
+%define release_version 3
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 11 2014 Kalev Lember <kalevlember@gmail.com> - 1:0.9.10.0-3.git20140704
+- Rebuilt for ppp 2.4.7
+
 * Wed Jul 30 2014 Dan Williams <dcbw@redhat.com> - 1:0.9.10.0-2.git20140704
 - connectivity: ensure interval is set to enable connectivity checking (rh #1123772)
 
