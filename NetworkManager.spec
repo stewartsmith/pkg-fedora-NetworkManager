@@ -67,7 +67,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{?dist}
+Release: %{release_version}%{snapshot}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Fri Aug 15 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.10.0-3.git20140704.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Mon Aug 11 2014 Kalev Lember <kalevlember@gmail.com> - 1:0.9.10.0-3.git20140704
 - Rebuilt for ppp 2.4.7
 
