@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 3
+%define release_version 4
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -67,7 +67,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{?dist}.1
+Release: %{release_version}%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -145,7 +145,7 @@ BuildRequires: wimax-devel
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
-%if 0%{?with_wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19))
+%if (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19))
 BuildRequires: ModemManager-glib-devel >= 1.0
 %endif
 %if 0%{?with_nmtui}
@@ -582,6 +582,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 18 2014 Dan Horák <dan[at]danny.cz> - 1:0.9.10.0-4.git20140704
+- always include ModemManager-glib-devel (#1129632)
+
 * Fri Aug 15 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.9.10.0-3.git20140704.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
