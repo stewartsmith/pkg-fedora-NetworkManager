@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 4
+%define release_version 5
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -169,6 +169,7 @@ services.
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: rp-pppoe
 Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-atm
 
@@ -582,6 +583,9 @@ fi
 %endif
 
 %changelog
+* Sat Aug 30 2014 Peter Robinson <pbrobinson@fedoraproject.org> 1:0.9.10.0-5.git20140704
+- adsl plugin needs rp-pppoe to work
+
 * Mon Aug 18 2014 Dan Horák <dan[at]danny.cz> - 1:0.9.10.0-4.git20140704
 - always include ModemManager-glib-devel (#1129632)
 
