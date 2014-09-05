@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 5
+%define release_version 6
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -583,6 +583,9 @@ fi
 %endif
 
 %changelog
+* Fri Sep  5 2014 Jiří Klimeš <jklimes@redhat.com> - 1:0.9.10.0-6.git20140704
+- connectivity: use HTTPS for connectivity checking (rh #113577)
+
 * Sat Aug 30 2014 Peter Robinson <pbrobinson@fedoraproject.org> 1:0.9.10.0-5.git20140704
 - adsl plugin needs rp-pppoe to work
 
