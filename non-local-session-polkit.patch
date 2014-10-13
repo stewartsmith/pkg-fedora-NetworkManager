@@ -1,0 +1,24 @@
+From f044ff186b433ef3debab7651adc06115809afc6 Mon Sep 17 00:00:00 2001
+From: Marius Vollmer <mvollmer@redhat.com>
+Date: Mon, 6 Oct 2014 11:16:03 +0300
+Subject: [PATCH] policy: allow non-local admin sessions to control the network (rh #1145646)
+
+---
+ policy/org.freedesktop.NetworkManager.policy.in.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/policy/org.freedesktop.NetworkManager.policy.in.in b/policy/org.freedesktop.NetworkManager.policy.in.in
+index cb22999..e103cd9 100644
+--- a/policy/org.freedesktop.NetworkManager.policy.in.in
++++ b/policy/org.freedesktop.NetworkManager.policy.in.in
+@@ -58,6 +58,7 @@
+     <_description>Allow control of network connections</_description>
+     <_message>System policy prevents control of network connections</_message>
+     <defaults>
++      <allow_any>auth_admin</allow_any>
+       <allow_inactive>yes</allow_inactive>
+       <allow_active>yes</allow_active>
+     </defaults>
+-- 
+1.9.3
+

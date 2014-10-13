@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 6
+%define release_version 7
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -78,6 +78,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 Patch1: 0001-explain-dns1-dns2.patch
+Patch2: non-local-session-polkit.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -314,6 +315,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch1 -p1 -b .0001.explain-dns1-dns2.orig
+%patch2 -p1 -b .non-local-session-polkit.orig
 
 %build
 
@@ -583,6 +585,9 @@ fi
 %endif
 
 %changelog
+* Mon Oct 06 2014 Stef Walter <stefw@redhat.com> - 1:0.9.10.0-7.git20140704
+- Allow non-local users network control after PolicyKit authentication (rh #1145646)
+
 * Fri Sep  5 2014 Jiří Klimeš <jklimes@redhat.com> - 1:0.9.10.0-6.git20140704
 - connectivity: use HTTPS for connectivity checking (rh #113577)
 
