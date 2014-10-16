@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 7
+%define release_version 8
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -77,8 +77,15 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch1: 0001-explain-dns1-dns2.patch
-Patch2: non-local-session-polkit.patch
+# Not upstream.
+Patch0: 0000-explain-dns1-dns2.patch
+
+# Cherry-picks from upstream:
+# http://cgit.freedesktop.org/NetworkManager/NetworkManager/log/?h=nm-0-9-10
+Patch1: 0001-policy-allow-non-local-admin-sessions-to-control-the.patch
+Patch2: 0002-bluez-split-out-errors.patch
+Patch3: 0003-bluez-track-adapter-address-in-NMBluezDevice.patch
+Patch4: 0004-bluez-re-add-DUN-support-for-Bluez5.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -140,6 +147,9 @@ BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
+%if 0%{?with_bluetooth} && 0%{?fedora} > 19
+BuildRequires: bluez-libs-devel
+%endif
 %if 0%{?with_wimax}
 BuildRequires: wimax-devel
 %endif
@@ -314,8 +324,11 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 
-%patch1 -p1 -b .0001.explain-dns1-dns2.orig
-%patch2 -p1 -b .non-local-session-polkit.orig
+%patch0 -p1 -b .explain-dns1-dns2.orig
+%patch1 -p1 -b .policy-allow-non-local-admin-sessions-to-control-the.orig
+%patch2 -p1 -b .bluez-split-out-errors.orig
+%patch3 -p1 -b .bluez-track-adapter-address-in-NMBluezDevice.orig
+%patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
 
 %build
 
@@ -325,8 +338,9 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %{__cp} -R docs ORIG-docs
 %endif
 
-#autopoint --force
-#intltoolize --force
+autoreconf -f -i
+autopoint --force
+intltoolize --force
 %configure \
 	--disable-static \
 	--with-dhclient=yes \
@@ -585,6 +599,9 @@ fi
 %endif
 
 %changelog
+* Thu Oct 16 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-8.git20140704
+- bluetooth: Restore DUN support (rh #1055628)
+
 * Mon Oct 06 2014 Stef Walter <stefw@redhat.com> - 1:0.9.10.0-7.git20140704
 - Allow non-local users network control after PolicyKit authentication (rh #1145646)
 

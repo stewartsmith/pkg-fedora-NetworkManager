@@ -1,0 +1,147 @@
+From d59bd3c9b57e55b20fd4d2e4781a8da123546f4d Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Mon, 16 Jun 2014 10:20:29 -0500
+Subject: [PATCH 3/4] bluez: track adapter address in NMBluezDevice
+
+We'll need it for bluez5 DUN support.
+
+[lkundrak@v3.sk: Turn the addresses to strings from guint8[ETH_ALEN], as that
+is what rest of NetworkManager uses for MAC addresses and what Bluez utility
+functions expect as well.]
+
+(cherry picked from commit 384ec8606488e67433753eb52440b4846a3090e7)
+---
+ src/devices/bluetooth/nm-bluez-device.c   | 29 ++++++++++++++++++++++++++---
+ src/devices/bluetooth/nm-bluez-device.h   |  5 ++++-
+ src/devices/bluetooth/nm-bluez4-adapter.c |  2 +-
+ src/devices/bluetooth/nm-bluez5-manager.c |  2 +-
+ 4 files changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/src/devices/bluetooth/nm-bluez-device.c b/src/devices/bluetooth/nm-bluez-device.c
+index 4c448a3..edebb75 100644
+--- a/src/devices/bluetooth/nm-bluez-device.c
++++ b/src/devices/bluetooth/nm-bluez-device.c
+@@ -55,6 +55,7 @@ typedef struct {
+ 	gboolean usable;
+ 	NMBluetoothCapabilities connection_bt_type;
+ 
++	char *adapter_address;
+ 	char *address;
+ 	guint8 bin_address[ETH_ALEN];
+ 	char *name;
+@@ -270,7 +271,7 @@ check_emit_usable (NMBluezDevice *self)
+ 	new_usable = (priv->initialized && priv->capabilities && priv->name &&
+ 	              ((priv->bluez_version == 4) ||
+ 	               (priv->bluez_version == 5 && priv->adapter5 && priv->adapter_powered) ) &&
+-	              priv->dbus_connection && priv->address);
++	              priv->dbus_connection && priv->address && priv->adapter_address);
+ 
+ 	if (!new_usable)
+ 		goto END;
+@@ -558,6 +559,18 @@ nm_bluez_device_connect_finish (NMBluezDevice *self,
+ 
+ /***********************************************************/
+ 
++static void
++set_adapter_address (NMBluezDevice *self, const char *address)
++{
++	NMBluezDevicePrivate *priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
++
++	g_return_if_fail (address);
++
++	if (priv->adapter_address)
++		g_free (priv->adapter_address);
++	priv->adapter_address = g_strdup (address);
++}
++
+ static guint32
+ convert_uuids_to_capabilities (const char **strings, int bluez_version)
+ {
+@@ -752,6 +765,10 @@ adapter5_on_acquired (GObject *object, GAsyncResult *res, NMBluezDevice *self)
+ 		if (v)
+ 			g_variant_unref (v);
+ 
++		v = g_dbus_proxy_get_cached_property (priv->adapter5, "Address");
++		if (VARIANT_IS_OF_TYPE_STRING (v))
++			set_adapter_address (self, g_variant_get_string (v, NULL));
++
+ 		priv->initialized = TRUE;
+ 		g_signal_emit (self, signals[INITIALIZED], 0, TRUE);
+ 
+@@ -957,7 +974,10 @@ on_bus_acquired (GObject *object, GAsyncResult *res, NMBluezDevice *self)
+ /********************************************************************/
+ 
+ NMBluezDevice *
+-nm_bluez_device_new (const char *path, NMConnectionProvider *provider, int bluez_version)
++nm_bluez_device_new (const char *path,
++                     const char *adapter_address,
++                     NMConnectionProvider *provider,
++                     int bluez_version)
+ {
+ 	NMBluezDevice *self;
+ 	NMBluezDevicePrivate *priv;
+@@ -978,8 +998,10 @@ nm_bluez_device_new (const char *path, NMConnectionProvider *provider, int bluez
+ 	priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
+ 
+ 	priv->bluez_version = bluez_version;
+-
+ 	priv->provider = provider;
++	g_return_val_if_fail (bluez_version == 5 || (bluez_version == 4 && adapter_address), NULL);
++	if (adapter_address)
++		set_adapter_address (self, adapter_address);
+ 
+ 	g_signal_connect (priv->provider,
+ 	                  NM_CP_SIGNAL_CONNECTION_ADDED,
+@@ -1073,6 +1095,7 @@ finalize (GObject *object)
+ 	nm_log_dbg (LOGD_BT, "bluez[%s]: finalize NMBluezDevice", priv->path);
+ 
+ 	g_free (priv->path);
++	g_free (priv->adapter_address);
+ 	g_free (priv->address);
+ 	g_free (priv->name);
+ 	g_free (priv->bt_iface);
+diff --git a/src/devices/bluetooth/nm-bluez-device.h b/src/devices/bluetooth/nm-bluez-device.h
+index 0bf7d89..25891a0 100644
+--- a/src/devices/bluetooth/nm-bluez-device.h
++++ b/src/devices/bluetooth/nm-bluez-device.h
+@@ -62,7 +62,10 @@ typedef struct {
+ 
+ GType nm_bluez_device_get_type (void);
+ 
+-NMBluezDevice *nm_bluez_device_new (const char *path, NMConnectionProvider *provider, int bluez_version);
++NMBluezDevice *nm_bluez_device_new (const char *path,
++                                    const char *adapter_address,
++                                    NMConnectionProvider *provider,
++                                    int bluez_version);
+ 
+ const char *nm_bluez_device_get_path (NMBluezDevice *self);
+ 
+diff --git a/src/devices/bluetooth/nm-bluez4-adapter.c b/src/devices/bluetooth/nm-bluez4-adapter.c
+index ad1786f..9c57d97 100644
+--- a/src/devices/bluetooth/nm-bluez4-adapter.c
++++ b/src/devices/bluetooth/nm-bluez4-adapter.c
+@@ -162,7 +162,7 @@ device_created (DBusGProxy *proxy, const char *path, gpointer user_data)
+ 	NMBluez4AdapterPrivate *priv = NM_BLUEZ4_ADAPTER_GET_PRIVATE (self);
+ 	NMBluezDevice *device;
+ 
+-	device = nm_bluez_device_new (path, priv->provider, 4);
++	device = nm_bluez_device_new (path, priv->address, priv->provider, 4);
+ 	g_signal_connect (device, "initialized", G_CALLBACK (device_initialized), self);
+ 	g_signal_connect (device, "notify::usable", G_CALLBACK (device_usable), self);
+ 	g_hash_table_insert (priv->devices, (gpointer) nm_bluez_device_get_path (device), device);
+diff --git a/src/devices/bluetooth/nm-bluez5-manager.c b/src/devices/bluetooth/nm-bluez5-manager.c
+index 63006b3..8653c28 100644
+--- a/src/devices/bluetooth/nm-bluez5-manager.c
++++ b/src/devices/bluetooth/nm-bluez5-manager.c
+@@ -143,7 +143,7 @@ device_added (GDBusProxy *proxy, const gchar *path, NMBluez5Manager *self)
+ 	NMBluez5ManagerPrivate *priv = NM_BLUEZ5_MANAGER_GET_PRIVATE (self);
+ 	NMBluezDevice *device;
+ 
+-	device = nm_bluez_device_new (path, priv->provider, 5);
++	device = nm_bluez_device_new (path, NULL, priv->provider, 5);
+ 	g_signal_connect (device, "initialized", G_CALLBACK (device_initialized), self);
+ 	g_signal_connect (device, "notify::usable", G_CALLBACK (device_usable), self);
+ 	g_hash_table_insert (priv->devices, (gpointer) nm_bluez_device_get_path (device), device);
+-- 
+1.9.3
+

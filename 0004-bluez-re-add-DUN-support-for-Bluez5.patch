@@ -1,0 +1,810 @@
+From 2ca59ef657b1f2a584807adea923589e5a4470a1 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 1 Oct 2014 10:59:13 +0200
+Subject: [PATCH 4/4] bluez: re-add DUN support for Bluez5
+
+This adds service discovery via SDP and RFCOMM tty management to
+NetworkManager, as it was dropped from Bluez.
+
+Based on work by Dan Williams <dcbw@redhat.com>.
+The SDP discovery is based on code from Bluez project.
+
+(cherry picked from commit f1c9595311f52d8b79e8d2032e006005613a8fb1)
+---
+[lkundrak@v3.sk: contrib/fedora/rpm/NetworkManager.spec hunk removed for RPM]
+
+ configure.ac                            |  14 ++
+ contrib/fedora/rpm/NetworkManager.spec  |   3 +
+ src/devices/bluetooth/Makefile.am       |  10 +
+ src/devices/bluetooth/nm-bluez-device.c | 134 +++++++----
+ src/devices/bluetooth/nm-bluez5-dun.c   | 409 ++++++++++++++++++++++++++++++++
+ src/devices/bluetooth/nm-bluez5-dun.h   |  46 ++++
+ 6 files changed, 573 insertions(+), 43 deletions(-)
+ create mode 100644 src/devices/bluetooth/nm-bluez5-dun.c
+ create mode 100644 src/devices/bluetooth/nm-bluez5-dun.h
+
+diff --git a/configure.ac b/configure.ac
+index d4437a6..d1ba66a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -586,6 +586,20 @@ else
+ fi
+ AM_CONDITIONAL(WITH_MODEM_MANAGER_1, test "${with_modem_manager_1}" = "yes")
+ 
++# Bluez5 DUN support
++PKG_CHECK_MODULES(BLUEZ5, [bluez >= 5], [have_bluez5=yes],[have_bluez5=no])
++AC_ARG_ENABLE(bluez5-dun, AS_HELP_STRING([--enable-bluez5-dun], [enable Bluez5 DUN support]),
++		[enable_bluez5_dun=${enableval}], [enable_bluez5_dun=${have_bluez5}])
++if (test "${enable_bluez5_dun}" = "yes"); then
++	if test x"$have_bluez5" = x"no"; then
++		AC_MSG_ERROR(Bluez 5.x development headers are required)
++	fi
++	AC_DEFINE(WITH_BLUEZ5_DUN, 1, [Define if you have Bluez 5 libraries])
++else
++	AC_DEFINE(HAVE_BLUEZ5_DUN, 0, [Define if you have Bluez 5 libraries])
++fi
++AM_CONDITIONAL(WITH_BLUEZ5_DUN, test "${enable_bluez5_dun}" = "yes")
++
+ # DHCP client support
+ AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
+ AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
+diff --git a/src/devices/bluetooth/Makefile.am b/src/devices/bluetooth/Makefile.am
+index 4342d4b..7840a21 100644
+--- a/src/devices/bluetooth/Makefile.am
++++ b/src/devices/bluetooth/Makefile.am
+@@ -64,6 +64,16 @@ libnm_device_plugin_bluetooth_la_LIBADD = \
+ 	$(DBUS_LIBS) \
+ 	$(GUDEV_LIBS)
+ 
++if WITH_BLUEZ5_DUN
++AM_CPPFLAGS += $(BLUEZ5_CFLAGS)
++
++libnm_device_plugin_bluetooth_la_SOURCES += \
++	nm-bluez5-dun.c \
++	nm-bluez5-dun.h
++
++libnm_device_plugin_bluetooth_la_LIBADD += $(BLUEZ5_LIBS)
++endif
++
+ CLEANFILES = $(BUILT_SOURCES)
+ EXTRA_DIST = $(SYMBOL_VIS_FILE)
+ 
+diff --git a/src/devices/bluetooth/nm-bluez-device.c b/src/devices/bluetooth/nm-bluez-device.c
+index edebb75..5ca370a 100644
+--- a/src/devices/bluetooth/nm-bluez-device.c
++++ b/src/devices/bluetooth/nm-bluez-device.c
+@@ -34,7 +34,8 @@
+ #include "nm-logging.h"
+ #include "nm-utils.h"
+ #include "nm-settings-connection.h"
+-
++#include "nm-bluez5-dun.h"
++#include "NetworkManagerUtils.h"
+ 
+ G_DEFINE_TYPE (NMBluezDevice, nm_bluez_device, G_TYPE_OBJECT)
+ 
+@@ -62,7 +63,8 @@ typedef struct {
+ 	guint32 capabilities;
+ 	gboolean connected;
+ 
+-	char *bt_iface;
++	char *b4_iface;
++	NMBluez5DunContext *b5_dun_context;
+ 
+ 	NMConnectionProvider *provider;
+ 	GSList *connections;
+@@ -157,9 +159,12 @@ nm_bluez_device_get_capabilities (NMBluezDevice *self)
+ gboolean
+ nm_bluez_device_get_connected (NMBluezDevice *self)
+ {
++	NMBluezDevicePrivate *priv;
++
+ 	g_return_val_if_fail (NM_IS_BLUEZ_DEVICE (self), FALSE);
+ 
+-	return NM_BLUEZ_DEVICE_GET_PRIVATE (self)->connected;
++	priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
++	return priv->connected;
+ }
+ 
+ static void
+@@ -265,8 +270,7 @@ check_emit_usable (NMBluezDevice *self)
+ 	gboolean new_usable;
+ 
+ 	/* only expect the supported capabilities set. */
+-	g_assert (priv->bluez_version != 4 || ((priv->capabilities & ~(NM_BT_CAPABILITY_NAP | NM_BT_CAPABILITY_DUN)) == NM_BT_CAPABILITY_NONE ));
+-	g_assert (priv->bluez_version != 5 || ((priv->capabilities & ~(NM_BT_CAPABILITY_NAP                       )) == NM_BT_CAPABILITY_NONE ));
++	g_assert ((priv->capabilities & ~(NM_BT_CAPABILITY_NAP | NM_BT_CAPABILITY_DUN)) == NM_BT_CAPABILITY_NONE );
+ 
+ 	new_usable = (priv->initialized && priv->capabilities && priv->name &&
+ 	              ((priv->bluez_version == 4) ||
+@@ -421,26 +425,33 @@ nm_bluez_device_disconnect (NMBluezDevice *self)
+ {
+ 	NMBluezDevicePrivate *priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
+ 	GVariant *args = NULL;
+-	const char *dbus_iface;
++	const char *dbus_iface = NULL;
+ 
+ 	g_return_if_fail (priv->dbus_connection);
+ 
+-	if (priv->bluez_version == 5) {
+-		g_return_if_fail (priv->connection_bt_type == NM_BT_CAPABILITY_NAP);
+-		dbus_iface = BLUEZ5_NETWORK_INTERFACE;
+-	} else if (priv->bluez_version == 4 && priv->connection_bt_type == NM_BT_CAPABILITY_DUN) {
+-		/* Can't pass a NULL interface name through dbus to bluez, so just
+-		 * ignore the disconnect if the interface isn't known.
+-		 */
+-		if (!priv->bt_iface)
+-			return;
+-
+-		args = g_variant_new ("(s)", priv->bt_iface),
+-		dbus_iface = BLUEZ4_SERIAL_INTERFACE;
+-	} else {
+-		g_return_if_fail (priv->bluez_version == 4 && priv->connection_bt_type == NM_BT_CAPABILITY_NAP);
+-		dbus_iface = BLUEZ4_NETWORK_INTERFACE;
+-	}
++	if (priv->connection_bt_type == NM_BT_CAPABILITY_DUN) {
++		if (priv->bluez_version == 4) {
++			/* Can't pass a NULL interface name through dbus to bluez, so just
++			 * ignore the disconnect if the interface isn't known.
++			 */
++			if (!priv->b4_iface)
++				goto out;
++			args = g_variant_new ("(s)", priv->b4_iface),
++			dbus_iface = BLUEZ4_SERIAL_INTERFACE;
++		} else if (priv->bluez_version == 5) {
++			nm_bluez5_dun_cleanup (priv->b5_dun_context);
++			priv->connected = FALSE;
++			goto out;
++		}
++	} else if (priv->connection_bt_type == NM_BT_CAPABILITY_NAP) {
++		if (priv->bluez_version == 4)
++			dbus_iface = BLUEZ4_NETWORK_INTERFACE;
++		else if (priv->bluez_version == 5)
++			dbus_iface = BLUEZ5_NETWORK_INTERFACE;
++		else
++			g_assert_not_reached ();
++	} else
++		g_assert_not_reached ();
+ 
+ 	g_dbus_connection_call (priv->dbus_connection,
+ 	                        BLUEZ_SERVICE,
+@@ -455,6 +466,8 @@ nm_bluez_device_disconnect (NMBluezDevice *self)
+ 	                        (GAsyncReadyCallback) bluez_disconnect_cb,
+ 	                        g_object_ref (self));
+ 
++out:
++	g_clear_pointer (&priv->b4_iface, g_free);
+ 	priv->connection_bt_type = NM_BT_CAPABILITY_NONE;
+ }
+ 
+@@ -481,7 +494,7 @@ bluez_connect_cb (GDBusConnection *dbus_connection,
+ 		g_simple_async_result_set_op_res_gpointer (result,
+ 		                                           g_strdup (device),
+ 		                                           g_free);
+-		priv->bt_iface = device;
++		priv->b4_iface = device;
+ 		g_variant_unref (variant);
+ 	}
+ 
+@@ -490,6 +503,26 @@ bluez_connect_cb (GDBusConnection *dbus_connection,
+ 	g_object_unref (result_object);
+ }
+ 
++static void
++bluez5_dun_connect_cb (NMBluez5DunContext *context,
++                   const char *device,
++                   GError *error,
++                   gpointer user_data)
++{
++	GSimpleAsyncResult *result = G_SIMPLE_ASYNC_RESULT (user_data);
++
++	if (error) {
++		g_simple_async_result_take_error (result, error);
++	} else {
++		g_simple_async_result_set_op_res_gpointer (result,
++		                                           g_strdup (device),
++		                                           g_free);
++	}
++
++	g_simple_async_result_complete (result);
++	g_object_unref (result);
++}
++
+ void
+ nm_bluez_device_connect_async (NMBluezDevice *self,
+                                NMBluetoothCapabilities connection_bt_type,
+@@ -498,26 +531,35 @@ nm_bluez_device_connect_async (NMBluezDevice *self,
+ {
+ 	GSimpleAsyncResult *simple;
+ 	NMBluezDevicePrivate *priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
+-	const char *dbus_iface;
+-	const char *connect_type = BLUETOOTH_CONNECT_NAP;
++	const char *dbus_iface = NULL;
++	const char *connect_type = NULL;
+ 
+ 	g_return_if_fail (priv->capabilities & connection_bt_type & (NM_BT_CAPABILITY_DUN | NM_BT_CAPABILITY_NAP));
+ 
+-	if (priv->bluez_version == 5) {
+-		g_return_if_fail (connection_bt_type == NM_BT_CAPABILITY_NAP);
+-		dbus_iface = BLUEZ5_NETWORK_INTERFACE;
+-	} else if (priv->bluez_version == 4 && connection_bt_type == NM_BT_CAPABILITY_DUN) {
+-		dbus_iface = BLUEZ4_SERIAL_INTERFACE;
+-		connect_type = BLUETOOTH_CONNECT_DUN;
+-	} else {
+-		g_return_if_fail (priv->bluez_version == 4 && connection_bt_type == NM_BT_CAPABILITY_NAP);
+-		dbus_iface = BLUEZ4_NETWORK_INTERFACE;
+-	}
+-
+ 	simple = g_simple_async_result_new (G_OBJECT (self),
+ 	                                    callback,
+ 	                                    user_data,
+ 	                                    nm_bluez_device_connect_async);
++	priv->connection_bt_type = connection_bt_type;
++
++	if (connection_bt_type == NM_BT_CAPABILITY_NAP) {
++		connect_type = BLUETOOTH_CONNECT_NAP;
++		if (priv->bluez_version == 4)
++			dbus_iface = BLUEZ4_NETWORK_INTERFACE;
++		else if (priv->bluez_version == 5)
++			dbus_iface = BLUEZ5_NETWORK_INTERFACE;
++	} else if (connection_bt_type == NM_BT_CAPABILITY_DUN) {
++		connect_type = BLUETOOTH_CONNECT_DUN;
++		if (priv->bluez_version == 4)
++			dbus_iface = BLUEZ4_SERIAL_INTERFACE;
++		else if (priv->bluez_version == 5) {
++			if (priv->b5_dun_context == NULL)
++				priv->b5_dun_context = nm_bluez5_dun_new (priv->adapter_address, priv->address);
++			nm_bluez5_dun_connect (priv->b5_dun_context, bluez5_dun_connect_cb, simple);
++			return;
++		}
++	} else
++		g_assert_not_reached ();
+ 
+ 	g_dbus_connection_call (priv->dbus_connection,
+ 	                        BLUEZ_SERVICE,
+@@ -531,8 +573,6 @@ nm_bluez_device_connect_async (NMBluezDevice *self,
+ 	                        NULL,
+ 	                        (GAsyncReadyCallback) bluez_connect_cb,
+ 	                        simple);
+-
+-	priv->connection_bt_type = connection_bt_type;
+ }
+ 
+ const char *
+@@ -540,6 +580,7 @@ nm_bluez_device_connect_finish (NMBluezDevice *self,
+                                 GAsyncResult *result,
+                                 GError **error)
+ {
++	NMBluezDevicePrivate *priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
+ 	GSimpleAsyncResult *simple;
+ 	const char *device;
+ 
+@@ -554,6 +595,9 @@ nm_bluez_device_connect_finish (NMBluezDevice *self,
+ 		return NULL;
+ 
+ 	device = (const char *) g_simple_async_result_get_op_res_gpointer (simple);
++	if (device && priv->bluez_version == 5)
++		priv->connected = TRUE;
++
+ 	return device;
+ }
+ 
+@@ -572,7 +616,7 @@ set_adapter_address (NMBluezDevice *self, const char *address)
+ }
+ 
+ static guint32
+-convert_uuids_to_capabilities (const char **strings, int bluez_version)
++convert_uuids_to_capabilities (const char **strings)
+ {
+ 	const char **iter;
+ 	guint32 capabilities = 0;
+@@ -584,8 +628,7 @@ convert_uuids_to_capabilities (const char **strings, int bluez_version)
+ 		if (parts && parts[0]) {
+ 			switch (g_ascii_strtoull (parts[0], NULL, 16)) {
+ 			case 0x1103:
+-				if (bluez_version == 4)
+-					capabilities |= NM_BT_CAPABILITY_DUN;
++				capabilities |= NM_BT_CAPABILITY_DUN;
+ 				break;
+ 			case 0x1116:
+ 				capabilities |= NM_BT_CAPABILITY_NAP;
+@@ -606,7 +649,7 @@ _set_property_capabilities (NMBluezDevice *self, const char **uuids)
+ 	guint32 uint_val;
+ 	NMBluezDevicePrivate *priv = NM_BLUEZ_DEVICE_GET_PRIVATE (self);
+ 
+-	uint_val = convert_uuids_to_capabilities (uuids, priv->bluez_version);
++	uint_val = convert_uuids_to_capabilities (uuids);
+ 	if (priv->capabilities != uint_val) {
+ 		if (priv->capabilities) {
+ 			/* changing (relevant) capabilities is not supported and ignored -- except setting initially */
+@@ -1067,6 +1110,11 @@ dispose (GObject *object)
+ 		g_clear_object (&priv->pan_connection_original);
+ 	}
+ 
++	if (priv->b5_dun_context) {
++		nm_bluez5_dun_free (priv->b5_dun_context);
++		priv->b5_dun_context = NULL;
++	}
++
+ 	g_signal_handlers_disconnect_by_func (priv->provider, cp_connection_added, self);
+ 	g_signal_handlers_disconnect_by_func (priv->provider, cp_connection_removed, self);
+ 	g_signal_handlers_disconnect_by_func (priv->provider, cp_connection_updated, self);
+@@ -1098,7 +1146,7 @@ finalize (GObject *object)
+ 	g_free (priv->adapter_address);
+ 	g_free (priv->address);
+ 	g_free (priv->name);
+-	g_free (priv->bt_iface);
++	g_free (priv->b4_iface);
+ 
+ 	if (priv->proxy)
+ 		g_signal_handlers_disconnect_by_data (priv->proxy, object);
+diff --git a/src/devices/bluetooth/nm-bluez5-dun.c b/src/devices/bluetooth/nm-bluez5-dun.c
+new file mode 100644
+index 0000000..dcd3d73
+--- /dev/null
++++ b/src/devices/bluetooth/nm-bluez5-dun.c
+@@ -0,0 +1,409 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
++/* NetworkManager -- Network link manager
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Copyright (C) 2014 Red Hat, Inc.
++ */
++
++#include <config.h>
++#include <sys/socket.h>
++#include <bluetooth/sdp.h>
++#include <bluetooth/sdp_lib.h>
++#include <bluetooth/rfcomm.h>
++#include <net/ethernet.h>
++#include <sys/ioctl.h>
++#include <unistd.h>
++#include <errno.h>
++#include <fcntl.h>
++
++#include "nm-bluez5-dun.h"
++#include "nm-bt-error.h"
++#include "nm-logging.h"
++#include "NetworkManagerUtils.h"
++
++typedef struct _NMBluez5DunContext {
++	bdaddr_t src;
++	bdaddr_t dst;
++	char *src_str;
++	char *dst_str;
++	int rfcomm_channel;
++	int rfcomm_fd;
++	int rfcomm_tty_fd;
++	int rfcomm_id;
++	NMBluez5DunFunc callback;
++	gpointer user_data;
++	sdp_session_t *sdp_session;
++	guint sdp_watch_id;
++} NMBluez5DunContext;
++
++static void
++dun_connect (NMBluez5DunContext *context)
++{
++	struct sockaddr_rc sa;
++	int devid, try = 30;
++	char tty[100];
++	const int ttylen = sizeof (tty) - 1;
++	GError *error = NULL;
++
++	struct rfcomm_dev_req req = {
++		.flags = (1 << RFCOMM_REUSE_DLC) | (1 << RFCOMM_RELEASE_ONHUP),
++		.dev_id = -1,
++		.channel = context->rfcomm_channel
++	};
++
++	context->rfcomm_fd = socket (AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
++	if (context->rfcomm_fd < 0) {
++		int errsv = errno;
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to create RFCOMM socket: (%d) %s",
++		                     errsv, strerror (errsv));
++		goto done;
++	}
++
++	/* Connect to the remote device */
++	sa.rc_family = AF_BLUETOOTH;
++	sa.rc_channel = 0;
++	memcpy (&sa.rc_bdaddr, &context->src, ETH_ALEN);
++	if (bind (context->rfcomm_fd, (struct sockaddr *) &sa, sizeof(sa))) {
++		int errsv = errno;
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to bind socket: (%d) %s",
++		                     errsv, strerror (errsv));
++		goto done;
++	}
++
++	sa.rc_channel = context->rfcomm_channel;
++	memcpy (&sa.rc_bdaddr, &context->dst, ETH_ALEN);
++	if (connect (context->rfcomm_fd, (struct sockaddr *) &sa, sizeof (sa)) ) {
++		int errsv = errno;
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to connect to remote device: (%d) %s",
++		                     errsv, strerror (errsv));
++		goto done;
++	}
++
++	nm_log_dbg (LOGD_BT, "(%s): connected to %s on channel %d",
++	            context->src_str, context->dst_str, context->rfcomm_channel);
++
++	/* Create an RFCOMM kernel device for the DUN channel */
++	memcpy (&req.src, &context->src, ETH_ALEN);
++	memcpy (&req.dst, &context->dst, ETH_ALEN);
++	devid = ioctl (context->rfcomm_fd, RFCOMMCREATEDEV, &req);
++	if (devid < 0) {
++		int errsv = errno;
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to create rfcomm device: (%d) %s",
++		                     errsv, strerror (errsv));
++		goto done;
++	}
++	context->rfcomm_id = devid;
++
++	snprintf (tty, ttylen, "/dev/rfcomm%d", devid);
++	while ((context->rfcomm_tty_fd = open (tty, O_RDONLY | O_NOCTTY)) < 0 && try--) {
++		if (try) {
++			g_usleep (100 * 1000);
++			continue;
++		}
++
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to find rfcomm device: %s",
++		                     tty);
++		break;
++	}
++
++done:
++	context->callback (context, tty, error, context->user_data);
++}
++
++static void
++sdp_search_cleanup (NMBluez5DunContext *context)
++{
++	if (context->sdp_session) {
++		sdp_close (context->sdp_session);
++		context->sdp_session = NULL;
++	}
++
++	if (context->sdp_watch_id) {
++		g_source_remove (context->sdp_watch_id);
++		context->sdp_watch_id = 0;
++	}
++}
++
++static void
++sdp_search_completed_cb (uint8_t type, uint16_t status, uint8_t *rsp, size_t size, void *user_data)
++{
++	NMBluez5DunContext *context = user_data;
++	int scanned, seqlen = 0, bytesleft = size;
++	uint8_t dataType;
++	int channel = -1;
++
++	nm_log_dbg (LOGD_BT, "(%s -> %s): SDP search finished with type=%d status=%d",
++	            context->src_str, context->dst_str, status, type);
++
++	/* SDP response received */
++	if (status || type != SDP_SVC_SEARCH_ATTR_RSP) {
++		GError *error = g_error_new (NM_BT_ERROR,
++		                             NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                             "Did not get a Service Discovery response");
++		context->callback (context, NULL, error, context->user_data);
++		goto done;
++	}
++
++	scanned = sdp_extract_seqtype (rsp, bytesleft, &dataType, &seqlen);
++
++	nm_log_dbg (LOGD_BT, "(%s -> %s): SDP sequence type scanned=%d length=%d",
++	            context->src_str, context->dst_str, scanned, seqlen);
++
++	scanned = sdp_extract_seqtype (rsp, bytesleft, &dataType, &seqlen);
++	if (!scanned || !seqlen) {
++		/* Short read or unknown sequence type */
++		GError *error = g_error_new (NM_BT_ERROR,
++		                             NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                             "Improper Service Discovery response");
++		context->callback (context, NULL, error, context->user_data);
++		goto done;
++	}
++
++	rsp += scanned;
++	bytesleft -= scanned;
++	do {
++		sdp_record_t *rec;
++		int recsize = 0;
++		sdp_list_t *protos;
++
++		rec = sdp_extract_pdu (rsp, bytesleft, &recsize);
++		if (!rec)
++			break;
++
++		if (!recsize) {
++			sdp_record_free (rec);
++			break;
++		}
++
++		if (sdp_get_access_protos (rec, &protos) == 0) {
++			/* Extract the DUN channel number */
++			channel = sdp_get_proto_port (protos, RFCOMM_UUID);
++			sdp_list_free (protos, NULL);
++
++			nm_log_dbg (LOGD_BT, "(%s -> %s): SDP channel=%d",
++			            context->src_str, context->dst_str, channel);
++		}
++		sdp_record_free (rec);
++
++		scanned += recsize;
++		rsp += recsize;
++		bytesleft -= recsize;
++	} while ((scanned < (ssize_t) size) && (bytesleft > 0) && (channel < 0));
++
++done:
++	if (channel != -1) {
++		context->rfcomm_channel = channel;
++		dun_connect (context);
++	}
++
++	sdp_search_cleanup (context);
++}
++
++static gboolean
++sdp_search_process_cb (GIOChannel *channel, GIOCondition condition, gpointer user_data)
++{
++	NMBluez5DunContext *context = user_data;
++
++	nm_log_dbg (LOGD_BT, "(%s -> %s): SDP search progressed with condition=%d",
++	            context->src_str, context->dst_str, condition);
++
++	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
++		GError *error = g_error_new (NM_BT_ERROR,
++		                             NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                             "Service Discovery interrupted");
++		context->callback (context, NULL, error, context->user_data);
++		sdp_search_cleanup (context);
++		return FALSE;
++	}
++
++	if (sdp_process (context->sdp_session) < 0) {
++		nm_log_dbg (LOGD_BT, "(%s -> %s): SDP search finished",
++		            context->src_str, context->dst_str);
++
++		/* Search finished successfully. */
++		return FALSE;
++	}
++
++	/* Search progressed successfully. */
++	return TRUE;
++}
++
++static gboolean
++sdp_connect_watch (GIOChannel *channel, GIOCondition condition, gpointer user_data)
++{
++	NMBluez5DunContext *context = user_data;
++	sdp_list_t *search, *attrs;
++	uuid_t svclass;
++	uint16_t attr;
++	int fd, err, fd_err = 0;
++	socklen_t len = sizeof (fd_err);
++	GError *error = NULL;
++
++	context->sdp_watch_id = 0;
++
++	fd = g_io_channel_unix_get_fd (channel);
++	if (getsockopt (fd, SOL_SOCKET, SO_ERROR, &fd_err, &len) < 0) {
++		nm_log_dbg (LOGD_BT, "(%s -> %s): getsockopt error=%d",
++		            context->src_str, context->dst_str, errno);
++		err = errno;
++	} else {
++		nm_log_dbg (LOGD_BT, "(%s -> %s): SO_ERROR error=%d",
++		            context->src_str, context->dst_str, fd_err);
++		err = fd_err;
++	}
++
++	if (err != 0) {
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Error on Service Discovery socket: (%d) %s",
++		                     err, strerror (err));
++		goto done;
++	}
++
++	if (sdp_set_notify (context->sdp_session, sdp_search_completed_cb, context) < 0) {
++		/* Should not be reached, only can fail if we passed bad sdp_session. */
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Could not request Service Discovery notification");
++		goto done;
++	}
++
++	sdp_uuid16_create (&svclass, DIALUP_NET_SVCLASS_ID);
++	search = sdp_list_append (NULL, &svclass);
++	attr = SDP_ATTR_PROTO_DESC_LIST;
++	attrs = sdp_list_append (NULL, &attr);
++
++	if (!sdp_service_search_attr_async (context->sdp_session, search, SDP_ATTR_REQ_INDIVIDUAL, attrs)) {
++		/* Set callback responsible for update the internal SDP transaction */
++		context->sdp_watch_id = g_io_add_watch (channel,
++		                                        G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_NVAL,
++		                                        sdp_search_process_cb,
++		                                        context);
++	} else {
++		err = sdp_get_error (context->sdp_session);
++		error = g_error_new (NM_BT_ERROR,
++		                     NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Error starting Service Discovery: (%d) %s",
++		                     err, strerror (err));
++	}
++
++	sdp_list_free (attrs, NULL);
++	sdp_list_free (search, NULL);
++
++done:
++	if (error) {
++		context->callback (context, NULL, error, context->user_data);
++		sdp_search_cleanup (context);
++	}
++
++	return G_SOURCE_REMOVE;
++}
++
++NMBluez5DunContext *
++nm_bluez5_dun_new (const char *adapter,
++                   const char *remote)
++
++{
++	NMBluez5DunContext *context;
++
++	context = g_slice_new0 (NMBluez5DunContext);
++	str2ba (adapter, &context->src);
++	str2ba (remote, &context->dst);
++	context->src_str = g_strdup (adapter);
++	context->dst_str = g_strdup (remote);
++	context->rfcomm_channel = -1;
++	context->rfcomm_id = -1;
++	context->rfcomm_fd = -1;
++	return context;
++}
++
++void
++nm_bluez5_dun_connect (NMBluez5DunContext *context,
++                       NMBluez5DunFunc callback,
++                       gpointer user_data)
++{
++	GIOChannel *channel;
++
++	context->callback = callback;
++	context->user_data = user_data;
++
++	if (context->rfcomm_channel != -1) {
++		nm_log_dbg (LOGD_BT, "(%s): channel number on device %s cached: %d",
++			    context->src_str, context->dst_str, context->rfcomm_channel);
++		dun_connect (context);
++		return;
++	}
++
++	nm_log_dbg (LOGD_BT, "(%s): starting channel number discovery for device %s",
++		    context->src_str, context->dst_str);
++
++	context->sdp_session = sdp_connect (&context->src, &context->dst, SDP_NON_BLOCKING);
++	if (!context->sdp_session) {
++		GError *error;
++		int err = sdp_get_error (context->sdp_session);
++
++		error = g_error_new (NM_BT_ERROR, NM_BT_ERROR_DUN_CONNECT_FAILED,
++		                     "Failed to connect to the SDP server: (%d) %s",
++		                      err, strerror (err));
++		context->callback (context, NULL, error, context->user_data);
++		return;
++	}
++
++	channel = g_io_channel_unix_new (sdp_get_socket (context->sdp_session));
++	context->sdp_watch_id = g_io_add_watch (channel,
++	                                        G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL,
++	                                        sdp_connect_watch,
++	                                        context);
++	g_io_channel_unref (channel);
++}
++
++/* Only clean up connection-related stuff to allow reconnect */
++void
++nm_bluez5_dun_cleanup (NMBluez5DunContext *context)
++{
++	g_return_if_fail (context != NULL);
++
++	sdp_search_cleanup (context);
++
++	if (context->rfcomm_fd >= 0) {
++		if (context->rfcomm_id >= 0) {
++			struct rfcomm_dev_req req = { 0 };
++
++			req.dev_id = context->rfcomm_id;
++			ioctl (context->rfcomm_fd, RFCOMMRELEASEDEV, &req);
++			context->rfcomm_id = -1;
++		}
++		close (context->rfcomm_fd);
++		context->rfcomm_fd = -1;
++	}
++
++	close (context->rfcomm_tty_fd);
++	context->rfcomm_tty_fd = -1;
++}
++
++void
++nm_bluez5_dun_free (NMBluez5DunContext *context)
++{
++	g_return_if_fail (context != NULL);
++
++	nm_bluez5_dun_cleanup (context);
++	g_clear_pointer (&context->src_str, g_free);
++	g_clear_pointer (&context->dst_str, g_free);
++	g_slice_free (NMBluez5DunContext, context);
++}
+diff --git a/src/devices/bluetooth/nm-bluez5-dun.h b/src/devices/bluetooth/nm-bluez5-dun.h
+new file mode 100644
+index 0000000..7e25972
+--- /dev/null
++++ b/src/devices/bluetooth/nm-bluez5-dun.h
+@@ -0,0 +1,46 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
++/* NetworkManager -- Network link manager
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Copyright (C) 2014 Red Hat, Inc.
++ */
++
++#ifndef _NM_BLUEZ5_UTILS_H_
++#define _NM_BLUEZ5_UTILS_H_
++
++#include <glib.h>
++#include <gio/gio.h>
++
++typedef struct _NMBluez5DunContext NMBluez5DunContext;
++
++typedef void (*NMBluez5DunFunc) (NMBluez5DunContext *context,
++                                 const char *rfcomm_dev,
++                                 GError *error,
++                                 gpointer user_data);
++
++NMBluez5DunContext *nm_bluez5_dun_new (const char *adapter,
++                                       const char *remote);
++
++void nm_bluez5_dun_connect (NMBluez5DunContext *context,
++                            NMBluez5DunFunc callback, gpointer user_data);
++
++/* Clean up connection resources */
++void nm_bluez5_dun_cleanup (NMBluez5DunContext *context);
++
++/* Clean up and dispose all resources */
++void nm_bluez5_dun_free (NMBluez5DunContext *context);
++
++#endif  /* _NM_BLUEZ5_UTILS_H_ */
+-- 
+1.9.3
+
