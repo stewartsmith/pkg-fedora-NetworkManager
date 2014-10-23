@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 8
+%define release_version 9
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -287,7 +287,6 @@ NetworkManager functionality from applications that use glib.
 %package config-connectivity-fedora
 Summary: NetworkManager config file for connectivity checking via Fedora servers
 Group: System Environment/Base
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description config-connectivity-fedora
 This adds a NetworkManager configuration file to enable connectivity checking
@@ -599,6 +598,9 @@ fi
 %endif
 
 %changelog
+* Thu Oct 23 2014 Adam Williamson <awilliam@redhat.com> - 1:0.9.10.0-9.git20140704
+- connectivity-fedora: don't require NetworkManager (#1156198)
+
 * Thu Oct 16 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-8.git20140704
 - bluetooth: Restore DUN support (rh #1055628)
 
