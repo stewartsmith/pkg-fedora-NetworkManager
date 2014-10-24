@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 9
+%define release_version 10
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -581,6 +581,7 @@ fi
 
 %files config-connectivity-fedora
 %defattr(-,root,root,0755)
+%dir %{_sysconfdir}/%{name}
 %dir %{_sysconfdir}/%{name}/conf.d
 %config(noreplace) %{_sysconfdir}/%{name}/conf.d/20-connectivity-fedora.conf
 
@@ -598,6 +599,9 @@ fi
 %endif
 
 %changelog
+* Fri Oct 24 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-10.git20140704
+- Avoid unowned /etc/NetworkManager in config-connectivity-fedora
+
 * Thu Oct 23 2014 Adam Williamson <awilliam@redhat.com> - 1:0.9.10.0-9.git20140704
 - connectivity-fedora: don't require NetworkManager (#1156198)
 
