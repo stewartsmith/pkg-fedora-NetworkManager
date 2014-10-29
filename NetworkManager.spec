@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 11
+%define release_version 12
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -87,6 +87,7 @@ Patch2: 0002-bluez-split-out-errors.patch
 Patch3: 0003-bluez-track-adapter-address-in-NMBluezDevice.patch
 Patch4: 0004-bluez-re-add-DUN-support-for-Bluez5.patch
 Patch5: 0005-core-only-set-IPv6-hop_limit-for-values-greater-than.patch
+Patch6: 0006-platform-deal-with-default-route-being-passed-to-rou.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -330,6 +331,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch3 -p1 -b .bluez-track-adapter-address-in-NMBluezDevice.orig
 %patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
 %patch5 -p1 -b .core-only-set-IPv6-hop_limit-for-values-greater-than.orig
+%patch6 -p1 -b .default-route-spam
 
 %build
 
@@ -601,6 +603,9 @@ fi
 %endif
 
 %changelog
+* Wed Oct 29 2014 Dan Winship <danw@redhat.com> - 1:0.9.10.0-12.git20140704
+- platform: fix a routing-related bug that could cause NM and other apps to spin (rh #1151665)
+
 * Wed Oct 29 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-11.git20140704
 - Fix IPv6 next hop default setting
 
