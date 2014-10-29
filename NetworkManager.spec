@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 10
+%define release_version 11
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -86,6 +86,7 @@ Patch1: 0001-policy-allow-non-local-admin-sessions-to-control-the.patch
 Patch2: 0002-bluez-split-out-errors.patch
 Patch3: 0003-bluez-track-adapter-address-in-NMBluezDevice.patch
 Patch4: 0004-bluez-re-add-DUN-support-for-Bluez5.patch
+Patch5: 0005-core-only-set-IPv6-hop_limit-for-values-greater-than.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -328,6 +329,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch2 -p1 -b .bluez-split-out-errors.orig
 %patch3 -p1 -b .bluez-track-adapter-address-in-NMBluezDevice.orig
 %patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
+%patch5 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
 
 %build
 
@@ -599,6 +601,9 @@ fi
 %endif
 
 %changelog
+* Wed Oct 29 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-11.git20140704
+- Fix IPv6 next hop default setting
+
 * Fri Oct 24 2014 Lubomir Rintel <lkundrak@v3.sk> 1:0.9.10.0-10.git20140704
 - Avoid unowned /etc/NetworkManager in config-connectivity-fedora
 
