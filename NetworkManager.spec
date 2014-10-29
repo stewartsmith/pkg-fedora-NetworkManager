@@ -329,7 +329,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch2 -p1 -b .bluez-split-out-errors.orig
 %patch3 -p1 -b .bluez-track-adapter-address-in-NMBluezDevice.orig
 %patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
-%patch5 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
+%patch5 -p1 -b .core-only-set-IPv6-hop_limit-for-values-greater-than.orig
 
 %build
 
