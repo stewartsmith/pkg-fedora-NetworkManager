@@ -13,7 +13,7 @@
 %define snapshot .git20140704
 %define git_sha 6eb82acd
 %define realversion 0.9.10.0
-%define release_version 12
+%define release_version 13
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -88,6 +88,7 @@ Patch3: 0003-bluez-track-adapter-address-in-NMBluezDevice.patch
 Patch4: 0004-bluez-re-add-DUN-support-for-Bluez5.patch
 Patch5: 0005-core-only-set-IPv6-hop_limit-for-values-greater-than.patch
 Patch6: 0006-platform-deal-with-default-route-being-passed-to-rou.patch
+Patch7: 0007-rh1159408-cli-multiple-wifi-devices-fix.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -332,6 +333,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
 %patch5 -p1 -b .core-only-set-IPv6-hop_limit-for-values-greater-than.orig
 %patch6 -p1 -b .default-route-spam
+%patch7 -p1 -b .rh1159408-cli-multiple-wifi-devices-fix.orig
 
 %build
 
@@ -603,6 +605,9 @@ fi
 %endif
 
 %changelog
+* Thu Nov  6 2014 Jiří Klimeš <jklimes@redhat.com> - 1:0.9.10.0-13.git20140704
+- cli: fix crash in `nmcli device wifi` with multiple wifi devices (rh #1159408)
+
 * Wed Oct 29 2014 Dan Winship <danw@redhat.com> - 1:0.9.10.0-12.git20140704
 - platform: fix a routing-related bug that could cause NM and other apps to spin (rh #1151665)
 
