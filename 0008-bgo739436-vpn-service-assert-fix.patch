@@ -1,0 +1,68 @@
+From d1d5196fd45c939d0d91d4a34b63e20b4b12bc34 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sun, 9 Nov 2014 12:38:38 +0100
+Subject: [PATCH 1/2] vpn: propagate daemon exec error correctly (bgo #739436)
+
+NetworkManager[31624]: <warn>  VPN service 'openvpn': could not launch the VPN service. error: (8) Failed to execute child process "/usr/local/libexec/nm-openvpn-service" (No such file or directory).
+**
+NetworkManager:ERROR:nm-manager.c:3094:_activation_auth_done: assertion failed: (error)
+
+https://bugzilla.gnome.org/show_bug.cgi?id=739436
+
+(cherry picked from commit 282d9b0e10c08dcda4a1d082b15dc2bdda8ee3d2)
+---
+ src/vpn-manager/nm-vpn-service.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/vpn-manager/nm-vpn-service.c b/src/vpn-manager/nm-vpn-service.c
+index 824543f..64eb78b 100644
+--- a/src/vpn-manager/nm-vpn-service.c
++++ b/src/vpn-manager/nm-vpn-service.c
+@@ -54,7 +54,7 @@ typedef struct {
+ 
+ #define VPN_CONNECTION_GROUP "VPN Connection"
+ 
+-static gboolean start_pending_vpn (NMVPNService *self);
++static gboolean start_pending_vpn (NMVPNService *self, GError **error);
+ 
+ NMVPNService *
+ nm_vpn_service_new (const char *namefile, GError **error)
+@@ -130,7 +130,7 @@ connection_vpn_state_changed (NMVPNConnection *connection,
+ 		g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_vpn_state_changed), self);
+ 		if (connection == priv->active) {
+ 			priv->active = NULL;
+-			start_pending_vpn (self);
++			start_pending_vpn (self, NULL);
+ 		} else
+ 			priv->pending = g_slist_remove (priv->pending, connection);
+ 		g_object_unref (connection);
+@@ -253,7 +253,7 @@ start_active_vpn (NMVPNService *self, GError **error)
+ }
+ 
+ static gboolean
+-start_pending_vpn (NMVPNService *self)
++start_pending_vpn (NMVPNService *self, GError **error)
+ {
+ 	NMVPNServicePrivate *priv = NM_VPN_SERVICE_GET_PRIVATE (self);
+ 
+@@ -266,7 +266,7 @@ start_pending_vpn (NMVPNService *self)
+ 	priv->active = g_slist_nth_data (priv->pending, 0);
+ 	priv->pending = g_slist_remove (priv->pending, priv->active);
+ 
+-	return start_active_vpn (self, NULL);
++	return start_active_vpn (self, error);
+ }
+ 
+ gboolean
+@@ -300,7 +300,7 @@ nm_vpn_service_activate (NMVPNService *service,
+ 	}
+ 
+ 	/* Otherwise start the next VPN */
+-	return start_pending_vpn (service);
++	return start_pending_vpn (service, error);
+ }
+ 
+ static void
+-- 
+1.7.11.7
+
