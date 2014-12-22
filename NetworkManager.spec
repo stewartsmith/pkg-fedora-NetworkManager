@@ -5,15 +5,12 @@
 %define wireless_tools_version 1:28-0pre9
 %define libnl3_version 3.2.7
 
-%define ppp_version 2.4.5
-%if (0%{?fedora} && 0%{?fedora} > 20)
-%define ppp_version 2.4.7
-%endif
+%define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .git20140704
-%define git_sha 6eb82acd
-%define realversion 0.9.10.0
-%define release_version 14
+%define snapshot %{nil}
+%define git_sha %{nil}
+%define realversion 1.0.0
+%define release_version 1
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -31,6 +28,7 @@
 
 %global with_adsl 1
 %global with_bluetooth 1
+%global with_team 1
 %global with_wifi 1
 %global with_wimax 0
 %global with_wwan 1
@@ -38,6 +36,12 @@
 # WiMAX still supported on <= F19
 %if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
 %global with_wimax 1
+%endif
+
+# ModemManager on Fedora < 20 too old for Bluetooth && wwan
+%if (0%{?fedora} && 0%{?fedora} < 20)
+%global with_bluetooth 0
+%global with_wwan 0
 %endif
 
 # Bluetooth requires the WWAN plugin
@@ -54,10 +58,14 @@
 %global with_wwan 0
 %endif
 
-%if 0%{?rhel} || (0%{?fedora} > 19)
-%global with_teamctl 1
+%if (0%{?fedora} && 0%{?fedora} <= 19)
+%global with_team 0
 %endif
 
+%define with_modem_manager_1 0
+%if 0%{?with_bluetooth} || (0%{?with_wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)))
+%define with_modem_manager_1 1
+%endif
 
 %global _hardened_build 1
 
@@ -67,30 +75,18 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{?dist}
+Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
-
-# Cherry-picks from upstream:
-# http://cgit.freedesktop.org/NetworkManager/NetworkManager/log/?h=nm-0-9-10
-Patch1: 0001-policy-allow-non-local-admin-sessions-to-control-the.patch
-Patch2: 0002-bluez-split-out-errors.patch
-Patch3: 0003-bluez-track-adapter-address-in-NMBluezDevice.patch
-Patch4: 0004-bluez-re-add-DUN-support-for-Bluez5.patch
-Patch5: 0005-core-only-set-IPv6-hop_limit-for-values-greater-than.patch
-Patch6: 0006-platform-deal-with-default-route-being-passed-to-rou.patch
-Patch7: 0007-rh1159408-cli-multiple-wifi-devices-fix.patch
-Patch8: 0008-bgo739436-vpn-service-assert-fix.patch
-Patch9: 0009-rh1167345-external-master-slave-assert-fix.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -109,7 +105,7 @@ Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
 Requires: libnl3 >= %{libnl3_version}
-Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
 Requires: avahi-autoipd
 Requires: dnsmasq
@@ -137,11 +133,10 @@ BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: perl(XML::Parser)
+BuildRequires: perl(YAML)
 BuildRequires: automake autoconf intltool libtool
-BuildRequires: ppp = %{ppp_version}
-BuildRequires: ppp-devel = %{ppp_version}
+BuildRequires: ppp-devel >= 2.4.5
 BuildRequires: nss-devel >= 3.11.7
-BuildRequires: polkit-devel
 BuildRequires: dhclient
 BuildRequires: readline-devel
 %if %{regen_docs}
@@ -161,15 +156,17 @@ BuildRequires: wimax-devel
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
 BuildRequires: libndp-devel >= 1.0
-%if (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19))
+%if 0%{?with_modem_manager_1}
 BuildRequires: ModemManager-glib-devel >= 1.0
 %endif
 %if 0%{?with_nmtui}
 BuildRequires: newt-devel
 %endif
-%if 0%{?with_teamctl}
-BuildRequires: teamd-devel
-%endif
+BuildRequires: /usr/bin/dbus-launch
+BuildRequires: pygobject3-base
+BuildRequires: dbus-python
+BuildRequires: libselinux-devel
+BuildRequires: polkit-devel
 
 
 %description
@@ -213,6 +210,21 @@ This package contains NetworkManager support for Bluetooth devices.
 %endif
 
 
+%if 0%{?with_team}
+%package team
+Summary: Team device plugin for NetworkManager
+Group: System Environment/Base
+BuildRequires: teamd-devel
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Obsoletes: NetworkManager < %{obsoletes_nmver}
+# Team was split from main NM binary between 0.9.10 and 1.0
+Obsoletes: NetworkManager < 1.0.0
+
+%description team
+This package contains NetworkManager support for team devices.
+%endif
+
+
 %if 0%{?with_wifi}
 %package wifi
 Summary: Wifi plugin for NetworkManager
@@ -253,9 +265,9 @@ devices.
 
 
 %package devel
-Summary: Libraries and headers for adding NetworkManager support to applications
+Summary: Headers defining the NetworkManager D-Bus APIs
 Group: Development/Libraries
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 Requires: pkgconfig
@@ -266,18 +278,19 @@ from applications.
 
 
 %package glib
-Summary: Libraries for adding NetworkManager support to applications that use glib.
+Summary: Libraries for adding NetworkManager support to applications (old API).
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 
 %description glib
 This package contains the libraries that make it easier to use some NetworkManager
-functionality from applications that use glib.
+functionality from applications that use glib.  This is the older NetworkManager API.
+See also NetworkManager-libnm.
 
 
 %package glib-devel
-Summary: Header files for adding NetworkManager support to applications that use glib.
+Summary: Header files for adding NetworkManager support to applications (old API).
 Group: Development/Libraries
 Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
@@ -287,7 +300,36 @@ Requires: dbus-glib-devel >= %{dbus_glib_version}
 
 %description glib-devel
 This package contains the header and pkg-config files for development applications using
-NetworkManager functionality from applications that use glib.
+NetworkManager functionality from applications that use glib.  This is the older
+NetworkManager API. See also NetworkManager-libnm-devel.
+
+
+%package libnm
+Summary: Libraries for adding NetworkManager support to applications (new API).
+Group: Development/Libraries
+Requires: dbus >= %{dbus_version}
+Requires: dbus-glib >= %{dbus_glib_version}
+
+%description libnm
+This package contains the libraries that make it easier to use some NetworkManager
+functionality from applications.  This is the new NetworkManager API.  See also
+NetworkManager-glib.
+
+
+%package libnm-devel
+Summary: Header files for adding NetworkManager support to applications (new API).
+Group: Development/Libraries
+Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: glib2-devel
+Requires: pkgconfig
+Requires: dbus-glib-devel >= %{dbus_glib_version}
+
+%description libnm-devel
+This package contains the header and pkg-config files for development applications using
+NetworkManager functionality from applications.  This is the new NetworkManager API.
+See also NetworkManager-glib-devel.
+
 
 %package config-connectivity-fedora
 Summary: NetworkManager config file for connectivity checking via Fedora servers
@@ -300,7 +342,6 @@ via Fedora infrastructure.
 %package config-server
 Summary: NetworkManager config file for "server-like" defaults
 Group: System Environment/Base
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description config-server
 This adds a NetworkManager configuration file to make it behave more
@@ -316,8 +357,8 @@ deployments.
 %package tui
 Summary: NetworkManager curses-based UI
 Group: System Environment/Base
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description tui
 This adds a curses-based "TUI" (Text User Interface) to
@@ -329,15 +370,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .explain-dns1-dns2.orig
-%patch1 -p1 -b .policy-allow-non-local-admin-sessions-to-control-the.orig
-%patch2 -p1 -b .bluez-split-out-errors.orig
-%patch3 -p1 -b .bluez-track-adapter-address-in-NMBluezDevice.orig
-%patch4 -p1 -b .bluez-re-add-DUN-support-for-Bluez5.orig
-%patch5 -p1 -b .core-only-set-IPv6-hop_limit-for-values-greater-than.orig
-%patch6 -p1 -b .default-route-spam
-%patch7 -p1 -b .rh1159408-cli-multiple-wifi-devices-fix.orig
-%patch8 -p1 -b .bgo739436-vpn-service-assert-fix.patch.orig
-%patch9 -p1 -b .rh1167345-external-master-slave-assert-fix.orig
 
 %build
 
@@ -357,7 +389,7 @@ intltoolize --force
 	--with-crypto=nss \
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
-%if 0%{?rhel} || (0%{?fedora} > 19)
+%if 0%{?with_modem_manager_1}
 	--with-modem-manager-1=yes \
 %else
 	--with-modem-manager-1=no \
@@ -378,12 +410,14 @@ intltoolize --force
 %else
 	--with-wext=no \
 %endif
-%if 0%{?with_teamctl}
+%if 0%{?with_team}
 	--enable-teamdctl=yes \
 %else
 	--enable-teamdctl=no \
 %endif
+	--with-selinux=yes \
 	--enable-polkit=yes \
+	--enable-polkit-agent \
 	--enable-modify-system=yes \
 	--enable-concheck \
 	--with-session-tracking=systemd \
@@ -396,7 +430,8 @@ intltoolize --force
 	--enable-ifcfg-rh=yes \
 	--with-system-libndp=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
-	--with-dist-version=%{version}-%{release}
+	--with-dist-version=%{version}-%{release} \
+        --with-setting-plugins-default='ifcfg-rh,ibft'
 
 make %{?_smp_mflags}
 
@@ -430,8 +465,6 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
 %{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
-
-install -m 0755 test/.libs/nm-online %{buildroot}/%{_bindir}
 
 %if %{regen_docs}
 # install the pristine docs
@@ -485,8 +518,12 @@ fi
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-avahi-autoipd.action
 %{_libexecdir}/nm-dispatcher
+%{_libexecdir}/nm-iface-helper
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/libnm-settings-plugin*.so
+%if 0%{?with_nmtui}
+%exclude %{_mandir}/man1/nmtui*
+%endif
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
@@ -517,8 +554,12 @@ fi
 %files bluetooth
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
-%else
-%exclude %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
+%endif
+
+%if 0%{?with_team}
+%files team
+%defattr(-,root,root,0755)
+%{_libdir}/%{name}/libnm-device-plugin-team.so
 %endif
 
 %if 0%{?with_wifi}
@@ -534,17 +575,12 @@ fi
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
-%else
-%exclude %{_libdir}/%{name}/libnm-device-plugin-wwan.so
-%exclude %{_libdir}/%{name}/libnm-wwan.so
 %endif
 
 %if 0%{?with_wimax}
 %files wimax
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wimax.so
-%else
-%exclude %{_libdir}/%{name}/libnm-device-plugin-wimax.so
 %endif
 
 %files devel
@@ -589,6 +625,21 @@ fi
 %dir %{_datadir}/gtk-doc/html/libnm-util
 %{_datadir}/gtk-doc/html/libnm-util/*
 
+%files libnm
+%defattr(-,root,root,0755)
+%{_libdir}/libnm.so.*
+%{_libdir}/girepository-1.0/NM-1.0.typelib
+
+%files libnm-devel
+%defattr(-,root,root,0755)
+%dir %{_includedir}/libnm
+%{_includedir}/libnm/*.h
+%{_libdir}/pkgconfig/libnm.pc
+%{_libdir}/libnm.so
+%{_datadir}/gir-1.0/NM-1.0.gir
+%dir %{_datadir}/gtk-doc/html/libnm
+%{_datadir}/gtk-doc/html/libnm/*
+
 %files config-connectivity-fedora
 %defattr(-,root,root,0755)
 %dir %{_sysconfdir}/%{name}
@@ -597,6 +648,7 @@ fi
 
 %files config-server
 %defattr(-,root,root,0755)
+%dir %{_sysconfdir}/%{name}
 %dir %{_sysconfdir}/%{name}/conf.d
 %config(noreplace) %{_sysconfdir}/%{name}/conf.d/00-server.conf
 
@@ -606,9 +658,13 @@ fi
 %{_bindir}/nmtui-edit
 %{_bindir}/nmtui-connect
 %{_bindir}/nmtui-hostname
+%{_mandir}/man1/nmtui*
 %endif
 
 %changelog
+* Mon Dec 22 2014 Dan Williams <dcbw@redhat.com> - 1:1.0.0-1
+- Update to 1.0
+
 * Mon Nov 24 2014 Jiří Klimeš <jklimes@redhat.com> - 1:0.9.10.0-14.git20140704
 - vpn: propagate daemon exec error correctly (bgo #739436)
 - core: do not assert when a device is enslaved externally (rh #1167345)
