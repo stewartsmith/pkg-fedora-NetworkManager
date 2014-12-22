@@ -431,7 +431,7 @@ intltoolize --force
 	--with-system-libndp=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release} \
-        --with-setting-plugins-default='ifcfg-rh,ibft'
+	--with-setting-plugins-default='ifcfg-rh,ibft'
 
 make %{?_smp_mflags}
 
