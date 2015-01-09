@@ -10,7 +10,7 @@
 %define snapshot %{nil}
 %define git_sha %{nil}
 %define realversion 1.0.0
-%define release_version 1
+%define release_version 2
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -47,15 +47,6 @@
 # Bluetooth requires the WWAN plugin
 %if 0%{?with_bluetooth}
 %global with_wwan 1
-%endif
-
-%ifarch s390 s390x
-# No hardware-based plugins on s390
-%global with_adsl 0
-%global with_bluetooth 0
-%global with_wifi 0
-%global with_wimax 0
-%global with_wwan 0
 %endif
 
 %if (0%{?fedora} && 0%{?fedora} <= 19)
@@ -196,7 +187,7 @@ This package contains NetworkManager support for ADSL devices.
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: NetworkManager-wwan
+Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
 %if (0%{?fedora} > 19)
 Requires: bluez >= 5.0
 %else
@@ -662,6 +653,10 @@ fi
 %endif
 
 %changelog
+* Fri Jan  9 2015  <danw@redhat.com> - 1:1.0.0-2
+- build: fix NetworkManager-bluetooth dep on NetworkManager-wwan
+- build: re-enable hardware plugins on s390
+
 * Mon Dec 22 2014 Dan Williams <dcbw@redhat.com> - 1:1.0.0-1
 - Update to 1.0
 
