@@ -1,0 +1,283 @@
+From 7e6aee7e1a898e552a0e273ef53ecf6a1f0e95d3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Pavel=20=C5=A0imerda?= <psimerda@redhat.com>
+Date: Tue, 18 Nov 2014 18:12:16 +0100
+Subject: [PATCH 1/3] dns-manager: make /etc/resolv.conf a symlink to
+ /run/NetworkManager/resolv.conf.default
+
+Related:
+
+ * https://bugzilla.gnome.org/show_bug.cgi?id=732941
+ * https://bugzilla.redhat.com/show_bug.cgi?id=1116999
+
+Acked-By: Thomas Haller <thaller@redhat.com>
+Acked-By: Dan Williams <dcbw@redhat.com>
+(cherry picked from commit 4805be2ed27b71a6099477d86dbc109adb41b819)
+---
+ src/dns-manager/nm-dns-manager.c | 111 ++++++++++++++++++++-------------------
+ 1 file changed, 57 insertions(+), 54 deletions(-)
+
+diff --git a/src/dns-manager/nm-dns-manager.c b/src/dns-manager/nm-dns-manager.c
+index d556850..5eeae9b 100644
+--- a/src/dns-manager/nm-dns-manager.c
++++ b/src/dns-manager/nm-dns-manager.c
+@@ -444,53 +444,27 @@ dispatch_resolvconf (char **searches,
+ }
+ #endif
+ 
++#define MY_RESOLV_CONF NMRUNDIR "/resolv.conf"
++#define MY_RESOLV_CONF_TMP MY_RESOLV_CONF ".tmp"
++#define RESOLV_CONF_TMP "/etc/.resolv.conf.NetworkManager"
++
+ static gboolean
+ update_resolv_conf (char **searches,
+                     char **nameservers,
+                     GError **error)
+ {
+-	char *tmp_resolv_conf;
+-	char *tmp_resolv_conf_realpath;
+-	char *resolv_conf_realpath;
+ 	FILE *f;
+-	int do_rename = 1;
+-	int old_errno = 0;
+ 
+ 	g_return_val_if_fail (error != NULL, FALSE);
+ 
+-	/* Find the real path of resolv.conf; it could be a symlink to something */
+-	resolv_conf_realpath = realpath (_PATH_RESCONF, NULL);
+-	if (!resolv_conf_realpath)
+-		resolv_conf_realpath = strdup (_PATH_RESCONF);
+-
+-	/* Build up the real path for the temp resolv.conf that we're about to
+-	 * write out.
+-	 */
+-	tmp_resolv_conf = g_strdup_printf ("%s.tmp", resolv_conf_realpath);
+-	tmp_resolv_conf_realpath = realpath (tmp_resolv_conf, NULL);
+-	if (!tmp_resolv_conf_realpath)
+-		tmp_resolv_conf_realpath = strdup (tmp_resolv_conf);
+-	g_free (tmp_resolv_conf);
+-	tmp_resolv_conf = NULL;
+-
+-	if ((f = fopen (tmp_resolv_conf_realpath, "w")) == NULL) {
+-		do_rename = 0;
+-		old_errno = errno;
+-		if ((f = fopen (_PATH_RESCONF, "w")) == NULL) {
+-			g_set_error (error,
+-			             NM_MANAGER_ERROR,
+-			             NM_MANAGER_ERROR_FAILED,
+-			             "Could not open %s: %s\nCould not open %s: %s\n",
+-			             tmp_resolv_conf_realpath,
+-			             g_strerror (old_errno),
+-			             _PATH_RESCONF,
+-			             g_strerror (errno));
+-			goto out;
+-		}
+-		/* Update tmp_resolv_conf_realpath so the error message on fclose()
+-		 * failure will be correct.
+-		 */
+-		strcpy (tmp_resolv_conf_realpath, _PATH_RESCONF);
++	if ((f = fopen (MY_RESOLV_CONF_TMP, "w")) == NULL) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not open %s: %s\n",
++		             MY_RESOLV_CONF_TMP,
++		             g_strerror (errno));
++		return FALSE;
+ 	}
+ 
+ 	write_resolv_conf (f, searches, nameservers, error);
+@@ -504,28 +478,57 @@ update_resolv_conf (char **searches,
+ 			             NM_MANAGER_ERROR,
+ 			             NM_MANAGER_ERROR_FAILED,
+ 			             "Could not close %s: %s\n",
+-			             tmp_resolv_conf_realpath,
++			             MY_RESOLV_CONF_TMP,
+ 			             g_strerror (errno));
+ 		}
+ 	}
+ 
+-	/* Don't rename the tempfile over top of the existing resolv.conf if there
+-	 * was an error writing it out.
+-	 */
+-	if (*error == NULL && do_rename) {
+-		if (rename (tmp_resolv_conf_realpath, resolv_conf_realpath) < 0) {
+-			g_set_error (error,
+-			             NM_MANAGER_ERROR,
+-			             NM_MANAGER_ERROR_FAILED,
+-			             "Could not replace " _PATH_RESCONF ": %s\n",
+-			             g_strerror (errno));
+-		}
++	if (*error)
++		return FALSE;
++
++	if (rename (MY_RESOLV_CONF_TMP, MY_RESOLV_CONF) < 0) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not replace %s: %s\n",
++		             MY_RESOLV_CONF,
++		             g_strerror (errno));
++		return FALSE;
++	}
++
++	if (unlink (RESOLV_CONF_TMP) == -1 && errno != ENOENT) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not unlink %s: %s\n",
++		             RESOLV_CONF_TMP,
++		             g_strerror (errno));
++		return FALSE;
++	}
++
++	if (symlink (MY_RESOLV_CONF, RESOLV_CONF_TMP) == -1) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not create symlink %s pointing to %s: %s\n",
++		             RESOLV_CONF_TMP,
++		             MY_RESOLV_CONF,
++		             g_strerror (errno));
++		return FALSE;
++	}
++
++	if (rename (RESOLV_CONF_TMP, _PATH_RESCONF) == -1) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not rename %s to %s: %s\n",
++		             RESOLV_CONF_TMP,
++		             _PATH_RESCONF,
++		             g_strerror (errno));
++		return FALSE;
+ 	}
+ 
+-out:
+-	free (tmp_resolv_conf_realpath);
+-	free (resolv_conf_realpath);
+-	return *error ? FALSE : TRUE;
++	return TRUE;
+ }
+ 
+ static void
+-- 
+1.9.3
+
+
+From 20983e28f4fff52f75327b30cc7d386ebfda2710 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Pavel=20=C5=A0imerda?= <psimerda@redhat.com>
+Date: Tue, 18 Nov 2014 18:12:16 +0100
+Subject: [PATCH 2/3] dns-manager: don't replace /etc/resolv.conf installed by
+ other tools
+
+Resolves:
+
+ * https://bugzilla.gnome.org/show_bug.cgi?id=732941
+ * https://bugzilla.redhat.com/show_bug.cgi?id=1116999
+
+Acked-By: Dan Williams <dcbw@redhat.com>
+Acked-By: Thomas Haller <thaller@redhat.com>
+(cherry picked from commit 583568e12f9e580cd2903811637c9f9b7a2f1088)
+---
+ src/dns-manager/nm-dns-manager.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/src/dns-manager/nm-dns-manager.c b/src/dns-manager/nm-dns-manager.c
+index 5eeae9b..e9d3f43 100644
+--- a/src/dns-manager/nm-dns-manager.c
++++ b/src/dns-manager/nm-dns-manager.c
+@@ -27,6 +27,7 @@
+ #include <fcntl.h>
+ #include <resolv.h>
+ #include <stdlib.h>
++#include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <unistd.h>
+ 
+@@ -454,6 +455,7 @@ update_resolv_conf (char **searches,
+                     GError **error)
+ {
+ 	FILE *f;
++	struct stat st;
+ 
+ 	g_return_val_if_fail (error != NULL, FALSE);
+ 
+@@ -496,6 +498,39 @@ update_resolv_conf (char **searches,
+ 		return FALSE;
+ 	}
+ 
++	/* Don't overwrite a symbolic link unless it points to MY_RESOLV_CONF. */
++	if (lstat (_PATH_RESCONF, &st) != -1) {
++		/* Don't overwrite a symbolic link. */
++		if (S_ISLNK (st.st_mode)) {
++			if (stat (_PATH_RESCONF, &st) != -1) {
++				char *path = g_file_read_link (_PATH_RESCONF, NULL);
++				gboolean not_ours = g_strcmp0 (path, MY_RESOLV_CONF) != 0;
++
++				g_free (path);
++				if (not_ours)
++					return TRUE;
++			} else {
++				if (errno != ENOENT)
++					return TRUE;
++				g_set_error (error,
++							 NM_MANAGER_ERROR,
++							 NM_MANAGER_ERROR_FAILED,
++							 "Could not stat %s: %s\n",
++							 _PATH_RESCONF,
++							 g_strerror (errno));
++				return FALSE;
++			}
++		}
++	} else if (errno != ENOENT) {
++		g_set_error (error,
++		             NM_MANAGER_ERROR,
++		             NM_MANAGER_ERROR_FAILED,
++		             "Could not lstat %s: %s\n",
++		             _PATH_RESCONF,
++		             g_strerror (errno));
++		return FALSE;
++	}
++
+ 	if (unlink (RESOLV_CONF_TMP) == -1 && errno != ENOENT) {
+ 		g_set_error (error,
+ 		             NM_MANAGER_ERROR,
+-- 
+1.9.3
+
+
+From 9c3b052d010a124b32319b79be9006ae5dccac6d Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 21 Jan 2015 17:29:10 +0100
+Subject: [PATCH 3/3] trival/whitespace: fix indention in nm-dns-manager.c
+
+Fixes: 583568e12f9e580cd2903811637c9f9b7a2f1088
+(cherry picked from commit 4c691cf69ed33bcbaa0b4802e419b98ed687630b)
+---
+ src/dns-manager/nm-dns-manager.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/dns-manager/nm-dns-manager.c b/src/dns-manager/nm-dns-manager.c
+index e9d3f43..6f34584 100644
+--- a/src/dns-manager/nm-dns-manager.c
++++ b/src/dns-manager/nm-dns-manager.c
+@@ -513,11 +513,11 @@ update_resolv_conf (char **searches,
+ 				if (errno != ENOENT)
+ 					return TRUE;
+ 				g_set_error (error,
+-							 NM_MANAGER_ERROR,
+-							 NM_MANAGER_ERROR_FAILED,
+-							 "Could not stat %s: %s\n",
+-							 _PATH_RESCONF,
+-							 g_strerror (errno));
++				             NM_MANAGER_ERROR,
++				             NM_MANAGER_ERROR_FAILED,
++				             "Could not stat %s: %s\n",
++				             _PATH_RESCONF,
++				             g_strerror (errno));
+ 				return FALSE;
+ 			}
+ 		}
+-- 
+1.9.3
+

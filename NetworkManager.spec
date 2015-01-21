@@ -10,7 +10,7 @@
 %define snapshot %{nil}
 %define git_sha %{nil}
 %define realversion 1.0.0
-%define release_version 2
+%define release_version 3
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -78,6 +78,7 @@ Source3: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
+Patch1: 0001-rh1116999-resolv-conf-symlink.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -360,7 +361,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 
-%patch0 -p1 -b .explain-dns1-dns2.orig
+%patch0 -p1 -b .0000-explain-dns1-dns2.orig
+%patch1 -p1 -b .0001-rh1116999-resolv-conf-symlink.orig
 
 %build
 
@@ -653,7 +655,10 @@ fi
 %endif
 
 %changelog
-* Fri Jan  9 2015  <danw@redhat.com> - 1:1.0.0-2
+* Wed Jan 21 2015 Thomas Haller <thaller@redhat.com> - 1:1.0.0-3
+- dns: manage resolv.conf as symlink to private file in /run directory (rh #1116999)
+
+* Fri Jan  9 2015 Dan Winship <danw@redhat.com> - 1:1.0.0-2
 - build: fix NetworkManager-bluetooth dep on NetworkManager-wwan
 - build: re-enable hardware plugins on s390
 
