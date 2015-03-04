@@ -10,7 +10,7 @@
 %define snapshot %{nil}
 %define git_sha %{nil}
 %define realversion 1.0.0
-%define release_version 4
+%define release_version 5
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -83,6 +83,8 @@ Patch1: 0001-rh1116999-resolv-conf-symlink.patch
 # http://cgit.freedesktop.org/NetworkManager/NetworkManager/commit/?id=a687d1f9e0f75b987f40335934b54aa748f6724b
 # https://bugzilla.redhat.com/show_bug.cgi?id=1162636
 Patch2: NetworkManager-1.0.0-bridge_resume.patch
+
+Patch3: 0001-ip6-config-remove-the-link-local-address-on-address-.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -368,6 +370,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
 %patch1 -p1 -b .0001-rh1116999-resolv-conf-symlink.orig
 %patch2 -p1 -b .bridge_resume
+%patch3 -p1 -b .v6ll-flush
 
 %build
 
@@ -660,6 +663,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar  4 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-5
+- core: flush IPv6LL address when deconfiguring managed devices (rh #1193127) (rh #1184997)
+
 * Thu Jan 29 2015 Adam Williamson <awilliam@redhat.com> - 1:1.0.0-4
 - core: resume bridged connections properly (rh #1162636, backport from master)
 
