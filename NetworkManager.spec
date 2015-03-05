@@ -10,7 +10,7 @@
 %define snapshot %{nil}
 %define git_sha %{nil}
 %define realversion 1.0.0
-%define release_version 5
+%define release_version 6
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -85,6 +85,7 @@ Patch1: 0001-rh1116999-resolv-conf-symlink.patch
 Patch2: NetworkManager-1.0.0-bridge_resume.patch
 
 Patch3: 0001-ip6-config-remove-the-link-local-address-on-address-.patch
+Patch4: bgo742823-connectivity-no-dns.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -371,6 +372,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch1 -p1 -b .0001-rh1116999-resolv-conf-symlink.orig
 %patch2 -p1 -b .bridge_resume
 %patch3 -p1 -b .v6ll-flush
+%patch4 -p1 -b .bgo742823-connectivity-no-dns.orig
 
 %build
 
@@ -663,6 +665,9 @@ fi
 %endif
 
 %changelog
+* Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-6
+- connectivity: fix checking when no valid DNS servers are present (rh #1199098)
+
 * Wed Mar  4 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-5
 - core: flush IPv6LL address when deconfiguring managed devices (rh #1193127) (rh #1184997)
 

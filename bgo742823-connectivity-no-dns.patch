@@ -1,0 +1,348 @@
+From 0a22ce64a6a8c2ec0f8a71f1a59855593cdeb96a Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@redhat.com>
+Date: Tue, 13 Jan 2015 15:08:21 -0500
+Subject: [PATCH 1/4] connectivity: improve debug logging
+
+nm-connectivity was logging both "started" and "finished" for periodic
+connectivity checks, but was only logging "finished" for manual ones,
+which made the logs look weird. Fix it to log both periodic and manual
+starts, and differentiate them.
+
+Also add some additional logging to indicate when set_online() is
+called, and when :state changes.
+
+(cherry picked from commit 53f2642c736ebb8466cbfd29c2ede2c3828a4728)
+---
+ src/nm-connectivity.c | 31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/src/nm-connectivity.c b/src/nm-connectivity.c
+index 8a324a5..5913fd9 100644
+--- a/src/nm-connectivity.c
++++ b/src/nm-connectivity.c
+@@ -69,12 +69,33 @@ nm_connectivity_get_state (NMConnectivity *connectivity)
+ 	return NM_CONNECTIVITY_GET_PRIVATE (connectivity)->state;
+ }
+ 
++static const char *
++state_name (NMConnectivityState state)
++{
++	switch (state) {
++	case NM_CONNECTIVITY_UNKNOWN:
++		return "UNKNOWN";
++	case NM_CONNECTIVITY_NONE:
++		return "NONE";
++	case NM_CONNECTIVITY_LIMITED:
++		return "LIMITED";
++	case NM_CONNECTIVITY_PORTAL:
++		return "PORTAL";
++	case NM_CONNECTIVITY_FULL:
++		return "FULL";
++	default:
++		return "???";
++	}
++}
++
+ static void
+ update_state (NMConnectivity *self, NMConnectivityState state)
+ {
+ 	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
+ 
+ 	if (priv->state != state) {
++		nm_log_dbg (LOGD_CONCHECK, "Connectivity state changed from %s to %s",
++		            state_name (priv->state), state_name (state));
+ 		priv->state = state;
+ 		g_object_notify (G_OBJECT (self), NM_CONNECTIVITY_STATE);
+ 	}
+@@ -155,7 +176,6 @@ run_check (gpointer user_data)
+ 
+ 	nm_connectivity_check_async (self, run_check_complete, NULL);
+ 	priv->running = TRUE;
+-	nm_log_dbg (LOGD_CONCHECK, "Connectivity check with uri '%s' started.", priv->uri);
+ 
+ 	return TRUE;
+ }
+@@ -167,7 +187,11 @@ nm_connectivity_set_online (NMConnectivity *self,
+ {
+ #if WITH_CONCHECK
+ 	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
++#endif
+ 
++	nm_log_dbg (LOGD_CONCHECK, "nm_connectivity_set_online(%s)", online ? "TRUE" : "FALSE");
++
++#if WITH_CONCHECK
+ 	if (online && priv->uri && priv->interval) {
+ 		if (!priv->check_id)
+ 			priv->check_id = g_timeout_add_seconds (priv->interval, run_check, self);
+@@ -201,6 +225,11 @@ nm_connectivity_check_async (NMConnectivity      *self,
+ 	g_return_if_fail (NM_IS_CONNECTIVITY (self));
+ 	priv = NM_CONNECTIVITY_GET_PRIVATE (self);
+ 
++	if (callback == run_check_complete)
++		nm_log_dbg (LOGD_CONCHECK, "Periodic connectivity check started with uri '%s'.", priv->uri);
++	else
++		nm_log_dbg (LOGD_CONCHECK, "Connectivity check started with uri '%s'.", priv->uri);
++
+ 	simple = g_simple_async_result_new (G_OBJECT (self), callback, user_data,
+ 	                                    nm_connectivity_check_async);
+ 
+-- 
+2.1.0
+
+From e042bb09a56511ffc6040f8e125863ebb5623974 Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@redhat.com>
+Date: Tue, 13 Jan 2015 14:48:29 -0500
+Subject: [PATCH 2/4] connectivity: fix manager state during connectivity check
+ (bgo #742823)
+
+When a connection has finished activating, but we don't know yet that
+we have full connectivity, then find_best_device_state() should return
+CONNECTED_SITE, not CONNECTING. Fixes a bug where the manager state
+would repeatedly switch between those two states.
+
+(cherry picked from commit 5e182d55777b95886d39068821d1d6fa8298474d)
+---
+ src/nm-manager.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index 65fb568..fb4e016 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -578,7 +578,7 @@ checked_connectivity (GObject *object, GAsyncResult *result, gpointer user_data)
+ }
+ 
+ static NMState
+-find_best_device_state (NMManager *manager, gboolean *want_connectivity_check)
++find_best_device_state (NMManager *manager)
+ {
+ 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
+ 	NMState best_state = NM_STATE_DISCONNECTED;
+@@ -593,13 +593,10 @@ find_best_device_state (NMManager *manager, gboolean *want_connectivity_check)
+ 			if (   nm_active_connection_get_default (ac)
+ 			    || nm_active_connection_get_default6 (ac)) {
+ 				nm_connectivity_set_online (priv->connectivity, TRUE);
+-				if (nm_connectivity_get_state (priv->connectivity) == NM_CONNECTIVITY_FULL) {
+-					*want_connectivity_check = FALSE;
++				if (nm_connectivity_get_state (priv->connectivity) == NM_CONNECTIVITY_FULL)
+ 					return NM_STATE_CONNECTED_GLOBAL;
+-				}
+ 
+-				best_state = NM_STATE_CONNECTING;
+-				*want_connectivity_check = TRUE;
++				best_state = NM_STATE_CONNECTED_SITE;
+ 			} else {
+ 				if (best_state < NM_STATE_CONNECTING)
+ 					best_state = NM_STATE_CONNECTED_LOCAL;
+@@ -630,7 +627,6 @@ nm_manager_update_state (NMManager *manager)
+ {
+ 	NMManagerPrivate *priv;
+ 	NMState new_state = NM_STATE_DISCONNECTED;
+-	gboolean want_connectivity_check = FALSE;
+ 
+ 	g_return_if_fail (NM_IS_MANAGER (manager));
+ 
+@@ -639,9 +635,9 @@ nm_manager_update_state (NMManager *manager)
+ 	if (manager_sleeping (manager))
+ 		new_state = NM_STATE_ASLEEP;
+ 	else
+-		new_state = find_best_device_state (manager, &want_connectivity_check);
++		new_state = find_best_device_state (manager);
+ 
+-	if (new_state == NM_STATE_CONNECTING && want_connectivity_check) {
++	if (new_state == NM_STATE_CONNECTED_SITE) {
+ 		nm_connectivity_check_async (priv->connectivity,
+ 		                             checked_connectivity,
+ 		                             g_object_ref (manager));
+-- 
+2.1.0
+
+From 57249a2d0513a51e7446b7058f9e24e69cabbf6c Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@redhat.com>
+Date: Tue, 13 Jan 2015 15:35:10 -0500
+Subject: [PATCH 3/4] connectivity: simplify redundant code
+
+Merge the two nm_connectivity_set_online() calls into one, after
+tweaking NMConnectivity to always update its internal state before
+alerting callers to the new state.
+
+(cherry picked from commit 0997c4b245ca5638d0d27eee90146dc47c56130d)
+---
+ src/nm-connectivity.c | 4 ++--
+ src/nm-manager.c      | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/nm-connectivity.c b/src/nm-connectivity.c
+index 5913fd9..cf4552a 100644
+--- a/src/nm-connectivity.c
++++ b/src/nm-connectivity.c
+@@ -145,10 +145,10 @@ nm_connectivity_check_cb (SoupSession *session, SoupMessage *msg, gpointer user_
+ 	}
+ 
+  done:
++	update_state (self, new_state);
++
+ 	g_simple_async_result_set_op_res_gssize (simple, new_state);
+ 	g_simple_async_result_complete (simple);
+-
+-	update_state (self, new_state);
+ }
+ 
+ static void
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index fb4e016..62a1e15 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -592,7 +592,6 @@ find_best_device_state (NMManager *manager)
+ 		case NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
+ 			if (   nm_active_connection_get_default (ac)
+ 			    || nm_active_connection_get_default6 (ac)) {
+-				nm_connectivity_set_online (priv->connectivity, TRUE);
+ 				if (nm_connectivity_get_state (priv->connectivity) == NM_CONNECTIVITY_FULL)
+ 					return NM_STATE_CONNECTED_GLOBAL;
+ 
+@@ -637,12 +636,13 @@ nm_manager_update_state (NMManager *manager)
+ 	else
+ 		new_state = find_best_device_state (manager);
+ 
++	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
++
+ 	if (new_state == NM_STATE_CONNECTED_SITE) {
+ 		nm_connectivity_check_async (priv->connectivity,
+ 		                             checked_connectivity,
+ 		                             g_object_ref (manager));
+-	} else
+-		nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
++	}
+ 
+ 	set_state (manager, new_state);
+ }
+-- 
+2.1.0
+
+From 3d49585b377a578ce0195d74c5b5125a1101c688 Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@redhat.com>
+Date: Tue, 13 Jan 2015 15:25:31 -0500
+Subject: [PATCH 4/4] connectivity: avoid redundant connectivity checks
+
+Don't start an automatic connectivity check right when NMManager tells
+us we're online; only do it if the manager doesn't request an explicit
+connectivity check immediately afterward.
+
+(cherry picked from commit 66b8f2b7a0f9e1ce84d8a98863c88ea3dbed0a51)
+---
+ src/nm-connectivity.c | 26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
+
+diff --git a/src/nm-connectivity.c b/src/nm-connectivity.c
+index cf4552a..1a374eb 100644
+--- a/src/nm-connectivity.c
++++ b/src/nm-connectivity.c
+@@ -44,7 +44,7 @@ typedef struct {
+ 
+ #if WITH_CONCHECK
+ 	SoupSession *soup_session;
+-	gboolean running;
++	guint pending_checks;
+ 	guint check_id;
+ #endif
+ 
+@@ -114,6 +114,7 @@ nm_connectivity_check_cb (SoupSession *session, SoupMessage *msg, gpointer user_
+ 	self = NM_CONNECTIVITY (g_async_result_get_source_object (G_ASYNC_RESULT (simple)));
+ 	g_object_unref (self);
+ 	priv = NM_CONNECTIVITY_GET_PRIVATE (self);
++	priv->pending_checks--;
+ 
+ 	if (SOUP_STATUS_IS_TRANSPORT_ERROR (msg->status_code)) {
+ 		nm_log_info (LOGD_CONCHECK, "Connectivity check for uri '%s' failed with '%s'.",
+@@ -157,11 +158,9 @@ run_check_complete (GObject      *object,
+                     gpointer      user_data)
+ {
+ 	NMConnectivity *self = NM_CONNECTIVITY (object);
+-	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
+ 	GError *error = NULL;
+ 
+ 	nm_connectivity_check_finish (self, result, &error);
+-	priv->running = FALSE;
+ 	if (error) {
+ 		nm_log_err (LOGD_CONCHECK, "Connectivity check failed: %s", error->message);
+ 		g_error_free (error);
+@@ -172,13 +171,23 @@ static gboolean
+ run_check (gpointer user_data)
+ {
+ 	NMConnectivity *self = NM_CONNECTIVITY (user_data);
+-	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
+ 
+ 	nm_connectivity_check_async (self, run_check_complete, NULL);
+-	priv->running = TRUE;
+-
+ 	return TRUE;
+ }
++
++static gboolean
++idle_start_periodic_checks (gpointer user_data)
++{
++	NMConnectivity *self = user_data;
++	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
++
++	priv->check_id = g_timeout_add_seconds (priv->interval, run_check, self);
++	if (!priv->pending_checks)
++		run_check (self);
++
++	return FALSE;
++}
+ #endif
+ 
+ void
+@@ -194,9 +203,7 @@ nm_connectivity_set_online (NMConnectivity *self,
+ #if WITH_CONCHECK
+ 	if (online && priv->uri && priv->interval) {
+ 		if (!priv->check_id)
+-			priv->check_id = g_timeout_add_seconds (priv->interval, run_check, self);
+-		if (!priv->running)
+-			run_check (self);
++			priv->check_id = g_timeout_add (0, idle_start_periodic_checks, self);
+ 
+ 		return;
+ 	} else if (priv->check_id) {
+@@ -241,6 +248,7 @@ nm_connectivity_check_async (NMConnectivity      *self,
+ 		                            msg,
+ 		                            nm_connectivity_check_cb,
+ 		                            simple);
++		priv->pending_checks++;
+ 
+ 		return;
+ 	}
+-- 
+2.1.0
+
+From ecd7227d45fc517230073d48a68a51937b60daea Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 16 Jan 2015 14:15:24 +0100
+Subject: [PATCH] connectivity: fix compile error no WITH_CONCHECK
+
+Fixes: 53f2642c736ebb8466cbfd29c2ede2c3828a4728
+(cherry picked from commit 07be0f511d6d559431ea66bdf74b00e4c276904b)
+---
+ src/nm-connectivity.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/nm-connectivity.c b/src/nm-connectivity.c
+index 1a374eb..f35da5e 100644
+--- a/src/nm-connectivity.c
++++ b/src/nm-connectivity.c
+@@ -232,9 +232,11 @@ nm_connectivity_check_async (NMConnectivity      *self,
+ 	g_return_if_fail (NM_IS_CONNECTIVITY (self));
+ 	priv = NM_CONNECTIVITY_GET_PRIVATE (self);
+ 
++#if WITH_CONCHECK
+ 	if (callback == run_check_complete)
+ 		nm_log_dbg (LOGD_CONCHECK, "Periodic connectivity check started with uri '%s'.", priv->uri);
+ 	else
++#endif
+ 		nm_log_dbg (LOGD_CONCHECK, "Connectivity check started with uri '%s'.", priv->uri);
+ 
+ 	simple = g_simple_async_result_new (G_OBJECT (self), callback, user_data,
+-- 
+2.1.0
+
