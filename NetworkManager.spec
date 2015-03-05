@@ -7,10 +7,10 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot %{nil}
-%define git_sha %{nil}
-%define realversion 1.0.0
-%define release_version 4
+%define snapshot .git20150305
+%define git_sha 2a72527c
+%define realversion 1.0.1
+%define release_version 1
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -71,18 +71,13 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
-Patch1: 0001-rh1116999-resolv-conf-symlink.patch
-
-# http://cgit.freedesktop.org/NetworkManager/NetworkManager/commit/?id=a687d1f9e0f75b987f40335934b54aa748f6724b
-# https://bugzilla.redhat.com/show_bug.cgi?id=1162636
-Patch2: NetworkManager-1.0.0-bridge_resume.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -366,8 +361,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
-%patch1 -p1 -b .0001-rh1116999-resolv-conf-symlink.orig
-%patch2 -p1 -b .bridge_resume
 
 %build
 
@@ -660,6 +653,18 @@ fi
 %endif
 
 %changelog
+* Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.1-1.git20150305
+- Update to 1.0.2 development snapshot
+
+* Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-7
+- dns: revert resolv.conf symlink stuff (should only be in F23+, not F22)
+
+* Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-6
+- connectivity: fix checking when no valid DNS servers are present (rh #1199098)
+
+* Wed Mar  4 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-5
+- core: flush IPv6LL address when deconfiguring managed devices (rh #1193127) (rh #1184997)
+
 * Thu Jan 29 2015 Adam Williamson <awilliam@redhat.com> - 1:1.0.0-4
 - core: resume bridged connections properly (rh #1162636, backport from master)
 
