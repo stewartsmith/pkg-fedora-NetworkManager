@@ -10,7 +10,7 @@
 %define snapshot %{nil}
 %define git_sha %{nil}
 %define realversion 1.0.0
-%define release_version 7
+%define release_version 8
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -85,6 +85,7 @@ Patch2: NetworkManager-1.0.0-bridge_resume.patch
 
 Patch3: 0001-ip6-config-remove-the-link-local-address-on-address-.patch
 Patch4: bgo742823-connectivity-no-dns.patch
+Patch5: 0001-connectivity-disable-HTTP-keepalive-for-connectivity.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -371,6 +372,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch2 -p1 -b .bridge_resume
 %patch3 -p1 -b .v6ll-flush
 %patch4 -p1 -b .bgo742823-connectivity-no-dns.orig
+%patch5 -p1 -b .0001-connectivity-disable-HTTP-keepalive-for-connectivity.orig
 
 %build
 
@@ -663,6 +665,9 @@ fi
 %endif
 
 %changelog
+* Mon Mar 16 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-8
+- Turn off keepalive for connectivity checking
+
 * Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.0-7
 - dns: revert resolv.conf symlink stuff (should only be in F23+, not F22)
 
