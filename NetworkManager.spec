@@ -7,10 +7,10 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .git20150305
-%define git_sha 2a72527c
+%define snapshot .git20150429
+%define git_sha a658561
 %define realversion 1.0.1
-%define release_version 1
+%define release_version 2
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -653,6 +653,9 @@ fi
 %endif
 
 %changelog
+* Wed Apr 29 2015 Jiří Klimeš <jklimes@redhat.com> - 1:1.0.1-2.git20150429
+- Update to 1.0.2 development snapshot (git20150429)
+
 * Thu Mar  5 2015 Dan Williams <dcbw@redhat.com> - 1:1.0.1-1.git20150305
 - Update to 1.0.2 development snapshot
 
