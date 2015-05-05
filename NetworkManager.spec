@@ -9,8 +9,8 @@
 
 %define snapshot %{nil}
 %define git_sha %{nil}
-%define realversion 1.0.0
-%define release_version 9
+%define realversion 1.0.2
+%define release_version 1
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -78,15 +78,6 @@ Source3: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
-
-# http://cgit.freedesktop.org/NetworkManager/NetworkManager/commit/?id=a687d1f9e0f75b987f40335934b54aa748f6724b
-# https://bugzilla.redhat.com/show_bug.cgi?id=1162636
-Patch2: NetworkManager-1.0.0-bridge_resume.patch
-
-Patch3: 0001-ip6-config-remove-the-link-local-address-on-address-.patch
-Patch4: bgo742823-connectivity-no-dns.patch
-Patch5: 0001-connectivity-disable-HTTP-keepalive-for-connectivity.patch
-Patch6: rh1212118-detect-CTC-devices.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -370,11 +361,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
-%patch2 -p1 -b .bridge_resume
-%patch3 -p1 -b .v6ll-flush
-%patch4 -p1 -b .bgo742823-connectivity-no-dns.orig
-%patch5 -p1 -b .0001-connectivity-disable-HTTP-keepalive-for-connectivity.orig
-%patch6 -p1 -b .rh1212118-detect-CTC-devices.orig
 
 %build
 
@@ -667,6 +653,9 @@ fi
 %endif
 
 %changelog
+* Tue May 5 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.2-1
+- Update to 1.0.2 release
+
 * Wed Apr 29 2015 Jiří Klimeš <jklimes@redhat.com> - 1:1.0.0-9
 - platform: use driver name to detect IBM z-System CTC devices (rh #1212118)
 
