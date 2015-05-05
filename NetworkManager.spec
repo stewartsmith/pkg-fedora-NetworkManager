@@ -7,10 +7,10 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .git20150429
-%define git_sha a658561
-%define realversion 1.0.1
-%define release_version 2
+%define snapshot %{nil}
+%define git_sha %{nil}
+%define realversion 1.0.2
+%define release_version 1
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -71,7 +71,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -653,6 +653,9 @@ fi
 %endif
 
 %changelog
+* Tue May 5 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.2-1
+- Update to 1.0.2 release
+
 * Wed Apr 29 2015 Jiří Klimeš <jklimes@redhat.com> - 1:1.0.1-2.git20150429
 - Update to 1.0.2 development snapshot (git20150429)
 
