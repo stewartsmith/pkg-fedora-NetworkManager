@@ -8,9 +8,9 @@
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %define snapshot %{nil}
-%define git_sha %{nil}
-%define realversion 1.0.2
-%define release_version 1
+%define release_version 0.1.git20150618
+%define git_sha 8cffaf3bf5
+%define realversion 1.0.4
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -49,6 +49,15 @@
 %global with_wwan 1
 %endif
 
+%ifarch s390 s390x
+# No hardware-based plugins on s390
+%global with_adsl 0
+%global with_bluetooth 0
+%global with_wifi 0
+%global with_wimax 0
+%global with_wwan 0
+%endif
+
 %if (0%{?fedora} && 0%{?fedora} <= 19)
 %global with_team 0
 %endif
@@ -66,15 +75,16 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}.1
+Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
+Source: NetworkManager-1.0.3.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
-Source3: 20-connectivity-fedora.conf
+Source3: 10-ibft-plugin.conf
+Source4: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
@@ -173,7 +183,6 @@ services.
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: rp-pppoe
 Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-atm
 
@@ -358,7 +367,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
 %prep
-%setup -q -n NetworkManager-%{realversion}
+%setup -q -n NetworkManager-1.0.3
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
 
@@ -437,6 +446,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 %{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 %{__cp} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
+%{__cp} %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 
 # create a VPN directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
@@ -446,6 +456,13 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 
 # create a dnsmasq.d directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/dnsmasq.d
+
+# create dispatcher directories
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
+%{__cp} examples/dispatcher/10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/
+%{__ln_s} ../10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
 
 %{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
@@ -467,7 +484,14 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 %{__rm} -rf $RPM_BUILD_ROOT
 
 
+%check
+make check
+
+
 %post
+/usr/bin/udevadm control --reload-rules || :
+/usr/bin/udevadm trigger --subsystem-match=net || :
+
 %systemd_post NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
 %preun
@@ -481,6 +505,9 @@ fi
 %systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
 %postun
+/usr/bin/udevadm control --reload-rules || :
+/usr/bin/udevadm trigger --subsystem-match=net || :
+
 %systemd_postun
 
 
@@ -500,8 +527,10 @@ fi
 %{_datadir}/bash-completion/completions/nmcli
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
+%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
+%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
@@ -515,6 +544,7 @@ fi
 %if 0%{?with_nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
+%config %{_sysconfdir}/%{name}/conf.d/10-ibft-plugin.conf
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
@@ -653,6 +683,9 @@ fi
 %endif
 
 %changelog
+* Thu Jun 18 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.1.git20150618.8cffaf3bf5
+- Update to a recent Git snapshot
+
 * Tue Jun 16 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:1.0.2-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
