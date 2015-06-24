@@ -7,9 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot %{nil}
-%define release_version 0.1.git20150618
-%define git_sha 8cffaf3bf5
+%define snapshot .git20160624
+%define release_version 0.1
+%define git_sha f245b49a
 %define realversion 1.0.4
 %define epoch_version 1
 
@@ -80,7 +80,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: NetworkManager-1.0.3.tar.bz2
+Source: %{name}-1.0.3%{snapshot}%{git_sha_version}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -683,6 +683,9 @@ fi
 %endif
 
 %changelog
+* Wed Jun 24 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.1.git20160624.f245b49a
+- A bit more recent Git snapshot
+
 * Thu Jun 18 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.1.git20150618.8cffaf3bf5
 - Update to a recent Git snapshot
 
