@@ -8,8 +8,8 @@
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %define snapshot .git20150707
-%define release_version 0.2
-%define git_sha cf15f2a
+%define release_version 0.3
+%define git_sha e3bd4e1
 %define realversion 1.0.4
 %define epoch_version 1
 
@@ -683,6 +683,10 @@ fi
 %endif
 
 %changelog
+* Tue Jul  7 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.3.git20150707.e3bd4e1
+- A bit more recent Git snapshot
+- This one fixes a regression with default route management
+
 * Tue Jul  7 2015 Jiří Klimeš <jklimes@redhat.com> - 1:1.0.4-0.2.git20150707.cf15f2a
 - Update to a new 1.0.3 development snapshot (git20150707)
 - core: fix handling of ignore-auto-* properties (rh #1239184)
