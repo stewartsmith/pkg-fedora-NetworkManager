@@ -424,7 +424,7 @@ intltoolize --force
 	--with-suspend-resume=systemd \
 	--with-systemdsystemunitdir=%{systemd_dir} \
 	--with-udev-dir=%{udev_dir} \
-	--with-system-ca-path=/etc/pki/tls/certs \
+	--with-system-ca-path=/etc/pki/tls/cert.pem \
 	--with-tests=yes \
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
