@@ -7,9 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .git20150707
-%define release_version 0.3
-%define git_sha e3bd4e1
+%define snapshot .git20150713
+%define release_version 0.4
+%define git_sha 38bf2cb0
 %define realversion 1.0.4
 %define epoch_version 1
 
@@ -80,7 +80,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-1.0.3%{snapshot}%{git_sha_version}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -148,7 +148,7 @@ BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
-%if 0%{?with_bluetooth} && 0%{?fedora} > 19
+%if 0%{?with_bluetooth}
 BuildRequires: bluez-libs-devel
 %endif
 %if 0%{?with_wimax}
@@ -196,12 +196,8 @@ This package contains NetworkManager support for ADSL devices.
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
-%if (0%{?fedora} > 19)
-Requires: bluez >= 5.0
-%else
+Requires: NetworkManager-wwan
 Requires: bluez >= 4.101-5
-%endif
 Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-bt
 
@@ -367,7 +363,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
 %prep
-%setup -q -n NetworkManager-1.0.3
+%setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
 
@@ -393,6 +389,11 @@ intltoolize --force
 	--with-modem-manager-1=yes \
 %else
 	--with-modem-manager-1=no \
+%endif
+%if 0%{?with_wifi}
+	--enable-wifi=yes \
+%else
+	--enable-wifi=no \
 %endif
 %if 0%{?with_wimax}
 	--enable-wimax=yes \
@@ -544,6 +545,8 @@ fi
 %if 0%{?with_nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
+%dir %{_sysconfdir}/%{name}
+%dir %{_sysconfdir}/%{name}/conf.d
 %config %{_sysconfdir}/%{name}/conf.d/10-ibft-plugin.conf
 %{_mandir}/man1/*
 %{_mandir}/man5/*
@@ -587,8 +590,6 @@ fi
 %files wifi
 %defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wifi.so
-%else
-%exclude %{_libdir}/%{name}/libnm-device-plugin-wifi.so
 %endif
 
 %if 0%{?with_wwan}
@@ -683,6 +684,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul  7 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.3.git20150707.e3bd4e1
+- A bit more recent Git snapshot
+
 * Tue Jul  7 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.3.git20150707.e3bd4e1
 - A bit more recent Git snapshot
 - This one fixes a regression with default route management
