@@ -7,9 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .git20150713
-%define release_version 0.5
-%define git_sha 38bf2cb0
+%define snapshot %{nil}
+%define release_version 1
+%define git_sha %{nil}
 %define realversion 1.0.4
 %define epoch_version 1
 
@@ -80,7 +80,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.bz2
+Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -684,6 +684,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 14 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-1
+- Update to 1.0.4 release
+
 * Tue Jul 14 2015 Dan Horák <dan[at]danny.cz> - 1:1.0.4-0.5.git20150713.38bf2cb0
 - WEXT depends on enabled wifi
 
