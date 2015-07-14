@@ -8,7 +8,7 @@
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %define snapshot .git20150713
-%define release_version 0.4
+%define release_version 0.5
 %define git_sha 38bf2cb0
 %define realversion 1.0.4
 %define epoch_version 1
@@ -392,6 +392,11 @@ intltoolize --force
 %endif
 %if 0%{?with_wifi}
 	--enable-wifi=yes \
+%if 0%{?fedora}
+	--with-wext=yes \
+%else
+	--with-wext=no \
+%endif
 %else
 	--enable-wifi=no \
 %endif
@@ -405,11 +410,6 @@ intltoolize --force
 	--enable-gtk-doc \
 %else
 	--disable-gtk-doc \
-%endif
-%if 0%{?fedora}
-	--with-wext=yes \
-%else
-	--with-wext=no \
 %endif
 %if 0%{?with_team}
 	--enable-teamdctl=yes \
@@ -684,7 +684,10 @@ fi
 %endif
 
 %changelog
-* Tue Jul  7 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.3.git20150707.e3bd4e1
+* Tue Jul 14 2015 Dan Horák <dan[at]danny.cz> - 1:1.0.4-0.5.git20150713.38bf2cb0
+- WEXT depends on enabled wifi
+
+* Mon Jul 13 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.4.git20150713.38bf2cb0
 - A bit more recent Git snapshot
 
 * Tue Jul  7 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-0.3.git20150707.e3bd4e1
