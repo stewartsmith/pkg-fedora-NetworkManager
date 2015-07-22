@@ -89,6 +89,10 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
+# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
+Patch1: 0001-docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
+Patch2: 0002-cli-fix-verifying-flag-based-properties-rh-1244048.patch
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if 0%{?fedora} && 0%{?fedora} < 20
@@ -366,6 +370,10 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
+%patch1 -p1 -b .docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
+%patch2 -p1 -b .cli-fix-verifying-flag-based-properties-rh-1244048.patch
 
 %build
 
@@ -684,6 +692,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 14 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-2
+- Fix an assertion failure in nmcli (rh #1244048)
+
 * Tue Jul 14 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-1
 - Update to 1.0.4 release
 
