@@ -1,0 +1,87 @@
+From 351a645ad63a9f84bef0fa8abaa0340dc1acbf21 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 22 Jul 2015 11:56:05 +0200
+Subject: [PATCH 04/11] device: move setting
+ v4_commit_first_time/v6_commit_first_time to the end of merge_and_apply()
+
+(cherry picked from commit cbd246c9b04868ada07b4853753fdba26bca54f3)
+---
+ src/devices/nm-device.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 867f384..5eeccbe 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3302,10 +3302,6 @@ ip4_config_merge_and_apply (NMDevice *self,
+ 	priv->default_route.v4_has = FALSE;
+ 	priv->default_route.v4_is_assumed = TRUE;
+ 
+-	routes_full_sync =    commit
+-	                   && priv->v4_commit_first_time
+-	                   && !nm_device_uses_assumed_connection (self);
+-
+ 	if (!commit) {
+ 		/* during a non-commit event, we always pickup whatever is configured. */
+ 		goto END_ADD_DEFAULT_ROUTE;
+@@ -3331,7 +3327,6 @@ ip4_config_merge_and_apply (NMDevice *self,
+ 
+ 	/* we are about to commit (for a non-assumed connection). Enforce whatever we have
+ 	 * configured. */
+-	priv->v4_commit_first_time = FALSE;
+ 	priv->default_route.v4_is_assumed = FALSE;
+ 
+ 	if (!connection_has_default_route)
+@@ -3385,8 +3380,15 @@ END_ADD_DEFAULT_ROUTE:
+ 			NM_DEVICE_GET_CLASS (self)->ip4_config_pre_commit (self, composite);
+ 	}
+ 
++	routes_full_sync =    commit
++	                   && priv->v4_commit_first_time
++	                   && !nm_device_uses_assumed_connection (self);
++
+ 	success = nm_device_set_ip4_config (self, composite, default_route_metric, commit, routes_full_sync, out_reason);
+ 	g_object_unref (composite);
++
++	if (commit)
++		priv->v4_commit_first_time = FALSE;
+ 	return success;
+ }
+ 
+@@ -3920,10 +3922,6 @@ ip6_config_merge_and_apply (NMDevice *self,
+ 	priv->default_route.v6_has = FALSE;
+ 	priv->default_route.v6_is_assumed = TRUE;
+ 
+-	routes_full_sync =    commit
+-	                   && priv->v6_commit_first_time
+-	                   && !nm_device_uses_assumed_connection (self);
+-
+ 	if (!commit) {
+ 		/* during a non-commit event, we always pickup whatever is configured. */
+ 		goto END_ADD_DEFAULT_ROUTE;
+@@ -3949,7 +3947,6 @@ ip6_config_merge_and_apply (NMDevice *self,
+ 
+ 	/* we are about to commit (for a non-assumed connection). Enforce whatever we have
+ 	 * configured. */
+-	priv->v6_commit_first_time = FALSE;
+ 	priv->default_route.v6_is_assumed = FALSE;
+ 
+ 	if (!connection_has_default_route)
+@@ -4006,8 +4003,14 @@ END_ADD_DEFAULT_ROUTE:
+ 			NM_DEVICE_GET_CLASS (self)->ip6_config_pre_commit (self, composite);
+ 	}
+ 
++	routes_full_sync =    commit
++	                   && priv->v6_commit_first_time
++	                   && !nm_device_uses_assumed_connection (self);
++
+ 	success = nm_device_set_ip6_config (self, composite, commit, routes_full_sync, out_reason);
+ 	g_object_unref (composite);
++	if (commit)
++		priv->v6_commit_first_time = FALSE;
+ 	return success;
+ }
+ 
+-- 
+2.4.3
+

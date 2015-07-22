@@ -1,0 +1,42 @@
+From 33081142111d9cd90828e9c9a657c2ab93bec84f Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 22 Jul 2015 14:17:08 +0200
+Subject: [PATCH 02/11] core: fix handling route-metric for
+ nm_ip4_config_merge()
+
+Fixes: bc75cd53a8c5ba525016bfddc1644be59a45ed41
+(cherry picked from commit 47cc91bef609fe6f0ec7c25deff0b0628842c240)
+---
+ src/nm-ip4-config.c | 2 +-
+ src/nm-ip6-config.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/nm-ip4-config.c b/src/nm-ip4-config.c
+index 6d8dfba..1b48517 100644
+--- a/src/nm-ip4-config.c
++++ b/src/nm-ip4-config.c
+@@ -570,7 +570,7 @@ nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src)
+ 
+ 	if (dst_priv->route_metric == -1)
+ 		dst_priv->route_metric = src_priv->route_metric;
+-	else
++	else if (src_priv->route_metric != -1)
+ 		dst_priv->route_metric = MIN (dst_priv->route_metric, src_priv->route_metric);
+ 
+ 	/* domains */
+diff --git a/src/nm-ip6-config.c b/src/nm-ip6-config.c
+index a528bf1..82c5662 100644
+--- a/src/nm-ip6-config.c
++++ b/src/nm-ip6-config.c
+@@ -647,7 +647,7 @@ nm_ip6_config_merge (NMIP6Config *dst, const NMIP6Config *src)
+ 
+ 	if (dst_priv->route_metric == -1)
+ 		dst_priv->route_metric = src_priv->route_metric;
+-	else
++	else if (src_priv->route_metric != -1)
+ 		dst_priv->route_metric = MIN (dst_priv->route_metric, src_priv->route_metric);
+ 
+ 	/* domains */
+-- 
+2.4.3
+
