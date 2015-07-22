@@ -1,0 +1,49 @@
+From 9cfdbf6a0655ce93c1aaf25ed8c571636bc4236e Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 22 Jul 2015 13:37:45 +0200
+Subject: [PATCH 11/11] libnm-core: don't assert against non-NULL @ip argument
+ to canonicalize_ip()
+
+Remove an assertion in canonicalize_ip() to assert that either a
+non-NULL @ip is given, or @null_any is TRUE.
+
+The condition of the assert is not easy to understand without context.
+Instead the caller should already handle %NULL properly.
+
+All callers that pass @null_any=FALSE to canonicalize_ip(), already assert
+that the argument is not %NULL. With the exception of nm_ip_route_new()
+which however checks for a valid @dest early on.
+
+(cherry picked from commit 7f129b976cf175ef7d3d75227761d14afad69dd3)
+---
+ libnm-core/nm-setting-ip-config.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/libnm-core/nm-setting-ip-config.c b/libnm-core/nm-setting-ip-config.c
+index d637b5e..4b73d5f 100644
+--- a/libnm-core/nm-setting-ip-config.c
++++ b/libnm-core/nm-setting-ip-config.c
+@@ -53,10 +53,8 @@ canonicalize_ip (int family, const char *ip, gboolean null_any)
+ 	char addr_str[NM_UTILS_INET_ADDRSTRLEN];
+ 	int ret;
+ 
+-	if (!ip) {
+-		g_return_val_if_fail (null_any == TRUE, NULL);
++	if (!ip)
+ 		return NULL;
+-	}
+ 
+ 	ret = inet_pton (family, ip, addr_bytes);
+ 	g_return_val_if_fail (ret == 1, NULL);
+@@ -2017,7 +2015,7 @@ set_property (GObject *object, guint prop_id,
+ 		gateway = g_value_get_string (value);
+ 		g_return_if_fail (!gateway || nm_utils_ipaddr_valid (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway));
+ 		g_free (priv->gateway);
+-		priv->gateway = canonicalize_ip (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway, gateway == NULL);
++		priv->gateway = canonicalize_ip (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway, FALSE);
+ 		break;
+ 	case PROP_ROUTES:
+ 		g_ptr_array_unref (priv->routes);
+-- 
+2.4.3
+
