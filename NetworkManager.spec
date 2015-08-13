@@ -7,10 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot %{nil}
-%define release_version 2
-%define git_sha %{nil}
-%define realversion 1.0.4
+%define snapshot 20150813git7e2caa2
+%define release_version 0.1
+%define realversion 1.0.6
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -69,18 +68,16 @@
 
 %global _hardened_build 1
 
-%define git_sha_version %(test -n '%{git_sha}' && echo '.%{git_sha}')
-
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
+Release: %{release_version}%{?snapshot:.%{snapshot}}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
+Source: http://ftp.gnome.org/pub/GNOME/sources/NetworkManager/1.0/%{name}-%{realversion}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -719,6 +716,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug 13 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-0.1.20150813git7e2caa2
+- Update to a Git snapshot
+
 * Tue Jul 14 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-2
 - Fix an assertion failure in nmcli (rh #1244048)
 - Fix default route handling on assumed connections (rh #1245648)
