@@ -7,10 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot %{nil}
-%define release_version 2
-%define git_sha %{nil}
-%define realversion 1.0.4
+%define snapshot 20150813git7e2caa2
+%define release_version 0.1
+%define realversion 1.0.6
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -69,18 +68,16 @@
 
 %global _hardened_build 1
 
-%define git_sha_version %(test -n '%{git_sha}' && echo '.%{git_sha}')
-
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{realversion}
-Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
+Release: %{release_version}%{?snapshot:.%{snapshot}}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: %{name}-%{realversion}%{snapshot}%{git_sha_version}.tar.xz
+Source: http://ftp.gnome.org/pub/GNOME/sources/NetworkManager/1.0/%{name}-%{realversion}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -88,23 +85,6 @@ Source4: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
-Patch1: 0001-docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
-Patch2: 0002-cli-fix-verifying-flag-based-properties-rh-1244048.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1245648
-Patch3: 0001-core-detect-route-metric-when-creating-nm-generated-.patch
-Patch4: 0002-core-fix-handling-route-metric-for-nm_ip4_config_mer.patch
-Patch5: 0003-device-trivial-rename-private-field-in-NMDevicePriva.patch
-Patch6: 0004-device-move-setting-v4_commit_first_time-v6_commit_f.patch
-Patch7: 0005-device-always-assume-default-route-for-generate-assu.patch
-Patch8: 0006-default-route-manager-pick-up-platform-changes-after.patch
-Patch9: 0007-ip4-config-0.0.0.0-is-a-valid-gateway-too.patch
-Patch10: 0008-libnm-core-properly-handle-NULL-ip-in-nm_utils_ipadd.patch
-Patch11: 0009-libnm-core-fix-nm-setting-ip-config.c-valid_ip-to-ha.patch
-Patch12: 0010-libnm-core-0.0.0.0-is-a-valid-gateway-too.patch
-Patch13: 0011-libnm-core-don-t-assert-against-non-NULL-ip-argument.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -383,24 +363,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
-%patch1 -p1 -b .docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
-%patch2 -p1 -b .cli-fix-verifying-flag-based-properties-rh-1244048.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1245648
-%patch3 -p1 -b .core-detect-route-metric-when-creating-nm-generated-
-%patch4 -p1 -b .core-fix-handling-route-metric-for-nm_ip4_config_mer
-%patch5 -p1 -b .device-trivial-rename-private-field-in-NMDevicePriva
-%patch6 -p1 -b .device-move-setting-v4_commit_first_time-v6_commit_f
-%patch7 -p1 -b .device-always-assume-default-route-for-generate-assu
-%patch8 -p1 -b .default-route-manager-pick-up-platform-changes-after
-%patch9 -p1 -b .ip4-config-0.0.0.0-is-a-valid-gateway-too
-%patch10 -p1 -b .libnm-core-properly-handle-NULL-ip-in-nm_utils_ipadd
-%patch11 -p1 -b .libnm-core-fix-nm-setting-ip-config.c-valid_ip-to-ha
-%patch12 -p1 -b .libnm-core-0.0.0.0-is-a-valid-gateway-too
-%patch13 -p1 -b .libnm-core-don-t-assert-against-non-NULL-ip-argument
-
 
 %build
 
@@ -719,6 +681,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug 13 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-0.1.20150813git7e2caa2
+- Update to a Git snapshot
+
 * Tue Jul 14 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.4-2
 - Fix an assertion failure in nmcli (rh #1244048)
 - Fix default route handling on assumed connections (rh #1245648)
