@@ -86,23 +86,6 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
-Patch1: 0001-docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
-Patch2: 0002-cli-fix-verifying-flag-based-properties-rh-1244048.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1245648
-Patch3: 0001-core-detect-route-metric-when-creating-nm-generated-.patch
-Patch4: 0002-core-fix-handling-route-metric-for-nm_ip4_config_mer.patch
-Patch5: 0003-device-trivial-rename-private-field-in-NMDevicePriva.patch
-Patch6: 0004-device-move-setting-v4_commit_first_time-v6_commit_f.patch
-Patch7: 0005-device-always-assume-default-route-for-generate-assu.patch
-Patch8: 0006-default-route-manager-pick-up-platform-changes-after.patch
-Patch9: 0007-ip4-config-0.0.0.0-is-a-valid-gateway-too.patch
-Patch10: 0008-libnm-core-properly-handle-NULL-ip-in-nm_utils_ipadd.patch
-Patch11: 0009-libnm-core-fix-nm-setting-ip-config.c-valid_ip-to-ha.patch
-Patch12: 0010-libnm-core-0.0.0.0-is-a-valid-gateway-too.patch
-Patch13: 0011-libnm-core-don-t-assert-against-non-NULL-ip-argument.patch
-
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if 0%{?fedora} && 0%{?fedora} < 20
@@ -380,24 +363,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1244048
-%patch1 -p1 -b .docs-fix-a-copy-paste-error-in-description-of-VLAN-f.patch
-%patch2 -p1 -b .cli-fix-verifying-flag-based-properties-rh-1244048.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1245648
-%patch3 -p1 -b .core-detect-route-metric-when-creating-nm-generated-
-%patch4 -p1 -b .core-fix-handling-route-metric-for-nm_ip4_config_mer
-%patch5 -p1 -b .device-trivial-rename-private-field-in-NMDevicePriva
-%patch6 -p1 -b .device-move-setting-v4_commit_first_time-v6_commit_f
-%patch7 -p1 -b .device-always-assume-default-route-for-generate-assu
-%patch8 -p1 -b .default-route-manager-pick-up-platform-changes-after
-%patch9 -p1 -b .ip4-config-0.0.0.0-is-a-valid-gateway-too
-%patch10 -p1 -b .libnm-core-properly-handle-NULL-ip-in-nm_utils_ipadd
-%patch11 -p1 -b .libnm-core-fix-nm-setting-ip-config.c-valid_ip-to-ha
-%patch12 -p1 -b .libnm-core-0.0.0.0-is-a-valid-gateway-too
-%patch13 -p1 -b .libnm-core-don-t-assert-against-non-NULL-ip-argument
-
 
 %build
 
