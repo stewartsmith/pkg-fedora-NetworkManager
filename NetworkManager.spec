@@ -8,7 +8,7 @@
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %define snapshot 20150813git7e2caa2
-%define release_version 0.1
+%define release_version 0.2
 %define realversion 1.0.6
 %define epoch_version 1
 
@@ -85,6 +85,8 @@ Source4: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
+Patch1: 0001-rh1253949-crash-device-deactivate.patch
+Patch2: 0002-wifi-ssid-scan-option.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -363,6 +365,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{realversion}
 
 %patch0 -p1 -b .0000-explain-dns1-dns2.orig
+%patch1 -p1 -b .0001-rh1253949-crash-device-deactivate.orig
+%patch2 -p1 -b .0002-wifi-ssid-scan-option.orig
 
 %build
 
@@ -681,6 +685,11 @@ fi
 %endif
 
 %changelog
+* Tue Aug 18 2015 Thomas Haller <thaller@redhat.com> - 1:1.0.6-0.2.20150813git7e2caa2
+- fix crash when deactivating assumed device (rh #1253949)
+- backport wifi scan options for ssid
+- use plain HTTP URI for connectivity check
+
 * Thu Aug 13 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-0.1.20150813git7e2caa2
 - Update to a Git snapshot
 

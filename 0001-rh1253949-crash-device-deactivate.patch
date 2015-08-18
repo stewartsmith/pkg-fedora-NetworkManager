@@ -1,0 +1,54 @@
+From a2acfba3a88b5673f55400aee061861291ccc2d4 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 12 Aug 2015 16:03:12 +0200
+Subject: [PATCH 1/1] device: avoid a crash during destruction
+
+The ipv4_config might be gone already, _cleanup_generic_post() sets it to NULL.
+
+  NetworkManager[30564]: <info>  caught SIGINT, shutting down normally.
+
+  (NetworkManager:30564): GLib-GObject-CRITICAL **: g_type_instance_get_private: assertion 'instance != NULL && instance->g_class != NULL' failed
+
+  Program received signal SIGTRAP, Trace/breakpoint trap.
+  g_logv (log_domain=0x7ffff4d92f64 "GLib-GObject", log_level=G_LOG_LEVEL_CRITICAL, format=<optimized out>, args=args@entry=0x7fffffffd5e0) at gmessages.c:1046
+  1046              g_private_set (&g_log_depth, GUINT_TO_POINTER (depth));
+  (gdb) bt
+  #0  0x00007ffff4a738c3 in g_logv (log_domain=0x7ffff4d92f64 "GLib-GObject", log_level=G_LOG_LEVEL_CRITICAL, format=<optimized out>, args=args@entry=0x7fffffffd5e0) at gmessages.c:1046
+  #1  0x00007ffff4a73a3f in g_log (log_domain=log_domain@entry=0x7ffff4d92f64 "GLib-GObject", log_level=log_level@entry=G_LOG_LEVEL_CRITICAL, format=format@entry=0x7ffff4ae173d "%s: assertion '%s' failed")
+      at gmessages.c:1079
+  #2  0x00007ffff4a73a79 in g_return_if_fail_warning (log_domain=log_domain@entry=0x7ffff4d92f64 "GLib-GObject", pretty_function=pretty_function@entry=0x7ffff4d9aad0 <__FUNCTION__.13620> "g_type_instance_get_private", expression=expression@entry=0x7ffff4d99db8 "instance != NULL && instance->g_class != NULL") at gmessages.c:1088
+  #3  0x00007ffff4d8d2ba in g_type_instance_get_private (instance=instance@entry=0x0, private_type=<optimized out>) at gtype.c:4632
+  #4  0x00000000004bf774 in nm_ip4_config_get_num_addresses (config=0x0) at nm-ip4-config.c:1418
+  #5  0x0000000000458834 in _update_ip4_address (self=self@entry=0xa8a490 [NMDeviceBridge]) at devices/nm-device.c:6069
+  #6  0x000000000045e740 in nm_device_set_ip4_config (self=self@entry=0xa8a490 [NMDeviceBridge], new_config=new_config@entry=0x0, default_route_metric=default_route_metric@entry=0, commit=commit@entry=1, routes_full_sync=routes_full_sync@entry=1, reason=reason@entry=0x7fffffffd7cc) at devices/nm-device.c:6558
+  #7  0x0000000000466c56 in _cleanup_generic_post (self=self@entry=0xa8a490 [NMDeviceBridge], cleanup_type=cleanup_type@entry=CLEANUP_TYPE_KEEP) at devices/nm-device.c:8108
+  #8  0x00000000004671af in dispose (object=0xa8a490 [NMDeviceBridge]) at devices/nm-device.c:9128
+  #9  0x00007ffff4d6ea82 in g_object_unref (_object=0xa8a490) at gobject.c:3133
+  #10 0x00000000004d1a53 in remove_device (manager=manager@entry=0x8822b0 [NMManager], device=0xa8a490 [NMDeviceBridge], quitting=quitting@entry=1, allow_unmanage=allow_unmanage@entry=1) at nm-manager.c:780
+  #11 0x00000000004d7db1 in nm_manager_stop (self=self@entry=0x8822b0 [NMManager]) at nm-manager.c:4199
+  #12 0x0000000000445aa9 in main (argc=1, argv=0x7fffffffda88) at main.c:465
+  (gdb)
+
+(cherry picked from commit 688e93fb2a3b93f422be69f3dda2f9e4148d4690)
+(cherry picked from commit 4956ac647519c86a94595a834356aad2dba5c6e3)
+---
+ src/devices/nm-device.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 294456d..7fab927 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -5945,7 +5945,8 @@ _update_ip4_address (NMDevice *self)
+ 
+ 	g_return_if_fail (NM_IS_DEVICE (self));
+ 
+-	if (   ip_config_valid (priv->state)
++	if (   priv->ip4_config
++	    && ip_config_valid (priv->state)
+ 	    && nm_ip4_config_get_num_addresses (priv->ip4_config)) {
+ 		addr = nm_ip4_config_get_address (priv->ip4_config, 0)->address;
+ 		if (addr != priv->ip4_address) {
+-- 
+2.4.3
+
