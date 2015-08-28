@@ -8,7 +8,7 @@
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %define snapshot %{nil}
-%define release_version 1
+%define release_version 2
 %define realversion 1.0.6
 %define epoch_version 1
 
