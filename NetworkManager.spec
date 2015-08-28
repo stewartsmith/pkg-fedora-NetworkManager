@@ -86,6 +86,9 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
+# nm-1-0 backports
+Patch1: 0001-config-bugfix-parse-commandline-options-into-correct.patch
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if 0%{?fedora} && 0%{?fedora} < 20
@@ -361,8 +364,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{realversion}
-
-%patch0 -p1 -b .0000-explain-dns1-dns2.orig
+%patch0 -p1
+%patch1 -p1
 
 %build
 
@@ -681,6 +684,9 @@ fi
 %endif
 
 %changelog
+* Fri Aug 28 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-2
+- Fix command line parsing
+
 * Thu Aug 27 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-1
 - Update to 1.0.6 release
 
