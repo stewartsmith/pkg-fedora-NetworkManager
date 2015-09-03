@@ -357,7 +357,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %if %{regen_docs}
 # back up pristine docs and use them instead of generated ones, which make
 # multilib unhappy due to different timestamps in the generated content
-%{__cp} -R docs ORIG-docs
+cp -R docs ORIG-docs
 %endif
 
 autoreconf -f -i
@@ -423,55 +423,55 @@ intltoolize --force
 make %{?_smp_mflags}
 
 %install
-%{__rm} -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
 # install NM
 make install DESTDIR=$RPM_BUILD_ROOT
 
-%{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
+cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/conf.d
-mkdir -p %{buildroot}%{nmlibdir}/conf.d
-mkdir -p %{buildroot}%{nmlibdir}/VPN
-%{__cp} %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
-%{__cp} %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
-%{__cp} %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
+mkdir -p $RPM_BUILD_ROOT%{nmlibdir}/conf.d
+mkdir -p $RPM_BUILD_ROOT%{nmlibdir}/VPN
+cp %{SOURCE2} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
+cp %{SOURCE3} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
+cp %{SOURCE4} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
 
 # create a VPN directory
-%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
 
 # create a keyfile plugin system settings directory
-%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/system-connections
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/system-connections
 
 # create a dnsmasq.d directory
-%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/dnsmasq.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/dnsmasq.d
 
 # create dispatcher directories
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
-%{__cp} examples/dispatcher/10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/
-%{__ln_s} ../10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
+cp examples/dispatcher/10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/
+ln -s ../10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
 
-%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
 
-%{__mkdir_p} $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
 
 %find_lang %{name}
 
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
-%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
 
 %if %{regen_docs}
 # install the pristine docs
-%{__cp} ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
-%{__cp} ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
+cp ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
+cp ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
 %endif
 
 %clean
-%{__rm} -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
 
 %check
