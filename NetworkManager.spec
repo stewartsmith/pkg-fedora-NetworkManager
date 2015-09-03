@@ -67,6 +67,9 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
+# Master backports
+Patch1: 0001-test-fix-duplicate-test-name.patch
+
 %if 0%{?fedora} && 0%{?fedora} < 20
 Requires(post): chkconfig
 Requires(preun): chkconfig
@@ -323,6 +326,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 %patch0 -p1
+%patch1 -p1
 
 %build
 
