@@ -78,8 +78,6 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
 %if 0%{?fedora} && 0%{?fedora} < 20
 Requires(post): chkconfig
 Requires(preun): chkconfig
@@ -423,55 +421,50 @@ intltoolize --force
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
-
 # install NM
-make install DESTDIR=$RPM_BUILD_ROOT
+make install DESTDIR=%{buildroot}
 
-cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
+cp %{SOURCE1} %{buildroot}%{_sysconfdir}/%{name}/
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
-mkdir -p $RPM_BUILD_ROOT%{nmlibdir}/conf.d
-mkdir -p $RPM_BUILD_ROOT%{nmlibdir}/VPN
-cp %{SOURCE2} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
-cp %{SOURCE3} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
-cp %{SOURCE4} $RPM_BUILD_ROOT%{nmlibdir}/conf.d/
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/conf.d
+mkdir -p %{buildroot}%{nmlibdir}/conf.d
+mkdir -p %{buildroot}%{nmlibdir}/VPN
+cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
+cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
+cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 
 # create a VPN directory
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
+mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/VPN
 
 # create a keyfile plugin system settings directory
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/system-connections
+mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/system-connections
 
 # create a dnsmasq.d directory
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/dnsmasq.d
+mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/dnsmasq.d
 
 # create dispatcher directories
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
-cp examples/dispatcher/10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/
-ln -s ../10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
+cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
+ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
 
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/gnome-vpn-properties
+mkdir -p %{buildroot}%{_datadir}/gnome-vpn-properties
 
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/NetworkManager
+mkdir -p %{buildroot}%{_localstatedir}/lib/NetworkManager
 
 %find_lang %{name}
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/pppd/%{ppp_version}/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/NetworkManager/*.la
+rm -f %{buildroot}%{_libdir}/*.la
+rm -f %{buildroot}%{_libdir}/pppd/%{ppp_version}/*.la
+rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 
 %if %{regen_docs}
 # install the pristine docs
-cp ORIG-docs/libnm-glib/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-glib/
-cp ORIG-docs/libnm-util/html/* $RPM_BUILD_ROOT%{_datadir}/gtk-doc/html/libnm-util/
+cp ORIG-docs/libnm-glib/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-glib/
+cp ORIG-docs/libnm-util/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-util/
 %endif
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 
 %check
@@ -506,8 +499,6 @@ fi
 
 
 %files -f %{name}.lang
-%defattr(-,root,root,0755)
-%doc COPYING NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
@@ -556,10 +547,11 @@ fi
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
+%doc NEWS AUTHORS README CONTRIBUTING TODO
+%license COPYING
 
 %if 0%{?with_adsl}
 %files adsl
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-adsl.so
 %else
 %exclude %{_libdir}/%{name}/libnm-device-plugin-adsl.so
@@ -567,37 +559,31 @@ fi
 
 %if 0%{?with_bluetooth}
 %files bluetooth
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
 %endif
 
 %if 0%{?with_team}
 %files team
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-team.so
 %endif
 
 %if 0%{?with_wifi}
 %files wifi
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wifi.so
 %endif
 
 %if 0%{?with_wwan}
 %files wwan
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
 %endif
 
 %if 0%{?with_wimax}
 %files wimax
-%defattr(-,root,root,0755)
 %{_libdir}/%{name}/libnm-device-plugin-wimax.so
 %endif
 
 %files devel
-%defattr(-,root,root,0755)
 %doc ChangeLog docs/api/html/*
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/%{name}.h
@@ -610,7 +596,6 @@ fi
 %{_datadir}/vala/vapi/*.vapi
 
 %files glib
-%defattr(-,root,root,0755)
 %{_libdir}/libnm-glib.so.*
 %{_libdir}/libnm-glib-vpn.so.*
 %{_libdir}/libnm-util.so.*
@@ -618,7 +603,6 @@ fi
 %{_libdir}/girepository-1.0/NMClient-1.0.typelib
 
 %files glib-devel
-%defattr(-,root,root,0755)
 %dir %{_includedir}/libnm-glib
 %{_includedir}/libnm-glib/*.h
 %{_includedir}/%{name}/nm-setting*.h
@@ -639,12 +623,10 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 
 %files libnm
-%defattr(-,root,root,0755)
 %{_libdir}/libnm.so.*
 %{_libdir}/girepository-1.0/NM-1.0.typelib
 
 %files libnm-devel
-%defattr(-,root,root,0755)
 %dir %{_includedir}/libnm
 %{_includedir}/libnm/*.h
 %{_libdir}/pkgconfig/libnm.pc
@@ -654,13 +636,11 @@ fi
 %{_datadir}/gtk-doc/html/libnm/*
 
 %files config-connectivity-fedora
-%defattr(-,root,root,0755)
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/20-connectivity-fedora.conf
 
 %files config-server
-%defattr(-,root,root,0755)
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/00-server.conf
