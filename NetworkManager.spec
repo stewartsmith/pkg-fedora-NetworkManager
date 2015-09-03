@@ -58,7 +58,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: http://ftp.gnome.org/pub/GNOME/sources/NetworkManager/1.0/%{name}-%{realversion}.tar.xz
+Source: http://ftp.gnome.org/pub/GNOME/sources/NetworkManager/1.2/%{name}-%{realversion}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
@@ -465,6 +465,9 @@ fi
 
 %post	glib -p /sbin/ldconfig
 %postun	glib -p /sbin/ldconfig
+
+%post	libnm -p /sbin/ldconfig
+%postun	libnm -p /sbin/ldconfig
 
 
 %files -f %{name}.lang
