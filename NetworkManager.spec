@@ -7,9 +7,9 @@
 
 %define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot %{nil}
-%define release_version 2
-%define realversion 1.0.6
+%define snapshot .20150903gitde5d981
+%define realversion 1.2.0
+%define release_version 0.1
 %define epoch_version 1
 
 %define obsoletes_nmver 1:0.9.9.95-1
@@ -24,6 +24,7 @@
 
 %define systemd_dir %{_prefix}/lib/systemd/system
 %define udev_dir %{_prefix}/lib/udev
+%define nmlibdir %{_prefix}/lib/%{name}
 
 %global with_adsl 1
 %global with_bluetooth 1
@@ -46,15 +47,6 @@
 # Bluetooth requires the WWAN plugin
 %if 0%{?with_bluetooth}
 %global with_wwan 1
-%endif
-
-%ifarch s390 s390x
-# No hardware-based plugins on s390
-%global with_adsl 0
-%global with_bluetooth 0
-%global with_wifi 0
-%global with_wimax 0
-%global with_wwan 0
 %endif
 
 %if (0%{?fedora} && 0%{?fedora} <= 19)
@@ -86,9 +78,6 @@ Source4: 20-connectivity-fedora.conf
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
 
-# nm-1-0 backports
-Patch1: 0001-config-bugfix-parse-commandline-options-into-correct.patch
-
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if 0%{?fedora} && 0%{?fedora} < 20
@@ -108,7 +97,6 @@ Requires: dhclient >= 12:4.1.0
 Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
-Requires: avahi-autoipd
 Requires: dnsmasq
 Requires: udev
 Requires: iptables
@@ -140,6 +128,7 @@ BuildRequires: ppp-devel >= 2.4.5
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: dhclient
 BuildRequires: readline-devel
+BuildRequires: audit-libs-devel
 %if %{regen_docs}
 BuildRequires: gtk-doc
 %endif
@@ -303,8 +292,6 @@ NetworkManager API. See also NetworkManager-libnm-devel.
 %package libnm
 Summary: Libraries for adding NetworkManager support to applications (new API).
 Group: Development/Libraries
-Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_glib_version}
 
 %description libnm
 This package contains the libraries that make it easier to use some NetworkManager
@@ -319,7 +306,6 @@ Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
-Requires: dbus-glib-devel >= %{dbus_glib_version}
 
 %description libnm-devel
 This package contains the header and pkg-config files for development applications using
@@ -365,7 +351,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 %patch0 -p1
-%patch1 -p1
 
 %build
 
@@ -385,6 +370,7 @@ intltoolize --force
 	--with-crypto=nss \
 	--enable-more-warnings=error \
 	--enable-ppp=yes \
+	--with-libaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
 	--with-modem-manager-1=yes \
 %else
@@ -444,10 +430,12 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %{__cp} %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
-%{__cp} %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
-%{__cp} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
-%{__cp} %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/conf.d
+mkdir -p %{buildroot}%{nmlibdir}/conf.d
+mkdir -p %{buildroot}%{nmlibdir}/VPN
+%{__cp} %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
+%{__cp} %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
+%{__cp} %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 
 # create a VPN directory
 %{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/NetworkManager/VPN
@@ -462,6 +450,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
 %{__cp} examples/dispatcher/10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/
 %{__ln_s} ../10-ifcfg-rh-routes.sh $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
 
@@ -520,7 +509,6 @@ fi
 %defattr(-,root,root,0755)
 %doc COPYING NEWS AUTHORS README CONTRIBUTING TODO
 %{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
-%{_sysconfdir}/dbus-1/system.d/nm-avahi-autoipd.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
 %{_sbindir}/%{name}
@@ -531,13 +519,13 @@ fi
 %{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
+%dir %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-helper
-%{_libexecdir}/nm-avahi-autoipd.action
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
 %dir %{_libdir}/NetworkManager
@@ -547,7 +535,10 @@ fi
 %endif
 %dir %{_sysconfdir}/%{name}
 %dir %{_sysconfdir}/%{name}/conf.d
-%config %{_sysconfdir}/%{name}/conf.d/10-ibft-plugin.conf
+%dir %{nmlibdir}
+%dir %{nmlibdir}/conf.d
+%{nmlibdir}/conf.d/10-ibft-plugin.conf
+%dir %{nmlibdir}/VPN
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man8/*
@@ -664,15 +655,15 @@ fi
 
 %files config-connectivity-fedora
 %defattr(-,root,root,0755)
-%dir %{_sysconfdir}/%{name}
-%dir %{_sysconfdir}/%{name}/conf.d
-%config(noreplace) %{_sysconfdir}/%{name}/conf.d/20-connectivity-fedora.conf
+%dir %{nmlibdir}
+%dir %{nmlibdir}/conf.d
+%{nmlibdir}/conf.d/20-connectivity-fedora.conf
 
 %files config-server
 %defattr(-,root,root,0755)
-%dir %{_sysconfdir}/%{name}
-%dir %{_sysconfdir}/%{name}/conf.d
-%config(noreplace) %{_sysconfdir}/%{name}/conf.d/00-server.conf
+%dir %{nmlibdir}
+%dir %{nmlibdir}/conf.d
+%{nmlibdir}/conf.d/00-server.conf
 
 %if 0%{?with_nmtui}
 %files tui
@@ -684,6 +675,9 @@ fi
 %endif
 
 %changelog
+* Thu Sep 03 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.1.20150903gitde5d981
+- Import a 1.2 git snapshot
+
 * Fri Aug 28 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.0.6-2
 - Fix command line parsing
 
