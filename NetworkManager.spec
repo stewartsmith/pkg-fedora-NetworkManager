@@ -22,15 +22,9 @@
 %global with_bluetooth 1
 %global with_team 1
 %global with_wifi 1
-%global with_wimax 0
 %global with_wwan 1
 %global with_nmtui 1
 %global regen_docs 1
-
-# WiMAX still supported on <= F19
-%if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
-%global with_wimax 1
-%endif
 
 # ModemManager on Fedora < 20 too old for Bluetooth && wwan
 %if (0%{?fedora} && 0%{?fedora} < 20)
@@ -96,6 +90,7 @@ Requires: iptables
 Requires: readline
 Obsoletes: dhcdbd
 Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager-wimax < 1.2
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
@@ -132,9 +127,6 @@ BuildRequires: vala-tools
 BuildRequires: iptables
 %if 0%{?with_bluetooth}
 BuildRequires: bluez-libs-devel
-%endif
-%if 0%{?with_wimax}
-BuildRequires: wimax-devel
 %endif
 BuildRequires: systemd >= 200-3 systemd-devel
 BuildRequires: libsoup-devel
@@ -226,19 +218,6 @@ Obsoletes: NetworkManager < %{obsoletes_nmver}
 
 %description wwan
 This package contains NetworkManager support for mobile broadband (WWAN) devices.
-%endif
-
-
-%if 0%{?with_wimax}
-%package wimax
-Summary: Intel WiMAX device support for NetworkManager
-Group: System Environment/Base
-Requires: wimax
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-
-%description wimax
-This package contains NetworkManager support for Intel WiMAX mobile broadband
-devices.
 %endif
 
 
@@ -378,11 +357,6 @@ intltoolize --force
 %endif
 %else
 	--enable-wifi=no \
-%endif
-%if 0%{?with_wimax}
-	--enable-wimax=yes \
-%else
-	--enable-wimax=no \
 %endif
 	--enable-vala=yes \
 %if 0%{?regen_docs}
@@ -571,11 +545,6 @@ fi
 %files wwan
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
-%endif
-
-%if 0%{?with_wimax}
-%files wimax
-%{_libdir}/%{name}/libnm-device-plugin-wimax.so
 %endif
 
 %files devel
