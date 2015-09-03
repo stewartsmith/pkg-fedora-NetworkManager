@@ -1,30 +1,22 @@
-%define dbus_version 1.1
-%define dbus_glib_version 0.100
+%global dbus_version 1.1
+%global dbus_glib_version 0.100
 
-%define glib2_version	2.32.0
-%define wireless_tools_version 1:28-0pre9
-%define libnl3_version 3.2.7
+%global glib2_version	2.32.0
+%global wireless_tools_version 1:28-0pre9
+%global libnl3_version 3.2.7
 
-%define ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
+%global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%define snapshot .20150903gitde5d981
-%define realversion 1.2.0
-%define release_version 0.1
-%define epoch_version 1
+%global snapshot .20150903gitde5d981
+%global realversion 1.2.0
+%global release_version 0.1
+%global epoch_version 1
 
-%define obsoletes_nmver 1:0.9.9.95-1
+%global obsoletes_nmver 1:0.9.9.95-1
 
-%global with_nmtui 1
-
-%if 0%{?fedora}
-%global regen_docs 1
-%else
-%global regen_docs 1
-%endif
-
-%define systemd_dir %{_prefix}/lib/systemd/system
-%define udev_dir %{_prefix}/lib/udev
-%define nmlibdir %{_prefix}/lib/%{name}
+%global systemd_dir %{_prefix}/lib/systemd/system
+%global udev_dir %{_prefix}/lib/udev
+%global nmlibdir %{_prefix}/lib/%{name}
 
 %global with_adsl 1
 %global with_bluetooth 1
@@ -32,6 +24,8 @@
 %global with_wifi 1
 %global with_wimax 0
 %global with_wwan 1
+%global with_nmtui 1
+%global regen_docs 1
 
 # WiMAX still supported on <= F19
 %if ! 0%{?rhel} && (! 0%{?fedora} || 0%{?fedora} < 20)
@@ -53,9 +47,10 @@
 %global with_team 0
 %endif
 
-%define with_modem_manager_1 0
 %if 0%{?with_bluetooth} || (0%{?with_wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)))
-%define with_modem_manager_1 1
+%global with_modem_manager_1 1
+%else
+%global with_modem_manager_1 0
 %endif
 
 %global _hardened_build 1
