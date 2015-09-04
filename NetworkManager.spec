@@ -9,7 +9,7 @@
 
 %global snapshot .20150903gitde5d981
 %global realversion 1.2.0
-%global release_version 0.1
+%global release_version 0.2
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -66,6 +66,9 @@ Source4: 20-connectivity-fedora.conf
 
 # Not upstream.
 Patch0: 0000-explain-dns1-dns2.patch
+
+# From master
+Patch1: 0001-test-fix-duplicate-test-names.patch
 
 %if 0%{?fedora} && 0%{?fedora} < 20
 Requires(post): chkconfig
@@ -323,6 +326,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{realversion}
 %patch0 -p1
+%patch1 -p1
 
 %build
 
@@ -437,8 +441,7 @@ cp ORIG-docs/libnm-util/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-util/
 
 
 %check
-make -k check || :
-find -name '*.log' |xargs grep .
+make check
 
 
 %post
@@ -623,6 +626,9 @@ fi
 %endif
 
 %changelog
+* Fri Sep 04 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.2.20150903gitde5d981
+- Fix test run
+
 * Thu Sep 03 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.1.20150903gitde5d981
 - Import a 1.2 git snapshot
 
