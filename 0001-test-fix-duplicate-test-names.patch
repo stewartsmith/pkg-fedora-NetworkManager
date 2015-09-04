@@ -243,3 +243,38 @@ index 16bc14d..cbee786 100644
 -- 
 2.4.3
 
+From f71f9d5fcf5726f9be5ac0c97e7dbc26c3e57ecc Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 4 Sep 2015 12:49:54 +0200
+Subject: [PATCH] tests: fix 32-bit build
+
+Fixes: 874f455d6d47c5a34ed9861a6710f4b78202e0d6
+---
+ src/devices/wifi/tests/test-wifi-ap-utils.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/devices/wifi/tests/test-wifi-ap-utils.c b/src/devices/wifi/tests/test-wifi-ap-utils.c
+index 5552ca4..b5642fe 100644
+--- a/src/devices/wifi/tests/test-wifi-ap-utils.c
++++ b/src/devices/wifi/tests/test-wifi-ap-utils.c
+@@ -1441,7 +1441,7 @@ main (int argc, char **argv)
+ 	                      test_ap_wpa_eap_connection_5);
+ 
+ #define ADD_FUNC(func) do { \
+-		gchar *name_idx = g_strdup_printf ("/wifi/wpa_psk/" G_STRINGIFY (func) "/%ld", i); \
++		gchar *name_idx = g_strdup_printf ("/wifi/wpa_psk/" G_STRINGIFY (func) "/%zd", i); \
+ 		g_test_add_data_func (name_idx, (gconstpointer) i, func); \
+ 		g_free (name_idx); \
+ 	} while (0)
+@@ -1466,7 +1466,7 @@ main (int argc, char **argv)
+ 
+ #undef ADD_FUNC
+ #define ADD_FUNC(func) do { \
+-		gchar *name_idx = g_strdup_printf ("/wifi/rsn_psk/" G_STRINGIFY (func) "/%ld", i); \
++		gchar *name_idx = g_strdup_printf ("/wifi/rsn_psk/" G_STRINGIFY (func) "/%zd", i); \
+ 		g_test_add_data_func (name_idx, (gconstpointer) i, func); \
+ 		g_free (name_idx); \
+ 	} while (0)
+-- 
+2.4.3
+
