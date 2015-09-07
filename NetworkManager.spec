@@ -70,11 +70,6 @@ Patch0: 0000-explain-dns1-dns2.patch
 # From master
 Patch1: 0001-test-fix-duplicate-test-names.patch
 
-%if 0%{?fedora} && 0%{?fedora} < 20
-Requires(post): chkconfig
-Requires(preun): chkconfig
-%endif
-Requires(post): systemd-sysv
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
