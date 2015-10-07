@@ -7,7 +7,7 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .20150903gitde5d981
+%global snapshot .20151007gite73e55c
 %global realversion 1.2.0
 %global release_version 0.2
 %global epoch_version 1
@@ -63,12 +63,6 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
 Source4: 20-connectivity-fedora.conf
-
-# Not upstream.
-Patch0: 0000-explain-dns1-dns2.patch
-
-# From master
-Patch1: 0001-test-fix-duplicate-test-names.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -320,8 +314,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{realversion}
-%patch0 -p1
-%patch1 -p1
 
 %build
 
@@ -621,6 +613,9 @@ fi
 %endif
 
 %changelog
+* Wed Oct 07 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.2.20151007gite73e55c
+- Import a newer 1.2 git snapshot
+
 * Fri Sep 04 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.2.20150903gitde5d981
 - Fix test run
 
