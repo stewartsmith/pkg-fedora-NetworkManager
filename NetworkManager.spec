@@ -69,7 +69,6 @@ Requires(preun): systemd
 Requires(postun): systemd
 
 Requires: dbus >= %{dbus_version}
-Requires: dbus-glib >= %{dbus_glib_version}
 Requires: glib2 >= %{glib2_version}
 Requires: iproute
 Requires: dhclient >= 12:4.1.0
@@ -98,7 +97,6 @@ BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
-BuildRequires: /usr/bin/autopoint
 BuildRequires: pkgconfig
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: perl(XML::Parser)
@@ -323,9 +321,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 cp -R docs ORIG-docs
 %endif
 
-autoreconf -f -i
-autopoint --force
-intltoolize --force
+autoreconf --install --force
+intltoolize --automake --copy --force
 %configure \
 	--disable-static \
 	--with-dhclient=yes \
@@ -546,6 +543,7 @@ fi
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/%{name}.h
 %{_includedir}/%{name}/NetworkManagerVPN.h
+%{_includedir}/%{name}/nm-version-macros.h
 %{_includedir}/%{name}/nm-version.h
 %{_libdir}/pkgconfig/%{name}.pc
 %dir %{_datadir}/gtk-doc/html/NetworkManager
