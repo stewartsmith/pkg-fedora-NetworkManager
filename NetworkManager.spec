@@ -7,9 +7,9 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .20151007gite73e55c
+%global snapshot .20151023gite01c175
 %global realversion 1.2.0
-%global release_version 0.2
+%global release_version 0.3
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -598,8 +598,9 @@ fi
 %endif
 
 %changelog
-* Wed Oct 07 2015 Lubomir Rintel <lkundrak@v3.sk>
+* Wed Oct 07 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.3.20151023gite01c175
 - Drop the NetworkManager-devel subpackage (folded into libnm-glib-devel)
+- Update to a later snapshot
 
 * Wed Oct 07 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.2.20151007gite73e55c
 - Import a newer 1.2 git snapshot
