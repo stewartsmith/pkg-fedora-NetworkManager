@@ -7,7 +7,7 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .20151023gite01c175
+%global snapshot .20151112gitec4d653
 %global realversion 1.2.0
 %global release_version 0.3
 %global epoch_version 1
@@ -598,6 +598,10 @@ fi
 %endif
 
 %changelog
+* Thu Nov 12 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.3.20151112gitec4d653
+- Update to a later snapshot
+- Enables RFC7217 addressing for new IPv6 connections
+
 * Wed Oct 07 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.3.20151023gite01c175
 - Drop the NetworkManager-devel subpackage (folded into libnm-glib-devel)
 - Update to a later snapshot
