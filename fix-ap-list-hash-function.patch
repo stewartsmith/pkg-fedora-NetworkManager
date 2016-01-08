@@ -1,0 +1,29 @@
+From 914d875dc2ea2e410c422cf9d027d33e47396cdf Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Mon, 16 Nov 2015 16:51:54 +0100
+Subject: wifi: fix handling APs list using string-hashing
+
+Commit d51827801128564c31dc5f9cc31db18f1bf7ae79 changed
+the hashing for the APs to use direct-hashing.
+
+That was wrong because get_ap_by_path() needs a full
+string-comparison.
+
+Fixes: d51827801128564c31dc5f9cc31db18f1bf7ae79
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index a9fb6c8..0eeb845 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -2881,7 +2881,7 @@ nm_device_wifi_init (NMDeviceWifi *self)
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+ 
+ 	priv->mode = NM_802_11_MODE_INFRA;
+-	priv->aps = g_hash_table_new (g_direct_hash, g_direct_equal);
++	priv->aps = g_hash_table_new (g_str_hash, g_str_equal);
+ }
+ 
+ static void
+-- 
+cgit v0.10.2
+

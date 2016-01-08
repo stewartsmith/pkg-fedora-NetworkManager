@@ -1,0 +1,64 @@
+From 15f1cd09d92bdb4e8001e1cf781db305569e2068 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Thu, 10 Dec 2015 18:53:49 +0100
+Subject: build: use soup 2.32
+
+We already use 2.32 API and also use API that was replaced with new one after
+2.42 and deprecated in 2.53.
+
+diff --git a/configure.ac b/configure.ac
+index a29602b..715b605 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -827,7 +827,7 @@ fi
+ AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
+ AC_SUBST(KERNEL_FIRMWARE_DIR)
+ 
+-PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
++PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.32], [have_libsoup=yes],[have_libsoup=no])
+ AC_ARG_WITH(libsoup, AS_HELP_STRING([--with-libsoup=yes|no], [Link against libsoup]), [], [with_libsoup=${have_libsoup}])
+ if test "$with_libsoup" != "no"; then
+ 	if test "$have_libsoup" != "yes"; then
+@@ -839,6 +839,7 @@ else
+ 	AC_DEFINE(WITH_LIBSOUP, 0, [Define if you have libsoup])
+ fi
+ AM_CONDITIONAL(WITH_LIBSOUP, test "$with_libsoup" != "no")
++LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_32 -DSOUP_VERSION_MAX_ALLOWED=SOUP_VERSION_2_32"
+ 
+ AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
+                      [enable_concheck=${enableval}], [enable_concheck=${with_libsoup}])
+-- 
+cgit v0.10.2
+
+From 7873b1761de362a66e3b09eacf470ce6e3360068 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Thu, 10 Dec 2015 19:17:56 +0100
+Subject: build: bump soup requirement to 2.40
+
+The dns-manager uses some newer API.
+
+diff --git a/configure.ac b/configure.ac
+index 715b605..c2c48d2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -827,7 +827,7 @@ fi
+ AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
+ AC_SUBST(KERNEL_FIRMWARE_DIR)
+ 
+-PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.32], [have_libsoup=yes],[have_libsoup=no])
++PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.40], [have_libsoup=yes],[have_libsoup=no])
+ AC_ARG_WITH(libsoup, AS_HELP_STRING([--with-libsoup=yes|no], [Link against libsoup]), [], [with_libsoup=${have_libsoup}])
+ if test "$with_libsoup" != "no"; then
+ 	if test "$have_libsoup" != "yes"; then
+@@ -839,7 +839,7 @@ else
+ 	AC_DEFINE(WITH_LIBSOUP, 0, [Define if you have libsoup])
+ fi
+ AM_CONDITIONAL(WITH_LIBSOUP, test "$with_libsoup" != "no")
+-LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_32 -DSOUP_VERSION_MAX_ALLOWED=SOUP_VERSION_2_32"
++LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_40 -DSOUP_VERSION_MAX_ALLOWED=SOUP_VERSION_2_40"
+ 
+ AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
+                      [enable_concheck=${enableval}], [enable_concheck=${with_libsoup}])
+-- 
+cgit v0.10.2
+

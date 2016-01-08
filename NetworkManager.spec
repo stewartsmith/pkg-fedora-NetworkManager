@@ -9,7 +9,7 @@
 
 %global snapshot .20151112gitec4d653
 %global realversion 1.2.0
-%global release_version 0.3
+%global release_version 0.4
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -63,6 +63,9 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
 Source4: 20-connectivity-fedora.conf
+# https://bugzilla.redhat.com/show_bug.cgi?id=1288867
+Patch0: soup-deprecation-fix.patch
+Patch1: fix-ap-list-hash-function.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -300,6 +303,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{realversion}
+%patch0 -p1
+%patch1 -p1
 
 %build
 
@@ -598,6 +603,9 @@ fi
 %endif
 
 %changelog
+* Fri Jan 08 2016 David King <amigadave@amigadave.com> - 1:1.2.0-0.4.20151007gite73e55c
+- Add upstream fix for AP list hash function (#1288867)
+
 * Thu Nov 12 2015 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.3.20151112gitec4d653
 - Update to a later snapshot
 - Enables RFC7217 addressing for new IPv6 connections
