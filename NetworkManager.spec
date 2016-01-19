@@ -7,9 +7,10 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .20151112gitec4d653
-%global realversion 1.2.0
-%global release_version 0.4
+%global snapshot .beta1
+%global rpm_version 1.2.0
+%global real_version 1.1.90
+%global release_version 0.5
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -52,20 +53,18 @@
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
-Version: %{realversion}
+Version: %{rpm_version}
 Release: %{release_version}%{snapshot}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: http://ftp.gnome.org/pub/GNOME/sources/NetworkManager/1.2/%{name}-%{realversion}.tar.xz
+
+Source: https://download.gnome.org/sources/NetworkManager/1.1/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 10-ibft-plugin.conf
 Source4: 20-connectivity-fedora.conf
-# https://bugzilla.redhat.com/show_bug.cgi?id=1288867
-Patch0: soup-deprecation-fix.patch
-Patch1: fix-ap-list-hash-function.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -302,9 +301,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
 %prep
-%setup -q -n NetworkManager-%{realversion}
-%patch0 -p1
-%patch1 -p1
+%setup -q -n NetworkManager-%{real_version}
 
 %build
 
@@ -603,6 +600,9 @@ fi
 %endif
 
 %changelog
+* Tue Jan 19 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.5.beta1
+- Update to NetworkManager 1.2-beta1
+
 * Fri Jan 08 2016 David King <amigadave@amigadave.com> - 1:1.2.0-0.4.20151007gite73e55c
 - Add upstream fix for AP list hash function (#1288867)
 
