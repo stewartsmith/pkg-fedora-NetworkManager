@@ -8,9 +8,10 @@
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
 %global snapshot .beta1
+%global git_sha %{nil}
 %global rpm_version 1.2.0
 %global real_version 1.1.90
-%global release_version 0.5
+%global release_version 0.6
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -19,52 +20,78 @@
 %global udev_dir %{_prefix}/lib/udev
 %global nmlibdir %{_prefix}/lib/%{name}
 
-%global with_adsl 1
-%global with_bluetooth 1
-%global with_team 1
-%global with_wifi 1
-%global with_wwan 1
-%global with_nmtui 1
-%global regen_docs 1
+%global _hardened_build 1
+
+%global git_sha_version %(test -n '%{git_sha}' && echo '.%{git_sha}')
+
+###############################################################################
+
+%bcond_without adsl
+
+%global default_with_bluetooth 1
+%global default_with_wwan 1
 
 # ModemManager on Fedora < 20 too old for Bluetooth && wwan
 %if (0%{?fedora} && 0%{?fedora} < 20)
-%global with_bluetooth 0
-%global with_wwan 0
+%global default_with_bluetooth 0
+%global default_with_wwan 0
 %endif
 
 # Bluetooth requires the WWAN plugin
-%if 0%{?with_bluetooth}
-%global with_wwan 1
+%if 0%{?default_with_bluetooth}
+%global default_with_wwan 1
+%endif
+
+%if 0%{?default_with_bluetooth}
+%bcond_without bluetooth
+%else
+%bcond_with bluetooth
+%endif
+
+%if 0%{?default_with_wwan}
+%bcond_without wwan
+%else
+%bcond_with wwan
 %endif
 
 %if (0%{?fedora} && 0%{?fedora} <= 19)
-%global with_team 0
+%bcond_with team
+%else
+%bcond_without team
 %endif
 
-%if 0%{?with_bluetooth} || (0%{?with_wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)))
+%bcond_without wifi
+
+%bcond_without nmtui
+%bcond_without regen_docs
+%bcond_with    debug
+%bcond_without test
+
+###############################################################################
+
+%if %{with bluetooth} || (%{with wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)))
 %global with_modem_manager_1 1
 %else
 %global with_modem_manager_1 0
 %endif
 
-%global _hardened_build 1
+###############################################################################
 
 Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{snapshot}%{?dist}.1
+Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-
 Source: https://download.gnome.org/sources/NetworkManager/1.1/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
-Source3: 10-ibft-plugin.conf
-Source4: 20-connectivity-fedora.conf
+Source3: 20-connectivity-fedora.conf
+
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -109,7 +136,7 @@ BuildRequires: nss-devel >= 3.11.7
 BuildRequires: dhclient
 BuildRequires: readline-devel
 BuildRequires: audit-libs-devel
-%if %{regen_docs}
+%if %{with regen_docs}
 BuildRequires: gtk-doc
 %endif
 BuildRequires: libudev-devel
@@ -117,7 +144,7 @@ BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
-%if 0%{?with_bluetooth}
+%if %{with bluetooth}
 BuildRequires: bluez-libs-devel
 %endif
 BuildRequires: systemd >= 200-3 systemd-devel
@@ -126,7 +153,7 @@ BuildRequires: libndp-devel >= 1.0
 %if 0%{?with_modem_manager_1}
 BuildRequires: ModemManager-glib-devel >= 1.0
 %endif
-%if 0%{?with_nmtui}
+%if %{with nmtui}
 BuildRequires: newt-devel
 %endif
 BuildRequires: /usr/bin/dbus-launch
@@ -144,7 +171,7 @@ Ethernet, Bridge, Bond, VLAN, Team, InfiniBand, Wi-Fi, mobile broadband
 services.
 
 
-%if 0%{?with_adsl}
+%if %{with adsl}
 %package adsl
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
@@ -157,7 +184,7 @@ This package contains NetworkManager support for ADSL devices.
 %endif
 
 
-%if 0%{?with_bluetooth}
+%if %{with bluetooth}
 %package bluetooth
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
@@ -172,7 +199,7 @@ This package contains NetworkManager support for Bluetooth devices.
 %endif
 
 
-%if 0%{?with_team}
+%if 0%{with team}
 %package team
 Summary: Team device plugin for NetworkManager
 Group: System Environment/Base
@@ -187,7 +214,7 @@ This package contains NetworkManager support for team devices.
 %endif
 
 
-%if 0%{?with_wifi}
+%if %{with wifi}
 %package wifi
 Summary: Wifi plugin for NetworkManager
 Group: System Environment/Base
@@ -200,7 +227,7 @@ This package contains NetworkManager support for Wifi and OLPC devices.
 %endif
 
 
-%if 0%{?with_wwan}
+%if %{with wwan}
 %package wwan
 Summary: Mobile broadband device plugin for NetworkManager
 Group: System Environment/Base
@@ -303,9 +330,11 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
+#%patch1 -p1
+
 %build
 
-%if %{regen_docs}
+%if %{with regen_docs}
 # back up pristine docs and use them instead of generated ones, which make
 # multilib unhappy due to different timestamps in the generated content
 cp -R docs ORIG-docs
@@ -319,6 +348,10 @@ intltoolize --automake --copy --force
 	--with-dhcpcd=no \
 	--with-crypto=nss \
 	--enable-more-warnings=error \
+%if %{with debug}
+	--with-more-logging \
+	--with-more-asserts=10000 \
+%endif
 	--enable-ppp=yes \
 	--with-libaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
@@ -326,7 +359,7 @@ intltoolize --automake --copy --force
 %else
 	--with-modem-manager-1=no \
 %endif
-%if 0%{?with_wifi}
+%if %{with wifi}
 	--enable-wifi=yes \
 %if 0%{?fedora}
 	--with-wext=yes \
@@ -337,12 +370,12 @@ intltoolize --automake --copy --force
 	--enable-wifi=no \
 %endif
 	--enable-vala=yes \
-%if 0%{?regen_docs}
+%if %{with regen_docs}
 	--enable-gtk-doc \
 %else
 	--disable-gtk-doc \
 %endif
-%if 0%{?with_team}
+%if %{with team}
 	--enable-teamdctl=yes \
 %else
 	--enable-teamdctl=no \
@@ -378,7 +411,6 @@ mkdir -p %{buildroot}%{nmlibdir}/conf.d
 mkdir -p %{buildroot}%{nmlibdir}/VPN
 cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
 cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
-cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 
 # create a VPN directory
 mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/VPN
@@ -395,7 +427,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
-ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
+ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
+ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/
 
 mkdir -p %{buildroot}%{_datadir}/gnome-vpn-properties
 
@@ -407,7 +440,7 @@ rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/pppd/%{ppp_version}/*.la
 rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 
-%if %{regen_docs}
+%if %{with regen_docs}
 # install the pristine docs
 cp ORIG-docs/libnm-glib/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-glib/
 cp ORIG-docs/libnm-util/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-util/
@@ -415,7 +448,9 @@ cp ORIG-docs/libnm-util/html/* %{buildroot}%{_datadir}/gtk-doc/html/libnm-util/
 
 
 %check
+%if %{with test}
 make check
+%endif
 
 
 %post
@@ -461,6 +496,7 @@ fi
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
+%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/VPN
@@ -471,14 +507,13 @@ fi
 %{_libexecdir}/nm-iface-helper
 %dir %{_libdir}/NetworkManager
 %{_libdir}/NetworkManager/libnm-settings-plugin*.so
-%if 0%{?with_nmtui}
+%if %{with nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
 %dir %{_sysconfdir}/%{name}
 %dir %{_sysconfdir}/%{name}/conf.d
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
-%{nmlibdir}/conf.d/10-ibft-plugin.conf
 %dir %{nmlibdir}/VPN
 %{_mandir}/man1/*
 %{_mandir}/man5/*
@@ -500,29 +535,29 @@ fi
 %doc NEWS AUTHORS README CONTRIBUTING TODO
 %license COPYING
 
-%if 0%{?with_adsl}
+%if %{with adsl}
 %files adsl
 %{_libdir}/%{name}/libnm-device-plugin-adsl.so
 %else
 %exclude %{_libdir}/%{name}/libnm-device-plugin-adsl.so
 %endif
 
-%if 0%{?with_bluetooth}
+%if %{with bluetooth}
 %files bluetooth
 %{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
 %endif
 
-%if 0%{?with_team}
+%if %{with team}
 %files team
 %{_libdir}/%{name}/libnm-device-plugin-team.so
 %endif
 
-%if 0%{?with_wifi}
+%if %{with wifi}
 %files wifi
 %{_libdir}/%{name}/libnm-device-plugin-wifi.so
 %endif
 
-%if 0%{?with_wwan}
+%if %{with wwan}
 %files wwan
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
@@ -590,7 +625,7 @@ fi
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/00-server.conf
 
-%if 0%{?with_nmtui}
+%if %{with nmtui}
 %files tui
 %{_bindir}/nmtui
 %{_bindir}/nmtui-edit
@@ -600,6 +635,9 @@ fi
 %endif
 
 %changelog
+* Wed Feb  3 2016 Thomas Haller <thaller@redhat.com> - 1:1.2.0-0.6.beta1
+- specfile: remove no longer needed 10-ibft-plugin.conf and sync with contrib/rpm
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.2.0-0.5.beta1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
