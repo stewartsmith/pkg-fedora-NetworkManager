@@ -92,6 +92,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-platform-statement-braces.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -331,6 +332,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch1 -p1
 
 %build
 
@@ -637,6 +639,7 @@ fi
 %changelog
 * Wed Feb  3 2016 Thomas Haller <thaller@redhat.com> - 1:1.2.0-0.6.beta1
 - specfile: remove no longer needed 10-ibft-plugin.conf and sync with contrib/rpm
+- core: backport fix for missing braces bug in platform
 
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.2.0-0.5.beta1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
