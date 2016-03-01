@@ -7,10 +7,10 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .beta1
+%global snapshot .beta2
 %global git_sha %{nil}
 %global rpm_version 1.2.0
-%global real_version 1.1.90
+%global real_version 1.1.91
 %global release_version 0.6
 %global epoch_version 1
 
@@ -92,7 +92,6 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-platform-statement-braces.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -200,7 +199,7 @@ This package contains NetworkManager support for Bluetooth devices.
 %endif
 
 
-%if 0%{with team}
+%if %{with team}
 %package team
 Summary: Team device plugin for NetworkManager
 Group: System Environment/Base
@@ -237,7 +236,8 @@ Requires: ModemManager
 Obsoletes: NetworkManager < %{obsoletes_nmver}
 
 %description wwan
-This package contains NetworkManager support for mobile broadband (WWAN) devices.
+This package contains NetworkManager support for mobile broadband (WWAN)
+devices.
 %endif
 
 
@@ -248,9 +248,9 @@ Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
 
 %description glib
-This package contains the libraries that make it easier to use some NetworkManager
-functionality from applications that use glib.  This is the older NetworkManager API.
-See also NetworkManager-libnm.
+This package contains the libraries that make it easier to use some
+NetworkManager functionality from applications that use glib.  This is
+the older NetworkManager API. See also NetworkManager-libnm.
 
 
 %package glib-devel
@@ -265,9 +265,10 @@ Provides: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: %{name}-devel < %{epoch}:%{version}-%{release}
 
 %description glib-devel
-This package contains the header and pkg-config files for development applications using
-NetworkManager functionality from applications that use glib.  This is the older
-NetworkManager API. See also NetworkManager-libnm-devel.
+This package contains the header and pkg-config files for development
+applications using NetworkManager functionality from applications that
+use glib.
+This is the older NetworkManager API.  See also NetworkManager-libnm-devel.
 
 
 %package libnm
@@ -275,9 +276,9 @@ Summary: Libraries for adding NetworkManager support to applications (new API).
 Group: Development/Libraries
 
 %description libnm
-This package contains the libraries that make it easier to use some NetworkManager
-functionality from applications.  This is the new NetworkManager API.  See also
-NetworkManager-glib.
+This package contains the libraries that make it easier to use some
+NetworkManager functionality from applications.  This is the new
+NetworkManager API.  See also NetworkManager-glib.
 
 
 %package libnm-devel
@@ -288,9 +289,9 @@ Requires: glib2-devel
 Requires: pkgconfig
 
 %description libnm-devel
-This package contains the header and pkg-config files for development applications using
-NetworkManager functionality from applications.  This is the new NetworkManager API.
-See also NetworkManager-glib-devel.
+This package contains the header and pkg-config files for development
+applications using NetworkManager functionality from applications.  This
+is the new NetworkManager API. See also NetworkManager-glib-devel.
 
 
 %package config-connectivity-fedora
@@ -332,7 +333,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
-%patch1 -p1
 
 %build
 
@@ -422,6 +422,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/system-connections
 
 # create a dnsmasq.d directory
 mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/dnsmasq.d
+mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/dnsmasq-shared.d
 
 # create dispatcher directories
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d
@@ -501,6 +502,7 @@ fi
 %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
+%dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
 %dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
@@ -637,6 +639,10 @@ fi
 %endif
 
 %changelog
+* Tue Mar  1 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.6.beta2
+- Update to NetworkManager 1.2-beta2
+- Resync with contrib/rpm
+
 * Wed Feb  3 2016 Thomas Haller <thaller@redhat.com> - 1:1.2.0-0.6.beta1
 - specfile: remove no longer needed 10-ibft-plugin.conf and sync with contrib/rpm
 - core: backport fix for missing braces bug in platform
