@@ -1,0 +1,44 @@
+From ca5da5d80f3a21847bb807021e2e40d25bca50d0 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Fri, 11 Mar 2016 15:36:35 +0100
+Subject: [PATCH] device: fix handling of available connections
+
+The prune list is for elements that must be deleted from the list of
+available connections. So, when processing all the existing
+connections an element must be deleted from the prune list iff it's
+available.
+
+Fixes: 8b2abe0e2c8f162544a2562fc18a7becbc55d233
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1316488
+---
+ src/devices/nm-device.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 51a84bf..f4e2ce1 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -9664,14 +9664,13 @@ nm_device_recheck_available_connections (NMDevice *self)
+ 			connection = NM_CONNECTION (iter->data);
+ 
+ 			if (nm_device_check_connection_available (self,
+-				                                  connection,
+-				                                  NM_DEVICE_CHECK_CON_AVAILABLE_NONE,
+-				                                  NULL)) {
++			                                          connection,
++			                                          NM_DEVICE_CHECK_CON_AVAILABLE_NONE,
++			                                          NULL)) {
+ 				if (available_connections_add (self, connection))
+ 					changed = TRUE;
+-			} else {
+-				if (prune_list && g_hash_table_remove (prune_list, connection))
+-					changed = TRUE;
++				if (prune_list)
++					g_hash_table_remove (prune_list, connection);
+ 			}
+ 		}
+ 
+-- 
+2.5.0
+

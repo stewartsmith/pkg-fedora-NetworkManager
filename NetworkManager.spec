@@ -7,7 +7,7 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .beta2
+%global snapshot .beta2.1
 %global git_sha %{nil}
 %global rpm_version 1.2.0
 %global real_version 1.1.91
@@ -161,6 +161,8 @@ BuildRequires: pygobject3-base
 BuildRequires: dbus-python
 BuildRequires: libselinux-devel
 BuildRequires: polkit-devel
+
+Patch0: 0001-device-fix-handling-of-available-connections.patch
 
 
 %description
@@ -333,6 +335,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch0 -p1 -b .available-connections
 
 %build
 
@@ -630,6 +633,9 @@ fi
 %endif
 
 %changelog
+* Thu Mar 17 2016 Dan Williams <dcbw@redhat.com> - 1:1.2.0-0.6.beta2.1
+- Fix activating connections in some cases (rh #1316488)
+
 * Tue Mar  1 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.6.beta2
 - Update to NetworkManager 1.2-beta2
 - Resync with contrib/rpm
