@@ -7,11 +7,11 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .beta2.1
+%global snapshot .beta2
 %global git_sha %{nil}
 %global rpm_version 1.2.0
 %global real_version 1.1.91
-%global release_version 0.6
+%global release_version 0.7
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -91,7 +91,10 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch0: 0001-device-fix-handling-of-available-connections.patch
+Patch1: 0001-core-use-hostnamed-to-set-the-transient-hostname.patch
+Patch2: 0002-policy-simplify-set_system_hostname.patch
+Patch3: 0003-policy-move-code-from-set_system_hostname-to-_set_ho.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -161,8 +164,6 @@ BuildRequires: pygobject3-base
 BuildRequires: dbus-python
 BuildRequires: libselinux-devel
 BuildRequires: polkit-devel
-
-Patch0: 0001-device-fix-handling-of-available-connections.patch
 
 
 %description
@@ -334,8 +335,10 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
-%patch0 -p1 -b .available-connections
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
 
 %build
 
@@ -633,6 +636,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar 22 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.beta2
+- Fix obtaining the hostname from DNS (rh #1308974)
+
 * Thu Mar 17 2016 Dan Williams <dcbw@redhat.com> - 1:1.2.0-0.6.beta2.1
 - Fix activating connections in some cases (rh #1316488)
 
