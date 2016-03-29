@@ -7,10 +7,10 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .beta2
-%global git_sha %{nil}
+%global snapshot .beta3
+#global git_sha %{nil}
 %global rpm_version 1.2.0
-%global real_version 1.1.91
+%global real_version 1.1.92
 %global release_version 0.7
 %global epoch_version 1
 
@@ -22,7 +22,7 @@
 
 %global _hardened_build 1
 
-%global git_sha_version %(test -n '%{git_sha}' && echo '.%{git_sha}')
+%global git_sha_version %{?git_sha:.%{git_sha}}
 
 ###############################################################################
 
@@ -91,10 +91,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch0: 0001-device-fix-handling-of-available-connections.patch
-Patch1: 0001-core-use-hostnamed-to-set-the-transient-hostname.patch
-Patch2: 0002-policy-simplify-set_system_hostname.patch
-Patch3: 0003-policy-move-code-from-set_system_hostname-to-_set_ho.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -335,11 +332,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-
 %build
 
 autoreconf --install --force
@@ -445,6 +437,11 @@ rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 
 # Ensure the documentation timestamps are constant to avoid multilib conflicts
 find %{buildroot}%{_datadir}/gtk-doc |xargs touch --reference configure.ac
+
+%if 0%{?__debug_package}
+mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
+cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
+%endif
 
 
 %check
@@ -636,6 +633,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar 29 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.beta3
+- Update to NetworkManager 1.2-beta3
+
 * Tue Mar 22 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.beta2
 - Fix obtaining the hostname from DNS (rh #1308974)
 
