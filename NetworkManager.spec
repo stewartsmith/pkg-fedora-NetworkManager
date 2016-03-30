@@ -11,7 +11,7 @@
 #global git_sha %{nil}
 %global rpm_version 1.2.0
 %global real_version 1.1.92
-%global release_version 0.7
+%global release_version 0.8
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -91,7 +91,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch0: 0001-platform-don-t-assume-that-netlink-message-is-as-big.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -331,6 +331,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{real_version}
+%patch0 -p1
 
 %build
 
@@ -633,6 +634,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar 30 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.8.beta3
+- Fix link detection on 4.5 when build with 4.6 kernel
+
 * Tue Mar 29 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.beta3
 - Update to NetworkManager 1.2-beta3
 
