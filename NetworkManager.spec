@@ -90,8 +90,6 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch0: 0001-platform-don-t-assume-that-netlink-message-is-as-big.patch
-
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
@@ -330,7 +328,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{real_version}
-%patch0 -p1
 
 %build
 gtkdocize
