@@ -17,7 +17,6 @@
 %global obsoletes_nmver 1:0.9.9.95-1
 
 %global systemd_dir %{_prefix}/lib/systemd/system
-%global udev_dir %{_prefix}/lib/udev
 %global nmlibdir %{_prefix}/lib/%{name}
 
 %global _hardened_build 1
@@ -334,7 +333,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch0 -p1
 
 %build
-
+gtkdocize
 autoreconf --install --force
 intltoolize --automake --copy --force
 %configure \
@@ -437,7 +436,7 @@ rm -f %{buildroot}%{_libdir}/pppd/%{ppp_version}/*.la
 rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 
 # Ensure the documentation timestamps are constant to avoid multilib conflicts
-find %{buildroot}%{_datadir}/gtk-doc |xargs touch --reference configure.ac
+find %{buildroot}%{_datadir}/gtk-doc -exec touch --reference configure.ac '{}' \+
 
 %if 0%{?__debug_package}
 mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
@@ -516,6 +515,7 @@ fi
 %dir %{nmlibdir}/VPN
 %{_mandir}/man1/*
 %{_mandir}/man5/*
+%{_mandir}/man7/*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/NetworkManager/system-connections
@@ -523,7 +523,7 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
-%{udev_dir}/rules.d/*.rules
+%{_prefix}/lib/udev/rules.d/*.rules
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
