@@ -7,10 +7,10 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .beta3
+%global snapshot .rc1
 #global git_sha %{nil}
 %global rpm_version 1.2.0
-%global real_version 1.1.92
+%global real_version 1.1.93
 %global release_version 0.8
 %global epoch_version 1
 
@@ -634,6 +634,9 @@ fi
 %endif
 
 %changelog
+* Tue Apr  5 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.rc1
+- Update to NetworkManager 1.2-rc1
+
 * Wed Mar 30 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.8.beta3
 - Fix link detection on 4.5 when build with 4.6 kernel
 
