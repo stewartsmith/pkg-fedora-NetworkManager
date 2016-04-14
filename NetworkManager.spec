@@ -7,10 +7,10 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .rc1
+%global snapshot .rc2
 #global git_sha %{nil}
 %global rpm_version 1.2.0
-%global real_version 1.1.93
+%global real_version 1.1.94
 %global release_version 0.8
 %global epoch_version 1
 
@@ -630,6 +630,9 @@ fi
 %endif
 
 %changelog
+* Thu Apr 14 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.rc2
+- Update to NetworkManager 1.2-rc2
+
 * Tue Apr  5 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.rc1
 - Update to NetworkManager 1.2-rc1
 
