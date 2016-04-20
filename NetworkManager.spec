@@ -7,11 +7,11 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot .rc2
+#global snapshot %{nil}
 #global git_sha %{nil}
 %global rpm_version 1.2.0
-%global real_version 1.1.94
-%global release_version 0.8
+%global real_version 1.2.0
+%global release_version 1
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -21,7 +21,7 @@
 
 %global _hardened_build 1
 
-%global git_sha_version %{?git_sha:.%{git_sha}}
+%global snap %{?git_sha:.%{git_sha}}%{?snapshot:.%{snapshot}}
 
 ###############################################################################
 
@@ -80,12 +80,12 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{snapshot}%{git_sha_version}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.1/%{name}-%{real_version}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.2/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -630,6 +630,9 @@ fi
 %endif
 
 %changelog
+* Wed Apr 20 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-1
+- Update to NetworkManager 1.2.0 release
+
 * Thu Apr 14 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-0.7.rc2
 - Update to NetworkManager 1.2-rc2
 
