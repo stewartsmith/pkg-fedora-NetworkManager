@@ -7,8 +7,8 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-#global snapshot %{nil}
-#global git_sha %{nil}
+%global snapshot %{nil}
+%global git_sha %{nil}
 %global rpm_version 1.2.0
 %global real_version 1.2.0
 %global release_version 1
@@ -21,7 +21,14 @@
 
 %global _hardened_build 1
 
-%global snap %{?git_sha:.%{git_sha}}%{?snapshot:.%{snapshot}}
+%if x%{?snapshot} != x
+%global snapshot_dot .%{snapshot}
+%endif
+%if x%{?git_sha} != x
+%global git_sha_dot .%{git_sha}
+%endif
+
+%global snap %{?git_sha_dot}%{?snapshot_dot}
 
 ###############################################################################
 
