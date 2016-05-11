@@ -9,8 +9,8 @@
 
 %global snapshot %{nil}
 %global git_sha %{nil}
-%global rpm_version 1.2.0
-%global real_version 1.2.0
+%global rpm_version 1.2.2
+%global real_version 1.2.2
 %global release_version 1
 %global epoch_version 1
 
@@ -637,6 +637,9 @@ fi
 %endif
 
 %changelog
+* Wed May 11 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.2-1
+- Update to NetworkManager 1.2.2 release
+
 * Wed Apr 20 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.0-1
 - Update to NetworkManager 1.2.0 release
 
