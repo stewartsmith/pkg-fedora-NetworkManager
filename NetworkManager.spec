@@ -11,7 +11,7 @@
 %global git_sha %{nil}
 %global rpm_version 1.2.2
 %global real_version 1.2.2
-%global release_version 1
+%global release_version 2
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -96,6 +96,9 @@ Source: https://download.gnome.org/sources/NetworkManager/1.2/%{name}-%{real_ver
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
+
+#Patch1: 0001-some.patch
+Patch1: 0001-dnsmasq-clear-cache-and-restart-rh1338731.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -193,7 +196,7 @@ This package contains NetworkManager support for ADSL devices.
 Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: NetworkManager-wwan
+Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
 Requires: bluez >= 4.101-5
 Obsoletes: NetworkManager < %{obsoletes_nmver}
 Obsoletes: NetworkManager-bt
@@ -335,6 +338,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{real_version}
+
+%patch1 -p1
 
 %build
 gtkdocize
@@ -637,6 +642,12 @@ fi
 %endif
 
 %changelog
+* Thu Jun  2 2016 Thomas Haller <thaller@redhat.com> - 1:1.2.2-2
+- dns: clear cache of dnsmasq when updating DNS configuration (rh#1338731)
+- dns: fix restarting dnsmasq instance
+- spec: depend bluetooth subpackage on exact wwan version
+- all: fix some memleaks
+
 * Wed May 11 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.2.2-1
 - Update to NetworkManager 1.2.2 release
 
