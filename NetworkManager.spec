@@ -7,11 +7,11 @@
 
 %global ppp_version %(rpm -q ppp-devel >/dev/null && rpm -q --qf '%%{version}' ppp-devel || echo -n bad)
 
-%global snapshot %{nil}
-%global git_sha %{nil}
-%global rpm_version 1.2.2
-%global real_version 1.2.2
-%global release_version 2
+%global snapshot git20160621
+%global git_sha 072358da
+%global rpm_version 1.4.0
+%global real_version 1.3.0
+%global release_version 0.3
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -28,7 +28,7 @@
 %global git_sha_dot .%{git_sha}
 %endif
 
-%global snap %{?git_sha_dot}%{?snapshot_dot}
+%global snap %{?snapshot_dot}%{?git_sha_dot}
 
 ###############################################################################
 
@@ -69,7 +69,11 @@
 %bcond_without wifi
 
 %bcond_without nmtui
+%if (0%{?rhel} && 0%{?rhel} <= 7)
+%bcond_with    regen_docs
+%else
 %bcond_without regen_docs
+%endif
 %bcond_with    debug
 %bcond_without test
 
@@ -92,13 +96,12 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.2/%{name}-%{real_version}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.4/%{name}-%{real_version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-dnsmasq-clear-cache-and-restart-rh1338731.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -149,7 +152,7 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: libgudev1-devel >= 143
-BuildRequires: vala-tools
+BuildRequires: vala-tools >= 0.26.1
 BuildRequires: iptables
 %if %{with bluetooth}
 BuildRequires: bluez-libs-devel
@@ -168,6 +171,7 @@ BuildRequires: pygobject3-base
 BuildRequires: dbus-python
 BuildRequires: libselinux-devel
 BuildRequires: polkit-devel
+BuildRequires: jansson-devel
 
 
 %description
@@ -339,10 +343,12 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch1 -p1
+#%patch1 -p1
 
 %build
+%if %{with regen_docs}
 gtkdocize
+%endif
 autoreconf --install --force
 intltoolize --automake --copy --force
 %configure \
@@ -642,6 +648,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 19 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.0-0.3.git20160621.072358da
+- Update to a later Git snapshot
+
 * Thu Jun  2 2016 Thomas Haller <thaller@redhat.com> - 1:1.2.2-2
 - dns: clear cache of dnsmasq when updating DNS configuration (rh#1338731)
 - dns: fix restarting dnsmasq instance
