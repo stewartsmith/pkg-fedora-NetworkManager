@@ -648,6 +648,9 @@ fi
 %endif
 
 %changelog
+* Thu Jul 21 2016 Matthias Clasen <mclasen@redhat.com> - 1:1.4.0-0.4.git20160621.072358da
+- Rebuild against newer GLib to overcome logging problems on i686
+
 * Tue Jul 19 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.0-0.3.git20160621.072358da
 - Update to a later Git snapshot
 
