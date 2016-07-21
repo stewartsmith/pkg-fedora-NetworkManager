@@ -11,7 +11,7 @@
 %global git_sha 072358da
 %global rpm_version 1.4.0
 %global real_version 1.3.0
-%global release_version 0.3
+%global release_version 0.4
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
