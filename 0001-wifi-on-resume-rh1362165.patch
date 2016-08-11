@@ -1,0 +1,71 @@
+From 3cd610adaba13c882881457520722fb201062ce7 Mon Sep 17 00:00:00 2001
+From: Tony Espy <espy@canonical.com>
+Date: Thu, 16 Jun 2016 15:07:33 -0400
+Subject: [PATCH 1/2] wifi: clear WiFi requested_scan if suppl exits
+
+It's possible for wpa_supplicant to exit with an
+outstanding requested_scan pending.  This can lead
+to a stall condition where scanning no longer occurs.
+
+https://mail.gnome.org/archives/networkmanager-list/2016-June/msg00117.html
+(cherry picked from commit 899d7e5cb1eb3bddaf92de3644c49c9f634b675e)
+---
+ src/devices/wifi/nm-device-wifi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index a88d6eb..8220776 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -247,6 +247,11 @@ supplicant_interface_release (NMDeviceWifi *self)
+ 
+ 	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+ 
++	if (priv->requested_scan) {
++		priv->requested_scan = FALSE;
++		nm_device_remove_pending_action (NM_DEVICE (self), "scan", TRUE);
++	}
++
+ 	nm_clear_g_source (&priv->pending_scan_id);
+ 
+ 	/* Reset the scan interval to be pretty frequent when disconnected */
+-- 
+2.7.4
+
+
+From eeb1532754cc0022a97732c989da2e09aa95a9b6 Mon Sep 17 00:00:00 2001
+From: Tony Espy <espy@canonical.com>
+Date: Thu, 16 Jun 2016 15:07:32 -0400
+Subject: [PATCH 2/2] wifi: clear WiFi requested_scan if suppl goes INACTIVE
+
+It's possible for wpa_supplicant to transition to INACTIVE
+state with an outstanding requested_scan pending.  This can
+lead to a stall condition where scanning no longer occurs.
+
+[thaller@redhat.com: added break statement to avoid fall-through]
+
+https://mail.gnome.org/archives/networkmanager-list/2016-June/msg00116.html
+(cherry picked from commit eed8fd2e43d244caa856d9993e750ff19ba62fd7)
+---
+ src/devices/wifi/nm-device-wifi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 8220776..781ecb7 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -1959,6 +1959,11 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 		else
+ 			_LOGI (LOGD_DEVICE | LOGD_WIFI, "supplicant interface keeps failing, giving up");
+ 		break;
++	case NM_SUPPLICANT_INTERFACE_STATE_INACTIVE:
++		priv->requested_scan = FALSE;
++		nm_clear_g_source (&priv->pending_scan_id);
++		request_wireless_scan (self, NULL);
++		break;
+ 	default:
+ 		break;
+ 	}
+-- 
+2.7.4
+

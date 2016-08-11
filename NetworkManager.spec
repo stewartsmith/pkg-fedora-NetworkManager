@@ -11,7 +11,7 @@
 %global git_sha 072358da
 %global rpm_version 1.4.0
 %global real_version 1.3.0
-%global release_version 0.4
+%global release_version 0.5
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -101,7 +101,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-wifi-on-resume-rh1362165.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -343,7 +343,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -648,6 +648,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug 11 2016 Thomas Haller <thaller@redhat.com> - 1:1.4.0-0.5.git20160621.072358da
+- fix stale Wi-Fi after resume from suspend (rh#1362165)
+
 * Thu Jul 21 2016 Matthias Clasen <mclasen@redhat.com> - 1:1.4.0-0.4.git20160621.072358da
 - Rebuild against newer GLib to overcome logging problems on i686
 
