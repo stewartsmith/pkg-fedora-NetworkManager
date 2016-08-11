@@ -1,4 +1,4 @@
-From 3cd610adaba13c882881457520722fb201062ce7 Mon Sep 17 00:00:00 2001
+From 3a4ad2c4cfc3daebf64bd5469a5b127a06611d26 Mon Sep 17 00:00:00 2001
 From: Tony Espy <espy@canonical.com>
 Date: Thu, 16 Jun 2016 15:07:33 -0400
 Subject: [PATCH 1/2] wifi: clear WiFi requested_scan if suppl exits
@@ -33,7 +33,7 @@ index a88d6eb..8220776 100644
 2.7.4
 
 
-From eeb1532754cc0022a97732c989da2e09aa95a9b6 Mon Sep 17 00:00:00 2001
+From ba216887c6c213aed9d37e4125c73604ef10c9da Mon Sep 17 00:00:00 2001
 From: Tony Espy <espy@canonical.com>
 Date: Thu, 16 Jun 2016 15:07:32 -0400
 Subject: [PATCH 2/2] wifi: clear WiFi requested_scan if suppl goes INACTIVE
