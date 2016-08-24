@@ -7,11 +7,10 @@
 
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
 
-%global snapshot git20160621
-%global git_sha 072358da
+%global snapshot %{nil}
+%global git_sha %{nil}
 %global rpm_version 1.4.0
-%global real_version 1.3.0
-%global release_version 0.5
+%global release_version 1
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -92,12 +91,10 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.4/%{name}-%{real_version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.4/%{name}-%{version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
-
-Patch1: 0001-wifi-on-resume-rh1362165.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -337,9 +334,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
 %prep
-%setup -q -n NetworkManager-%{real_version}
-
-%patch1 -p1
+%setup -q
 
 %build
 gtkdocize
@@ -447,8 +442,8 @@ rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 find %{buildroot}%{_datadir}/gtk-doc -exec touch --reference configure.ac '{}' \+
 
 %if 0%{?__debug_package}
-mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
-cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
+mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{version}
+cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{version}
 %endif
 
 
@@ -642,6 +637,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 24 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.0-1
+- Update to NetworkManager 1.4.0 release
+
 * Thu Aug 11 2016 Thomas Haller <thaller@redhat.com> - 1:1.4.0-0.5.git20160621.072358da
 - fix stale Wi-Fi after resume from suspend (rh#1362165)
 
