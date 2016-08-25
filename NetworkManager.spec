@@ -9,7 +9,9 @@
 
 %global snapshot %{nil}
 %global git_sha %{nil}
+
 %global rpm_version 1.4.0
+%global real_version 1.4.0
 %global release_version 1
 %global epoch_version 1
 
@@ -95,6 +97,8 @@ Source: https://download.gnome.org/sources/NetworkManager/1.4/%{name}-%{version}
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
+
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -334,10 +338,14 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
 %prep
-%setup -q
+%setup -q -n NetworkManager-%{real_version}
+
+#%patch1 -p1
 
 %build
+%if %{with regen_docs}
 gtkdocize
+%endif
 autoreconf --install --force
 intltoolize --automake --copy --force
 %configure \
@@ -393,7 +401,10 @@ intltoolize --automake --copy --force
 	--with-system-libndp=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release} \
-	--with-setting-plugins-default='ifcfg-rh,ibft'
+	--with-setting-plugins-default='ifcfg-rh,ibft' \
+	--with-config-dns-rc-manager-default=symlink \
+	--with-config-logging-backend-default=journal \
+	--enable-json-validation
 
 make %{?_smp_mflags}
 
@@ -442,8 +453,8 @@ rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
 find %{buildroot}%{_datadir}/gtk-doc -exec touch --reference configure.ac '{}' \+
 
 %if 0%{?__debug_package}
-mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{version}
-cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{version}
+mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
+cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
 %endif
 
 
@@ -492,10 +503,10 @@ fi
 %{_datadir}/bash-completion/completions/nmcli
 %dir %{_sysconfdir}/%{name}/
 %dir %{_sysconfdir}/%{name}/dispatcher.d
-%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
+%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
