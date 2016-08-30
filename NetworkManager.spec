@@ -12,7 +12,7 @@
 
 %global rpm_version 1.4.0
 %global real_version 1.4.0
-%global release_version 1
+%global release_version 2
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -99,6 +99,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-wifi-set-mac-addr-workaround-rh1371478
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -340,7 +341,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -648,6 +649,9 @@ fi
 %endif
 
 %changelog
+* Tue Aug 30 2016 Thomas Haller <thaller@redhat.com> - 1:1.4.0-2
+- wifi: fix activation failure due to error changing MAC address (rh#1371478, bgo#770456)
+
 * Wed Aug 24 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.0-1
 - Update to NetworkManager 1.4.0 release
 
