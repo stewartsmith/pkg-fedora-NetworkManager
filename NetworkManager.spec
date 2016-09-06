@@ -12,7 +12,7 @@
 
 %global rpm_version 1.4.0
 %global real_version 1.4.0
-%global release_version 2
+%global release_version 3
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -100,6 +100,7 @@ Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
 Patch1: 0001-wifi-set-mac-addr-workaround-rh1371478
+Patch2: 0002-dhcp-helper-sync-notify-rh1372854.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -342,6 +343,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 %patch1 -p1
+%patch2 -p1
 
 %build
 %if %{with regen_docs}
@@ -649,6 +651,9 @@ fi
 %endif
 
 %changelog
+* Thu Sep  8 2016 Thoams Haller <thaller@redhat.com> - 1:1.4.0-3
+- dhcp: fix race to miss DHCP lease event (rh#1372854)
+
 * Tue Aug 30 2016 Thomas Haller <thaller@redhat.com> - 1:1.4.0-2
 - wifi: fix activation failure due to error changing MAC address (rh#1371478, bgo#770456)
 
