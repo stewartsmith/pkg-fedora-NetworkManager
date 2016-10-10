@@ -1,18 +1,18 @@
 %global dbus_version 1.1
 %global dbus_glib_version 0.100
 
-%global glib2_version 2.32.0
 %global wireless_tools_version 1:28-0pre9
 %global libnl3_version 3.2.7
 
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
+%global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.4.0
-%global real_version 1.4.0
-%global release_version 4
+%global rpm_version 1.4.2
+%global real_version 1.4.2
+%global release_version 1
 %global epoch_version 1
 
 %global obsoletes_nmver 1:0.9.9.95-1
@@ -99,9 +99,6 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-wifi-set-mac-addr-workaround-rh1371478
-Patch2: 0002-dhcp-helper-sync-notify-rh1372854.patch
-Patch3: 0003-wifi-set-mac-addr-workaround-rh1371478-v2.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -133,7 +130,7 @@ BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 %if 0%{?fedora}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 %endif
-BuildRequires: glib2-devel >= %{glib2_version}
+BuildRequires: glib2-devel >= 2.32.0
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
@@ -343,9 +340,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
+#%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -653,6 +648,9 @@ fi
 %endif
 
 %changelog
+* Mon Oct 10 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.2-1
+- Update to 1.4.2
+
 * Tue Sep 13 2016 Thomas Haller <thaller@redhat.com> - 1:1.4.0-4
 - wifi: fix another activation failure when changing MAC address (rh#1371478, bgo#770456, bgo#770504)
 
