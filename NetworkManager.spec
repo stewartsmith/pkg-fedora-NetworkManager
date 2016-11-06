@@ -650,7 +650,7 @@ fi
 %endif
 
 %changelog
-* Sun Oct  6 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.2-1
+* Sun Nov  6 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.2-1
 - Update to a development snapshot
 
 * Mon Oct 10 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.2-1
