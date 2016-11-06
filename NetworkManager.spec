@@ -10,12 +10,12 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.4.2
-%global real_version 1.4.2
+%global rpm_version 1.5.2
+%global real_version 1.5.2
 %global release_version 1
 %global epoch_version 1
 
-%global obsoletes_nmver 1:0.9.9.95-1
+%global obsoletes_device_plugins 1:0.9.9.95-1
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global nmlibdir %{_prefix}/lib/%{name}
@@ -93,7 +93,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.4/%{name}-%{version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.5/%{name}-%{version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -106,17 +106,11 @@ Requires(postun): systemd
 
 Requires: dbus >= %{dbus_version}
 Requires: glib2 >= %{glib2_version}
-Requires: iproute
-Requires: dhclient >= 12:4.1.0
 Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
-Requires: dnsmasq
-Requires: udev
-Requires: iptables
-Requires: readline
 Obsoletes: dhcdbd
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager-wimax < 1.2
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -184,7 +178,7 @@ services.
 Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager-atm
 
 %description adsl
@@ -199,7 +193,7 @@ Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
 Requires: bluez >= 4.101-5
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager-bt
 
 %description bluetooth
@@ -213,7 +207,7 @@ Summary: Team device plugin for NetworkManager
 Group: System Environment/Base
 BuildRequires: teamd-devel
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 # Team was split from main NM binary between 0.9.10 and 1.0
 Obsoletes: NetworkManager < 1.0.0
 
@@ -228,7 +222,7 @@ Summary: Wifi plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: wpa_supplicant >= 1:1.1
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 
 %description wifi
 This package contains NetworkManager support for Wifi and OLPC devices.
@@ -241,7 +235,7 @@ Summary: Mobile broadband device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ModemManager
-Obsoletes: NetworkManager < %{obsoletes_nmver}
+Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 
 %description wwan
 This package contains NetworkManager support for mobile broadband (WWAN)
@@ -358,6 +352,7 @@ intltoolize --automake --copy --force
 	--with-more-logging \
 	--with-more-asserts=10000 \
 %endif
+	--enable-ld-gc \
 	--enable-ppp=yes \
 	--with-libaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
@@ -406,6 +401,11 @@ intltoolize --automake --copy --force
 	--with-config-logging-backend-default=journal \
 	--enable-json-validation
 
+make %{?_smp_mflags}
+
+# regenerate src/NetworkManager.ver with the actually used
+# symbols and relink.
+./tools/create-exports-NetworkManager.sh update
 make %{?_smp_mflags}
 
 %install
@@ -460,7 +460,7 @@ cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_
 
 %check
 %if %{with test}
-make check
+make %{?_smp_mflags} check
 %endif
 
 
@@ -611,8 +611,8 @@ fi
 %{_datadir}/gtk-doc/html/libnm-util/*
 %dir %{_datadir}/gtk-doc/html/NetworkManager
 %{_datadir}/gtk-doc/html/NetworkManager/*
-%{_datadir}/vala/vapi/*.deps
-%{_datadir}/vala/vapi/*.vapi
+%{_datadir}/vala/vapi/libnm-*.deps
+%{_datadir}/vala/vapi/libnm-*.vapi
 
 %files libnm
 %{_libdir}/libnm.so.*
@@ -627,6 +627,8 @@ fi
 %{_datadir}/gir-1.0/NM-1.0.gir
 %dir %{_datadir}/gtk-doc/html/libnm
 %{_datadir}/gtk-doc/html/libnm/*
+%{_datadir}/vala/vapi/libnm.deps
+%{_datadir}/vala/vapi/libnm.vapi
 
 %files config-connectivity-fedora
 %dir %{nmlibdir}
@@ -648,6 +650,9 @@ fi
 %endif
 
 %changelog
+* Sun Oct  6 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.2-1
+- Update to a development snapshot
+
 * Mon Oct 10 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.4.2-1
 - Update to 1.4.2
 
