@@ -12,7 +12,7 @@
 
 %global rpm_version 1.5.2
 %global real_version 1.5.2
-%global release_version 1
+%global release_version 2
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -393,10 +393,9 @@ intltoolize --automake --copy --force
 	--with-tests=yes \
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
-	--with-system-libndp=yes \
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--with-dist-version=%{version}-%{release} \
-	--with-setting-plugins-default='ifcfg-rh,ibft' \
+	--with-config-plugins-default='ifcfg-rh,ibft' \
 	--with-config-dns-rc-manager-default=symlink \
 	--with-config-logging-backend-default=journal \
 	--enable-json-validation
@@ -489,7 +488,7 @@ fi
 %postun	libnm -p /sbin/ldconfig
 
 
-%files -f %{name}.lang
+%files
 %{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
 %{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
 %{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
@@ -571,7 +570,7 @@ fi
 %{_libdir}/%{name}/libnm-wwan.so
 %endif
 
-%files glib
+%files glib -f %{name}.lang
 %{_libdir}/libnm-glib.so.*
 %{_libdir}/libnm-glib-vpn.so.*
 %{_libdir}/libnm-util.so.*
@@ -609,7 +608,7 @@ fi
 %{_datadir}/vala/vapi/libnm-*.deps
 %{_datadir}/vala/vapi/libnm-*.vapi
 
-%files libnm
+%files libnm -f %{name}.lang
 %{_libdir}/libnm.so.*
 %{_libdir}/girepository-1.0/NM-1.0.typelib
 
@@ -645,6 +644,10 @@ fi
 %endif
 
 %changelog
+* Wed Nov 23 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-2
+- fix enabling ifcfg-rh plugin by default (rh#1397938)
+- move translation files from core to libnm/glib subpackages
+
 * Sun Nov  6 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.2-1
 - Update to a development snapshot
 
