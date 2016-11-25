@@ -1,0 +1,79 @@
+From a8e7e7c4b35ef4c9c6718f6147190c6c95dd8f61 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 25 Nov 2016 14:11:00 +0100
+Subject: [PATCH 1/2] config: fix config merging default value for main.plugins
+
+Since commit fb2ca0ce3d we would no longer pre-set the main.plugins
+value in NMConfig's keyfile to recognize unset default settings.
+
+This breaks with
+
+  [main]
+  plugins+=foo
+
+which now results in
+
+  main.plgin=foo
+
+while previously it would have extended the compile time default.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1397938
+
+Fixes: fb2ca0ce3dadae8154d2ad8b611538323be137ac
+(cherry picked from commit 03f35e96de2a33fc1756d4404a42b51464d3f953)
+---
+ src/nm-config.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/nm-config.c b/src/nm-config.c
+index 3f49202..b6a9d2d 100644
+--- a/src/nm-config.c
++++ b/src/nm-config.c
+@@ -764,6 +764,13 @@ read_config (GKeyFile *keyfile, gboolean is_base_config, const char *dirname, co
+ 					if (is_string_list) {
+ 						old_val = g_key_file_get_string_list (keyfile, group, base_key, NULL, NULL);
+ 						new_val = g_key_file_get_string_list (kf, group, key, NULL, NULL);
++						if (!old_val && !g_key_file_has_key (keyfile, group, base_key, NULL)) {
++							/* we must fill the unspecified value with the compile-time default. */
++							if (nm_streq (group, NM_CONFIG_KEYFILE_GROUP_MAIN) && nm_streq (base_key, "plugins")) {
++								g_key_file_set_value (keyfile, group, base_key, NM_CONFIG_PLUGINS_DEFAULT);
++								old_val = g_key_file_get_string_list (keyfile, group, base_key, NULL, NULL);
++							}
++						}
+ 					} else {
+ 						gs_free char *old_sval = nm_config_keyfile_get_value (keyfile, group, base_key, NM_CONFIG_GET_VALUE_TYPE_SPEC);
+ 						gs_free char *new_sval = nm_config_keyfile_get_value (kf, group, key, NM_CONFIG_GET_VALUE_TYPE_SPEC);
+-- 
+2.7.4
+
+
+From 0da3e28a9d316caaf09d573a399c51ec4e4d10ad Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 10 Nov 2016 16:27:43 +0100
+Subject: [PATCH 2/2] build: fix symbol version file for
+ _nm_device_factory_no_default_settings
+
+Strange, didn't get this failure before...
+
+    ./src/NetworkManager: symbol lookup error: ./src/devices/wifi/.libs/libnm-device-plugin-wifi.so: undefined symbol: _nm_device_factory_no_default_settings
+
+(cherry picked from commit dc8ed66a19aa55dc80f7ef274744f9ccca9e3506)
+---
+ src/NetworkManager.ver | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/NetworkManager.ver b/src/NetworkManager.ver
+index 9e613d4..3d86904 100644
+--- a/src/NetworkManager.ver
++++ b/src/NetworkManager.ver
+@@ -6,6 +6,7 @@ global:
+ 	_nm_dbus_proxy_call_finish;
+ 	_nm_dbus_signal_connect_data;
+ 	_nm_device_factory_no_default_links;
++	_nm_device_factory_no_default_settings;
+ 	_nm_exported_object_clear_and_unexport;
+ 	_nm_log_impl;
+ 	_nm_logging_enabled_state;
+-- 
+2.7.4
+

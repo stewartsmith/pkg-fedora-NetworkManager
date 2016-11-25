@@ -12,7 +12,7 @@
 
 %global rpm_version 1.5.2
 %global real_version 1.5.2
-%global release_version 2
+%global release_version 3
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -99,6 +99,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-config-fix-plugin-default-rh1397938.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -335,6 +336,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -644,6 +646,10 @@ fi
 %endif
 
 %changelog
+* Fri Nov 25 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-3
+- fix enabling ifcfg-rh plugin by default for +=/-= operations (rh#1397938)
+- fix missing symbol _nm_device_factory_no_default_settings
+
 * Wed Nov 23 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-2
 - fix enabling ifcfg-rh plugin by default (rh#1397938)
 - move translation files from core to libnm/glib subpackages
