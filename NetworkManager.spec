@@ -12,7 +12,7 @@
 
 %global rpm_version 1.5.2
 %global real_version 1.5.2
-%global release_version 3
+%global release_version 4
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -646,6 +646,9 @@ fi
 %endif
 
 %changelog
+* Tue Dec  6 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-4
+- Rebuild package for vala generation error (rh#1398738)
+
 * Fri Nov 25 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-3
 - fix enabling ifcfg-rh plugin by default for +=/-= operations (rh#1397938)
 - fix missing symbol _nm_device_factory_no_default_settings
