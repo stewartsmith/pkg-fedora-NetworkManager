@@ -16,6 +16,7 @@
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
+%global obsoletes_ppp_plugin     1:1.5.2
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global nmlibdir %{_prefix}/lib/%{name}
@@ -68,6 +69,7 @@
 %endif
 
 %bcond_without wifi
+%bcond_without ppp
 
 %bcond_without nmtui
 %bcond_without regen_docs
@@ -99,7 +101,6 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-config-fix-plugin-default-rh1397938.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -109,7 +110,6 @@ Requires: dbus >= %{dbus_version}
 Requires: glib2 >= %{glib2_version}
 Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: ppp = %{ppp_version}
 Obsoletes: dhcdbd
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager-wimax < 1.2
@@ -130,8 +130,6 @@ BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: libnl3-devel >= %{libnl3_version}
-BuildRequires: perl(XML::Parser)
-BuildRequires: perl(YAML)
 BuildRequires: automake autoconf intltool libtool
 BuildRequires: ppp-devel >= 2.4.5
 BuildRequires: nss-devel >= 3.11.7
@@ -243,6 +241,19 @@ This package contains NetworkManager support for mobile broadband (WWAN)
 devices.
 %endif
 
+%if %{with ppp}
+%package ppp
+Summary: PPP plugin for NetworkManager
+Group: System Environment/Base
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: ppp = %{ppp_version}
+Provides: NetworkManager = %{epoch}:%{version}-%{release}
+Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
+
+%description ppp
+This package contains NetworkManager support for PPP.
+%endif
+
 
 %package glib
 Summary: Libraries for adding NetworkManager support to applications (old API).
@@ -300,6 +311,7 @@ is the new NetworkManager API. See also NetworkManager-glib-devel.
 %package config-connectivity-fedora
 Summary: NetworkManager config file for connectivity checking via Fedora servers
 Group: System Environment/Base
+BuildArch: noarch
 
 %description config-connectivity-fedora
 This adds a NetworkManager configuration file to enable connectivity checking
@@ -308,6 +320,7 @@ via Fedora infrastructure.
 %package config-server
 Summary: NetworkManager config file for "server-like" defaults
 Group: System Environment/Base
+BuildArch: noarch
 
 %description config-server
 This adds a NetworkManager configuration file to make it behave more
@@ -336,7 +349,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
-%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -355,7 +367,6 @@ intltoolize --automake --copy --force
 	--with-more-asserts=10000 \
 %endif
 	--enable-ld-gc \
-	--enable-ppp=yes \
 	--with-libaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
 	--with-modem-manager-1=yes \
@@ -395,7 +406,10 @@ intltoolize --automake --copy --force
 	--with-tests=yes \
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
+%if %{with ppp}
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
+	--enable-ppp=yes \
+%endif
 	--with-dist-version=%{version}-%{release} \
 	--with-config-plugins-default='ifcfg-rh,ibft' \
 	--with-config-dns-rc-manager-default=symlink \
@@ -531,13 +545,13 @@ fi
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
-%{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{_datadir}/polkit-1/actions/*.policy
 %{_prefix}/lib/udev/rules.d/*.rules
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
 %{systemd_dir}/NetworkManager-dispatcher.service
+%dir %{systemd_dir}/network-online.target.wants
 %{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
@@ -570,6 +584,12 @@ fi
 %files wwan
 %{_libdir}/%{name}/libnm-device-plugin-wwan.so
 %{_libdir}/%{name}/libnm-wwan.so
+%endif
+
+%if %{with ppp}
+%files ppp
+%{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
+%{_libdir}/%{name}/libnm-ppp-plugin.so
 %endif
 
 %files glib -f %{name}.lang
@@ -625,6 +645,7 @@ fi
 %{_datadir}/gtk-doc/html/libnm/*
 %{_datadir}/vala/vapi/libnm.deps
 %{_datadir}/vala/vapi/libnm.vapi
+%{_datadir}/dbus-1/interfaces/*.xml
 
 %files config-connectivity-fedora
 %dir %{nmlibdir}
