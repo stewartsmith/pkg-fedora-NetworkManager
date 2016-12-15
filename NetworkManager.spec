@@ -10,13 +10,13 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.5.2
-%global real_version 1.5.2
+%global rpm_version 1.5.3
+%global real_version 1.5.3
 %global release_version 4
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
-%global obsoletes_ppp_plugin     1:1.5.2
+%global obsoletes_ppp_plugin     1:1.5.2-4
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global nmlibdir %{_prefix}/lib/%{name}
@@ -112,6 +112,7 @@ Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: dhcdbd
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
+Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
 Obsoletes: NetworkManager-wimax < 1.2
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
@@ -667,6 +668,9 @@ fi
 %endif
 
 %changelog
+* Thu Dec 15 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.3-1
+- Update to a newer development snapshot
+
 * Tue Dec  6 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-4
 - Rebuild package for vala generation error (rh#1398738)
 
