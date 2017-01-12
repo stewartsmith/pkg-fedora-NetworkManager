@@ -90,7 +90,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -668,6 +668,9 @@ fi
 %endif
 
 %changelog
+* Thu Jan 12 2017 Igor Gnatenko <ignatenko@redhat.com> - 1:1.5.3-4.1
+- Rebuild for readline 7.x
+
 * Thu Dec 15 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.3-1
 - Update to a newer development snapshot
 
