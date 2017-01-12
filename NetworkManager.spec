@@ -12,7 +12,7 @@
 
 %global rpm_version 1.5.3
 %global real_version 1.5.3
-%global release_version 4
+%global release_version 5
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -90,7 +90,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -100,7 +100,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-bitwise-clash.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -349,7 +349,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -668,10 +668,13 @@ fi
 %endif
 
 %changelog
+* Thu Jan 12 2017 Thomas Haller <thaller@redhat.com> - 1:1.5.3-5
+- fix build failure due to clash of bitwise defines
+
 * Thu Jan 12 2017 Igor Gnatenko <ignatenko@redhat.com> - 1:1.5.3-4.1
 - Rebuild for readline 7.x
 
-* Thu Dec 15 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.3-1
+* Thu Dec 15 2016 Lubomir Rintel <lkundrak@v3.sk> - 1:1.5.3-4
 - Update to a newer development snapshot
 
 * Tue Dec  6 2016 Thomas Haller <thaller@redhat.com> - 1:1.5.2-4
