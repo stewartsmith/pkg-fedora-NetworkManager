@@ -101,6 +101,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-device-add-an-initializer.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -352,6 +353,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}

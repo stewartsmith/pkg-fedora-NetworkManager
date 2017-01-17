@@ -1,0 +1,40 @@
+From 7ce805d49d25fec60b50b4c53459df835512d279 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Tue, 17 Jan 2017 16:16:46 +0100
+Subject: [PATCH] device: add an initializer
+
+Basically to silence gcc that is not smart enough to understand how does
+.initialized and .value relate.
+
+  src/devices/nm-device.c: In function '_commit_mtu':
+  src/devices/nm-device.c:6754:15: error: 'ip6_mtu_sysctl.value' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+     if (ip6_mtu && ip6_mtu != _IP6_MTU_SYS ()) {
+                 ^
+---
+ src/devices/nm-device.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index bc532ff..969bf6a 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -6630,7 +6630,7 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
+ 	struct {
+ 		gboolean initialized;
+ 		guint32 value;
+-	} ip6_mtu_sysctl;
++	} ip6_mtu_sysctl = { 0, };
+ 	int ifindex;
+ 	char sbuf[64], sbuf1[64], sbuf2[64];
+ 
+@@ -6729,7 +6729,6 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
+ 	       ip6_mtu == ip6_mtu_orig ? "" : nm_sprintf_buf (sbuf2, " (was %u)", (guint) ip6_mtu_orig),
+ 	       ifindex);
+ 
+-	ip6_mtu_sysctl.initialized = FALSE;
+ #define _IP6_MTU_SYS() \
+ 	({ \
+ 		if (!ip6_mtu_sysctl.initialized) { \
+-- 
+2.9.3
+
