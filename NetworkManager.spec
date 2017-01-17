@@ -10,13 +10,19 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
+<<<<<<< 0727cc1c28b90eb887b997b363941e0c709ed46b
 %global rpm_version 1.5.3
 %global real_version 1.5.3
 %global release_version 5
+=======
+%global rpm_version 1.5.90
+%global real_version 1.5.90
+%global release_version 1
+>>>>>>> Update to a 1.6-rc1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
-%global obsoletes_ppp_plugin     1:1.5.2-4
+%global obsoletes_ppp_plugin     1:1.5.3
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global nmlibdir %{_prefix}/lib/%{name}
@@ -132,7 +138,9 @@ BuildRequires: gettext-devel
 BuildRequires: pkgconfig
 BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: automake autoconf intltool libtool
+%if %{with ppp}
 BuildRequires: ppp-devel >= 2.4.5
+%endif
 BuildRequires: nss-devel >= 3.11.7
 BuildRequires: dhclient
 BuildRequires: readline-devel
@@ -668,6 +676,9 @@ fi
 %endif
 
 %changelog
+* Tue Jan 17 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6-0.1.rc1
+- Update to a 1.6-rc1
+
 * Thu Jan 12 2017 Thomas Haller <thaller@redhat.com> - 1:1.5.3-5
 - fix build failure due to clash of bitwise defines
 
