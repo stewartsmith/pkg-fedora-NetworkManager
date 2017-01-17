@@ -10,15 +10,9 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-<<<<<<< 0727cc1c28b90eb887b997b363941e0c709ed46b
-%global rpm_version 1.5.3
-%global real_version 1.5.3
-%global release_version 5
-=======
-%global rpm_version 1.5.90
+%global rpm_version 1.6
 %global real_version 1.5.90
-%global release_version 1
->>>>>>> Update to a 1.6-rc1
+%global release_version 0.1.rc1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -101,7 +95,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.5/%{name}-%{version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.5/%{name}-%{real_version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
