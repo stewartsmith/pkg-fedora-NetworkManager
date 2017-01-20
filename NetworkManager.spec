@@ -12,7 +12,7 @@
 
 %global rpm_version 1.6
 %global real_version 1.5.90
-%global release_version 0.1.rc1
+%global release_version 0.2.rc1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -102,6 +102,7 @@ Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
 Patch1: 0001-device-add-an-initializer.patch
+Patch2: 0001-update-from-nm-1-6.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -264,6 +265,7 @@ Summary: Libraries for adding NetworkManager support to applications (old API).
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
 Requires: dbus-glib >= %{dbus_glib_version}
+Conflicts: NetworkManager-libnm < %{epoch}:%{version}-%{release}
 
 %description glib
 This package contains the libraries that make it easier to use some
@@ -292,6 +294,7 @@ This is the older NetworkManager API.  See also NetworkManager-libnm-devel.
 %package libnm
 Summary: Libraries for adding NetworkManager support to applications (new API).
 Group: Development/Libraries
+Conflicts: NetworkManager-glib < %{epoch}:%{version}-%{release}
 
 %description libnm
 This package contains the libraries that make it easier to use some
@@ -354,6 +357,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 #%patch1 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 %if %{with regen_docs}
@@ -672,6 +676,10 @@ fi
 %endif
 
 %changelog
+* Fri Jan 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.6-0.2.rc1
+- Update with fixes from upstream nm-1-6 branch
+- build: let libnm and glib package conflict (rh #1406454)
+
 * Tue Jan 17 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6-0.1.rc1
 - Update to a 1.6-rc1
 
