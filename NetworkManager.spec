@@ -10,9 +10,9 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.6
-%global real_version 1.5.90
-%global release_version 0.2.rc1
+%global rpm_version 1.6.0
+%global real_version 1.6.0
+%global release_version 1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -95,7 +95,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.5/%{name}-%{real_version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.6/%{name}-%{real_version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -676,6 +676,9 @@ fi
 %endif
 
 %changelog
+* Wed Jan 25 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6.0-1
+- Update to a 1.6.0 release
+
 * Fri Jan 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.6-0.2.rc1
 - Update with fixes from upstream nm-1-6 branch
 - build: let libnm and glib package conflict (rh #1406454)
