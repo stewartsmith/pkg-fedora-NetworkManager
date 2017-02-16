@@ -10,8 +10,8 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.6.0
-%global real_version 1.6.0
+%global rpm_version 1.6.2
+%global real_version 1.6.2
 %global release_version 1
 %global epoch_version 1
 
@@ -90,7 +90,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -672,6 +672,9 @@ fi
 %endif
 
 %changelog
+* Thu Feb 16 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6.2-1
+- Update to a 1.6.2 release
+
 * Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.6.0-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
