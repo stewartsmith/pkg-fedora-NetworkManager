@@ -10,9 +10,9 @@
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global rpm_version 1.6.2
-%global real_version 1.6.2
-%global release_version 1
+%global rpm_version 1.8.0
+%global real_version 1.7.2
+%global release_version 0.1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -35,42 +35,11 @@
 ###############################################################################
 
 %bcond_without adsl
-
-%global default_with_bluetooth 1
-%global default_with_wwan 1
-
-# ModemManager on Fedora < 20 too old for Bluetooth && wwan
-%if (0%{?fedora} && 0%{?fedora} < 20)
-%global default_with_bluetooth 0
-%global default_with_wwan 0
-%endif
-
-# Bluetooth requires the WWAN plugin
-%if 0%{?default_with_bluetooth}
-%global default_with_wwan 1
-%endif
-
-%if 0%{?default_with_bluetooth}
 %bcond_without bluetooth
-%else
-%bcond_with bluetooth
-%endif
-
-%if 0%{?default_with_wwan}
 %bcond_without wwan
-%else
-%bcond_with wwan
-%endif
-
-%if (0%{?fedora} && 0%{?fedora} <= 19)
-%bcond_with team
-%else
 %bcond_without team
-%endif
-
 %bcond_without wifi
 %bcond_without ppp
-
 %bcond_without nmtui
 %bcond_without regen_docs
 %bcond_with    debug
@@ -78,7 +47,15 @@
 
 ###############################################################################
 
-%if %{with bluetooth} || (%{with wwan} && (0%{?rhel} || (0%{?fedora} && 0%{?fedora} > 19)))
+%if 0%{?fedora}
+%global dbus_version 1.9.18
+%global dbus_sys_dir %{_datadir}/dbus-1/system.d
+%else
+%global dbus_version 1.1
+%global dbus_sys_dir %{_sysconfdir}/dbus-1/system.d
+%endif
+
+%if %{with bluetooth} || %{with wwan}
 %global with_modem_manager_1 1
 %else
 %global with_modem_manager_1 0
@@ -95,7 +72,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.6/%{name}-%{real_version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.7/%{name}-%{real_version}%{snap}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -144,14 +121,17 @@ BuildRequires: gtk-doc
 %endif
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
-BuildRequires: libgudev1-devel >= 143
 BuildRequires: vala-tools
 BuildRequires: iptables
+BuildRequires: libxslt
 %if %{with bluetooth}
 BuildRequires: bluez-libs-devel
 %endif
 BuildRequires: systemd >= 200-3 systemd-devel
-BuildRequires: libsoup-devel
+%if 0%{?fedora}
+BuildRequires: libpsl-devel >= 0.1
+%endif
+BuildRequires: libcurl-devel
 BuildRequires: libndp-devel >= 1.0
 %if 0%{?with_modem_manager_1}
 BuildRequires: ModemManager-glib-devel >= 1.0
@@ -389,6 +369,7 @@ intltoolize --automake --copy --force
 	--enable-wifi=no \
 %endif
 	--enable-vala=yes \
+	--enable-introspection \
 %if %{with regen_docs}
 	--enable-gtk-doc \
 %else
@@ -404,10 +385,16 @@ intltoolize --automake --copy --force
 	--enable-polkit-agent \
 	--enable-modify-system=yes \
 	--enable-concheck \
+%if 0%{?fedora}
+	--enable-libpsl \
+%else
+	--disable-libpsl \
+%endif
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
 	--with-systemdsystemunitdir=%{systemd_dir} \
 	--with-system-ca-path=/etc/pki/tls/cert.pem \
+	--with-dbus-sys-dir=%{dbus_sys_dir} \
 	--with-tests=yes \
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
@@ -429,34 +416,12 @@ make install DESTDIR=%{buildroot}
 
 cp %{SOURCE1} %{buildroot}%{_sysconfdir}/%{name}/
 
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/conf.d
-mkdir -p %{buildroot}%{nmlibdir}/conf.d
-mkdir -p %{buildroot}%{nmlibdir}/VPN
 cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
 cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
 
-# create a VPN directory
-mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/VPN
-
-# create a keyfile plugin system settings directory
-mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/system-connections
-
-# create a dnsmasq.d directory
-mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/dnsmasq.d
-mkdir -p %{buildroot}%{_sysconfdir}/NetworkManager/dnsmasq-shared.d
-
-# create dispatcher directories
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
-mkdir -p %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
 ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
 ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/
-
-mkdir -p %{buildroot}%{_datadir}/gnome-vpn-properties
-
-mkdir -p %{buildroot}%{_localstatedir}/lib/NetworkManager
 
 %find_lang %{name}
 
@@ -510,9 +475,9 @@ fi
 
 
 %files
-%{_sysconfdir}/dbus-1/system.d/org.freedesktop.NetworkManager.conf
-%{_sysconfdir}/dbus-1/system.d/nm-dispatcher.conf
-%{_sysconfdir}/dbus-1/system.d/nm-ifcfg-rh.conf
+%{dbus_sys_dir}/org.freedesktop.NetworkManager.conf
+%{dbus_sys_dir}/nm-dispatcher.conf
+%{dbus_sys_dir}/nm-ifcfg-rh.conf
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
 %{_datadir}/bash-completion/completions/nmcli
@@ -526,7 +491,6 @@ fi
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
-%dir %{_sysconfdir}/%{name}/VPN
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-helper
@@ -605,7 +569,7 @@ fi
 %{_libdir}/girepository-1.0/NMClient-1.0.typelib
 
 %files glib-devel
-%doc ChangeLog docs/api/html/*
+%doc docs/api/html/*
 %dir %{_includedir}/libnm-glib
 %dir %{_includedir}/%{name}
 %{_includedir}/libnm-glib/*.h
@@ -640,7 +604,7 @@ fi
 %{_libdir}/girepository-1.0/NM-1.0.typelib
 
 %files libnm-devel
-%doc ChangeLog docs/api/html/*
+%doc docs/api/html/*
 %dir %{_includedir}/libnm
 %{_includedir}/libnm/*.h
 %{_libdir}/pkgconfig/libnm.pc
@@ -672,6 +636,9 @@ fi
 %endif
 
 %changelog
+* Thu Mar 24 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.1
+- Update to a snapshot of 1.8.x series
+
 * Thu Feb 16 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6.2-1
 - Update to a 1.6.2 release
 
