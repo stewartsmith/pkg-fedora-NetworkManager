@@ -7,12 +7,12 @@
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
-%global snapshot %{nil}
+%global snapshot rc2
 %global git_sha %{nil}
 
 %global rpm_version 1.8.0
-%global real_version 1.7.2
-%global release_version 0.1
+%global real_version 1.7.91
+%global release_version 0.2
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -72,7 +72,7 @@ Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.7/%{name}-%{real_version}%{snap}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/1.7/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
@@ -636,7 +636,10 @@ fi
 %endif
 
 %changelog
-* Thu Mar 24 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.1
+* Thu Apr  6 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.2.rc2
+- Update to second Release Candidate of NetworkManager 1.8
+
+* Fri Mar 24 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.1
 - Update to a snapshot of 1.8.x series
 
 * Thu Feb 16 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.6.2-1
