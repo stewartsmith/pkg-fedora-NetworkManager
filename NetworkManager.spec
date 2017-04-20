@@ -7,11 +7,11 @@
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
-%global snapshot rc2
+%global snapshot rc3
 %global git_sha %{nil}
 
 %global rpm_version 1.8.0
-%global real_version 1.7.91
+%global real_version 1.7.92
 %global release_version 0.2
 %global epoch_version 1
 
@@ -636,6 +636,9 @@ fi
 %endif
 
 %changelog
+* Thu Apr 20 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.2.rc3
+- Update to third Release Candidate of NetworkManager 1.8
+
 * Thu Apr  6 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.2.rc2
 - Update to second Release Candidate of NetworkManager 1.8
 
