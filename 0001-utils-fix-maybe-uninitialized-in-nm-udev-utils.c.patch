@@ -1,0 +1,64 @@
+From bf2a90588410a7d81ff86a6dcf09521316f23ffb Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 10 May 2017 15:31:15 +0200
+Subject: [PATCH 1/1] utils: fix maybe-uninitialized in "nm-udev-utils.c"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+      CC       shared/nm-utils/libnm_core_libnm_core_la-nm-udev-utils.lo
+    In file included from ./shared/nm-utils/nm-glib.h:27:0,
+                     from ./shared/nm-utils/nm-macros-internal.h:29,
+                     from ./shared/nm-default.h:178,
+                     from shared/nm-utils/nm-udev-utils.c:21:
+    shared/nm-utils/nm-udev-utils.c: In function ‘nm_udev_client_enumerate_new’:
+    ./shared/nm-utils/gsystem-local-alloc.h:53:50: error: ‘to_free’ may be used uninitialized in this function [-Werror=maybe-uninitialized]
+     GS_DEFINE_CLEANUP_FUNCTION(void*, gs_local_free, g_free)
+                                                      ^~~~~~
+    shared/nm-utils/nm-udev-utils.c:147:18: note: ‘to_free’ was declared here
+        gs_free char *to_free;
+                      ^~~~~~~
+    In file included from ./shared/nm-utils/nm-glib.h:27:0,
+                     from ./shared/nm-utils/nm-macros-internal.h:29,
+                     from ./shared/nm-default.h:178,
+                     from shared/nm-utils/nm-udev-utils.c:21:
+    shared/nm-utils/nm-udev-utils.c: In function ‘nm_udev_client_new’:
+    ./shared/nm-utils/gsystem-local-alloc.h:53:50: error: ‘to_free’ may be used uninitialized in this function [-Werror=maybe-uninitialized]
+     GS_DEFINE_CLEANUP_FUNCTION(void*, gs_local_free, g_free)
+                                                      ^~~~~~
+    shared/nm-utils/nm-udev-utils.c:243:20: note: ‘to_free’ was declared here
+          gs_free char *to_free;
+                        ^~~~~~~
+
+Fixes: e32839838e5ea74ba490cf912e20939afa0e4f40
+(cherry picked from commit 0893c3756ef898f8fe6e2367d5167a345299dcd4)
+(cherry picked from commit e2902f61a4462e6d197a20bf3d0ab996b64305b1)
+---
+ shared/nm-utils/nm-udev-utils.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/shared/nm-utils/nm-udev-utils.c b/shared/nm-utils/nm-udev-utils.c
+index 5552d59..bf0ad5b 100644
+--- a/shared/nm-utils/nm-udev-utils.c
++++ b/shared/nm-utils/nm-udev-utils.c
+@@ -144,7 +144,7 @@ nm_udev_utils_enumerate (struct udev *uclient,
+ 		for (n = 0; subsystems[n]; n++) {
+ 			const char *subsystem;
+ 			const char *devtype;
+-			gs_free char *to_free;
++			gs_free char *to_free = NULL;
+ 
+ 			_subsystem_split (subsystems[n], &subsystem, &devtype, &to_free);
+ 
+@@ -240,7 +240,7 @@ nm_udev_client_new (const char *const*subsystems,
+ 			/* install subsystem filters to only wake up for certain events */
+ 			for (n = 0; self->subsystems[n]; n++) {
+ 				if (self->monitor) {
+-					gs_free char *to_free;
++					gs_free char *to_free = NULL;
+ 					const char *subsystem;
+ 					const char *devtype;
+ 
+-- 
+2.9.3
+

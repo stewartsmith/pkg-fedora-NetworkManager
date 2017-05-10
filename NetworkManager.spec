@@ -11,8 +11,8 @@
 %global git_sha %{nil}
 
 %global rpm_version 1.8.0
-%global real_version 1.7.92
-%global release_version 0.2
+%global real_version 1.8.0
+%global release_version 1
 %global epoch_version 1
 
 %global obsoletes_device_plugins 1:0.9.9.95-1
@@ -77,7 +77,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-utils-fix-maybe-uninitialized-in-nm-udev-utils.c.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -333,7 +333,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -636,6 +636,9 @@ fi
 %endif
 
 %changelog
+* Wed May 10 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-1
+- Update to 1.8.0 release
+
 * Thu Apr 20 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-0.2.rc3
 - Update to third Release Candidate of NetworkManager 1.8
 
