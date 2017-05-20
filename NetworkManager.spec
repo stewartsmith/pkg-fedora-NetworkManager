@@ -10,7 +10,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.0
 %global real_version 1.8.0
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -76,7 +76,14 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch1: 0001-utils-fix-maybe-uninitialized-in-nm-udev-utils.c.patch
+Patch2: 0002-utils-fix-maybe-uninitialized-in-nm-udev-utils.c.patch
+Patch3: 0003-fix-device-run-state-unknown-rh1440171.patch
+Patch4: 0004-proxy-crash-rh1450459.patch
+Patch5: 0005-device-fix-wait-carrier-rh1450444.patch
+Patch6: 0006-dhcp-don-t-add-route-to-DHCP4-server-rh1448987.patch
+Patch7: 0007-device-update-ext-conf-before-commit-rh1449873.patch
+Patch8: 0008-utf8safe-fixes-rh1443114.patch
+Patch9: 0009-ifcfg-rh-fix-null-next-hop.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -332,7 +339,14 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
 
 %build
 %if %{with regen_docs}
@@ -635,6 +649,17 @@ fi
 %endif
 
 %changelog
+* Sat May 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-2
+- dhcp: don't add route to DHCP4 server (rh #1448987)
+- device: update external configuration before commit (rh #1449873)
+- libnm: fix NUL termination of device's description (rh #1443114)
+- libnm, core: ensure valid UTF-8 in device properties (rh #1443114)
+- core: fix device's UDI property on D-Bus (rh #1443114)
+- ifcfg-rh: omit empty next hop for routes in legacy format (rh #1452648)
+- core: fix persisting managed state of device (rh #1440171)
+- proxy: fix use-after-free (rh #1450459)
+- device: don't wrongly delay startup complete waiting for carrier (rh #1450444)
+
 * Wed May 10 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-1
 - Update to 1.8.0 release
 

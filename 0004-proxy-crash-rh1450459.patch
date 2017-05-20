@@ -1,0 +1,65 @@
+From 4bf6a4dd5b73fcea36fcfa4a97091665b233bc15 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 11 May 2017 12:09:45 +0200
+Subject: [PATCH 1/2] proxy: fix refcount handing for DestroyProxyConfiguration
+ operation
+
+Fixes: e895beb0da38fc87ce93fe7403a6b50e92f0dd82
+(cherry picked from commit df137fdf9a7077c20d8923f068568c22fb479e5a)
+(cherry picked from commit 10373de9072f0318ea1150c85fd7b7ebfa5a9655)
+---
+ src/nm-pacrunner-manager.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/nm-pacrunner-manager.c b/src/nm-pacrunner-manager.c
+index cfc028c..fd3d1f8 100644
+--- a/src/nm-pacrunner-manager.c
++++ b/src/nm-pacrunner-manager.c
+@@ -250,6 +250,7 @@ pacrunner_send_done (GDBusProxy *proxy, GAsyncResult *res, gpointer user_data)
+ 		_LOG2D (config, "sent");
+ 
+ 		if (config->removed) {
++			config_ref (config);
+ 			g_dbus_proxy_call (priv->pacrunner,
+ 			                   "DestroyProxyConfiguration",
+ 			                   g_variant_new ("(o)", config->path),
+-- 
+2.9.3
+
+
+From 617aa8fd2fccbd8a8cb76fbf9bce3e74eac78f8c Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 11 May 2017 12:32:22 +0200
+Subject: [PATCH 2/2] proxy: fix passing cancellable to async D-Bus operations
+
+We must not cancel pacrunner_cancellable when the D-Bus proxy is
+created. Instead, keep it around and use it later for the asynchronous
+D-Bus operations.
+
+This doesn't really matter at the moment, because the pacrunner manager
+is only destroyed when NetworkManager is about to terminated. That is
+the only time when we actually cancel the asynchronous request. Also,
+at that time we no longer iterate the mainloop, so the pending requests
+are never completed anyway.
+
+(cherry picked from commit a08540d967812457af192ebd34497412da5d143e)
+(cherry picked from commit 6cfd9279625366c24808d86e1c3b04a18a036eb6)
+---
+ src/nm-pacrunner-manager.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/nm-pacrunner-manager.c b/src/nm-pacrunner-manager.c
+index fd3d1f8..87e0a36 100644
+--- a/src/nm-pacrunner-manager.c
++++ b/src/nm-pacrunner-manager.c
+@@ -330,7 +330,6 @@ pacrunner_proxy_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+ 	priv = NM_PACRUNNER_MANAGER_GET_PRIVATE (self);
+ 
+ 	priv->pacrunner = proxy;
+-	nm_clear_g_cancellable (&priv->pacrunner_cancellable);
+ 
+ 	g_signal_connect (priv->pacrunner, "notify::g-name-owner",
+ 	                  G_CALLBACK (name_owner_changed_cb), self);
+-- 
+2.9.3
+
