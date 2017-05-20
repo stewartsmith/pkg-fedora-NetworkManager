@@ -1,4 +1,3 @@
-%global dbus_version 1.1
 %global dbus_glib_version 0.100
 
 %global wireless_tools_version 1:28-0pre9
@@ -91,7 +90,6 @@ Requires(postun): systemd
 
 Requires: dbus >= %{dbus_version}
 Requires: glib2 >= %{glib2_version}
-Requires: libnl3 >= %{libnl3_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: dhcdbd
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
@@ -399,9 +397,9 @@ intltoolize --automake --copy --force
 	--enable-modify-system=yes \
 	--enable-concheck \
 %if 0%{?fedora}
-	--enable-libpsl \
+	--with-libpsl \
 %else
-	--disable-libpsl \
+	--without-libpsl \
 %endif
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
