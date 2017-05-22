@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.0
 %global real_version 1.8.0
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -647,6 +647,9 @@ fi
 %endif
 
 %changelog
+* Mon May 22 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-3
+- device: update external configuration before commit (fix bug) (rh #1449873)
+
 * Sat May 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-2
 - dhcp: don't add route to DHCP4 server (rh #1448987)
 - device: update external configuration before commit (rh #1449873)
