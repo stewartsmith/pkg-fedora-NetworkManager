@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.2
 %global real_version 1.8.2
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -235,7 +235,7 @@ Summary: PPP plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: ppp = %{ppp_version}
-Provides: NetworkManager = %{epoch}:%{version}-%{release}
+Requires: NetworkManager = %{epoch}:%{version}-%{release}
 Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
 
 %description ppp
@@ -263,8 +263,8 @@ Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
 Requires: dbus-glib-devel >= %{dbus_glib_version}
-Provides: %{name}-devel = %{epoch}:%{version}-%{release}
-Provides: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-devel = %{epoch}:%{version}-%{release}
+Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: %{name}-devel < %{epoch}:%{version}-%{release}
 
 %description glib-devel
@@ -652,6 +652,10 @@ fi
 %endif
 
 %changelog
+* Thu Jul 20 2017 Stephen Gallagher <sgallagh@redhat.com> - 1:1.8.2-2
+- NetworkManager-wifi and NetworkManager-glib-devel should require
+  NetworkManager, not provide it.
+
 * Mon Jul 17 2017 Beniamino Galvani <bgalvani@redhat.com> - 1:1.8.2-1
 - Update to 1.8.2 release
 - dhcp/dhclient: improve "interface" statement parsing
