@@ -1,0 +1,721 @@
+From 3757404ab4d14fcd6e61b367c37308ef1e3dbc3a Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 25 May 2017 15:03:40 +0200
+Subject: [PATCH 1/5] ifcfg-rh: fix writing NETMASK in write_ip4_setting()
+
+(cherry picked from commit efd462d946ae3382975cd73f60f33185a2cf9542)
+(cherry picked from commit 2bf3d590ceb99c9f7d0c5dfd3e031e69d14fa5b8)
+---
+ src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c b/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
+index 400e9bd..c66af01 100644
+--- a/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
++++ b/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
+@@ -2196,7 +2196,8 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+ 			char buf[INET_ADDRSTRLEN];
+ 
+ 			g_free (tmp);
+-			svSetValueStr (ifcfg, netmask_key, nm_utils_inet4_ntop (prefix, buf));
++			svSetValueStr (ifcfg, netmask_key,
++			               nm_utils_inet4_ntop (nm_utils_ip4_prefix_to_netmask (prefix), buf));
+ 		}
+ 
+ 		svUnsetValue (ifcfg, gw_key);
+-- 
+2.9.4
+
+
+From 37b96ee417fb9bb67a02c162f1dbe05fa4a9eb5f Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 25 May 2017 14:53:03 +0200
+Subject: [PATCH 2/5] ifcfg-rh: add svFindFirstKeyWithPrefix() function
+
+During backporting manually patched to use GList instead of CList.
+
+(cherry picked from commit e9d960740af008acb91074b31a570fba17dc0344)
+(cherry picked from commit 3dfddc18a53601463da49451c05cc62869773e16)
+---
+ src/settings/plugins/ifcfg-rh/shvar.c | 22 ++++++++++++++++++++++
+ src/settings/plugins/ifcfg-rh/shvar.h |  2 ++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/src/settings/plugins/ifcfg-rh/shvar.c b/src/settings/plugins/ifcfg-rh/shvar.c
+index 9fce5aa..47ad5a2 100644
+--- a/src/settings/plugins/ifcfg-rh/shvar.c
++++ b/src/settings/plugins/ifcfg-rh/shvar.c
+@@ -905,6 +905,28 @@ svGetKeys (shvarFile *s)
+ 
+ /*****************************************************************************/
+ 
++const char *
++svFindFirstKeyWithPrefix (shvarFile *s, const char *key_prefix)
++{
++	const GList *current;
++	const shvarLine *l;
++
++	g_return_val_if_fail (s, NULL);
++	g_return_val_if_fail (key_prefix, NULL);
++
++	for (current = s->lineList; current; current = current->next) {
++		l = current->data;
++		if (   l->key
++		    && l->line
++		    && g_str_has_prefix (l->key, key_prefix))
++			return l->key;
++	}
++
++	return NULL;
++}
++
++/*****************************************************************************/
++
+ static const char *
+ _svGetValue (shvarFile *s, const char *key, char **to_free)
+ {
+diff --git a/src/settings/plugins/ifcfg-rh/shvar.h b/src/settings/plugins/ifcfg-rh/shvar.h
+index 9d8c236..a13920a 100644
+--- a/src/settings/plugins/ifcfg-rh/shvar.h
++++ b/src/settings/plugins/ifcfg-rh/shvar.h
+@@ -44,6 +44,8 @@ shvarFile *svCreateFile (const char *name);
+ /* Open the file <name>, return shvarFile on success, NULL on failure */
+ shvarFile *svOpenFile (const char *name, GError **error);
+ 
++const char *svFindFirstKeyWithPrefix (shvarFile *s, const char *key_prefix);
++
+ /* Get the value associated with the key, and leave the current pointer
+  * pointing at the line containing the value.  The char* returned MUST
+  * be freed by the caller.
+-- 
+2.9.4
+
+
+From 9df20fdb815fd37f31fa488325bfc3803bfa5003 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 25 May 2017 14:07:28 +0200
+Subject: [PATCH 3/5] build: sort filenames in Makefile.am alphabetically
+
+(cherry picked from commit 371b761680d660ea61ae33e02916564a0c3acc02)
+(cherry picked from commit 85aa450e947785dc2eab73a5b248345ce9662b5b)
+---
+ Makefile.am | 301 ++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 151 insertions(+), 150 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 909847e..c543a21 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -2003,154 +2003,153 @@ $(src_settings_plugins_ifcfg_rh_tests_test_ifcfg_rh_OBJECTS): $(libnm_core_lib_h
+ endif
+ 
+ EXTRA_DIST += \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-a.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-b.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-wired-802-1X-subj-matches.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_User_1.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bond_Main.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bridge_Component.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Permissions.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Proxy_Basic.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Team_Port.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_VLAN_reorder_hdr.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_Band_A.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_Hidden.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_always.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_default.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_missing.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_never.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wifi_LEAP.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wifi_WEP_104_ASCII.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Auto-Negotiate.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Wake-on-LAN.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Vlan_test-vlan-interface.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-dcb-test.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection_2.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-team-slave-enp31s0f1-142.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-eth-type \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-main \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-mode-numeric \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave-ib \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-component \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-main \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-missing-stp \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-booleans \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-percent \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-uints \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-default-app-priorities \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-pgpct-not-100 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-booleans \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-percent \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-uints \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dns-options \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-fabric \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-vn2vn \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ibft \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-infiniband \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-minimal \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-misc-variables \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-variables-corner-cases-1 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled-unrecognized \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-unrecognized \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-bootproto \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-plus-ip \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-shared-plus-ip \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-send-hostname \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcpv6-hostname-fallback \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp6-only \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-autoip \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway-ignore \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway-ignore \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-obsolete-gateway-n \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-never-default \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-never-default \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no-gatewaydev-yes \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-defroute-no-gatewaydev-yes \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-peap-mschapv2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wired-8021x-peap-mschapv2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-agent \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-always \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1X-subj-matches \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1x-ttls-eapgtc \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-onboot-no \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-noip \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-onboot-no \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-permissions \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-read-proxy-basic \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-sit-ignore \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-invalid \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-empty-config \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-unrecognized \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-variables-corner-cases-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-interface \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-device \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-vlanid \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-physdev \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-trailing-spaces \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a-channel-mismatch \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-bg-channel-mismatch \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-dynamic-wep-leap \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-hidden \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-agent \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-always-ask \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-always \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-default \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-missing \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-never \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-auto \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-quoted \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-quoted \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-bad-hex \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-hex \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-hex \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-bad-hex \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-quoted \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-quoted \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-104-ascii \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-40-ascii \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-adhoc \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-adhoc \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-agent-keys \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-eap-ttls-chap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-eap-ttls-chap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-leap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-agent \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-always-ask \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-no-keys \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-passphrase \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-tls \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-ttls-tls \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted2 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-adhoc \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-adhoc \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-hex \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-hex \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-tls \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-tls \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-ttls-tls \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-ttls-tls \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-hidden \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a-channel-mismatch \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-bg-channel-mismatch \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-always \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-never \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-default \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-missing \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/test_ca_cert.pem \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/test1_key_and_cert.pem \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ibft \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-static-routes-legacy \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-sit-ignore \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes-legacy \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes-legacy \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1X-subj-matches \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1x-ttls-eapgtc \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-peap-mschapv2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-agent \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-always \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-auto-negotiate-on \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-autoip \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ctc-static \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no-gatewaydev-yes \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-plus-ip \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-send-hostname \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp6-only \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcpv6-hostname-fallback \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway-ignore \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-1 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-2 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-3 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-4 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-manual \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route6-test-wired-ipv6-manual \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-8 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-16 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-24 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-passphrase \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-passphrase \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-40-ascii \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-40-ascii \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-104-ascii \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-104-ascii \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-never-default \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-obsolete-gateway-n \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-qeth-static \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ctc-static \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-main \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-component \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-missing-stp \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-interface \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-vlanid \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-device \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-physdev \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-1 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-1 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-no-keys \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-permissions \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-agent-keys \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-dynamic-wep-leap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-dynamic-wep-leap \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-infiniband \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-eth-type \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-main \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave-ib \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-mode-numeric \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-default-app-priorities \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-booleans \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-booleans \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-uints \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-uints \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-percent \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-percent \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-pgpct-not-100 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-fabric \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-vn2vn \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-1 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-invalid \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-1 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-2 \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-empty-config \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-read-proxy-basic \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-trailing-spaces \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dns-options \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-wake-on-lan \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-auto-negotiate-on \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-shared-plus-ip \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-bootproto \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-16 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-24 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-8 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes-legacy \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-unknown-ethtool-opt \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only-1 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-wake-on-lan \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1.expected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-2 \
+@@ -2159,32 +2158,34 @@ EXTRA_DIST += \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-3.expected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4.expected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-a.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-b.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-wired-802-1X-subj-matches.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bond_Main.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bridge_Component.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Permissions.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Proxy_Basic.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Team_Port.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_VLAN_reorder_hdr.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_Band_A.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_Hidden.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_always.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_default.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_missing.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_WiFi_MAC_never.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wifi_LEAP.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wifi_WEP_104_ASCII.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Auto-Negotiate.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Wake-on-LAN.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Vlan_test-vlan-interface.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-dcb-test.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection_2.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-team-slave-enp31s0f1-142.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy.cexpected \
+-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_User_1.cexpected
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-dynamic-wep-leap \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-leap \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-104-ascii \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-40-ascii \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-adhoc \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-eap-ttls-chap \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-passphrase \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-tls \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-ttls-tls \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-adhoc \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-hex \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wired-8021x-peap-mschapv2 \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-defroute-no-gatewaydev-yes \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway-ignore \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-never-default \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-static-routes-legacy \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes-legacy \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/route6-test-wired-ipv6-manual \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/test1_key_and_cert.pem \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/test_ca_cert.pem \
++	$(NULL)
+ 
+ # make target dependencies can't have colons in their names, which ends up
+ # meaning that we can't add the alias files to EXTRA_DIST. They are instead
+-- 
+2.9.4
+
+
+From 20046c93062b14b0329cf151bc5e8a7f3c455531 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 25 May 2017 14:03:42 +0200
+Subject: [PATCH 4/5] ifcfg-rh/tests: add test for reading NETMASK property
+
+(cherry picked from commit ba05819c89d913ad1bc6b86e62c7704d173ef534)
+(cherry picked from commit 7ebc132864776a1c0ce4a33660408a2953e076c8)
+---
+ Makefile.am                                        |  1 +
+ shared/nm-utils/nm-test-utils.h                    |  9 +++++
+ .../ifcfg-rh/tests/network-scripts/ifcfg-netmask-1 | 14 +++++++
+ .../network-scripts/ifcfg-netmask-1.cexpected      | 22 +++++++++++
+ .../plugins/ifcfg-rh/tests/test-ifcfg-rh.c         | 44 ++++++++++++++++++++++
+ 5 files changed, 90 insertions(+)
+ create mode 100644 src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1
+ create mode 100644 src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
+
+diff --git a/Makefile.am b/Makefile.am
+index c543a21..50ef197 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -2025,6 +2025,7 @@ EXTRA_DIST += \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Wake-on-LAN.cexpected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Vlan_test-vlan-interface.cexpected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-dcb-test.cexpected \
++	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1 \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection.cexpected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection_2.cexpected \
+ 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-team-slave-enp31s0f1-142.cexpected \
+diff --git a/shared/nm-utils/nm-test-utils.h b/shared/nm-utils/nm-test-utils.h
+index 0dfdfce..bc52113 100644
+--- a/shared/nm-utils/nm-test-utils.h
++++ b/shared/nm-utils/nm-test-utils.h
+@@ -1183,6 +1183,15 @@ nmtst_file_get_contents (const char *filename)
+ 	return contents;
+ }
+ 
++#define nmtst_file_set_contents(filename, content) \
++	G_STMT_START { \
++		GError *_error = NULL; \
++		gboolean _success; \
++		\
++		_success = g_file_set_contents ((filename), (content), -1, &_error); \
++		nmtst_assert_success (_success, _error); \
++	} G_STMT_END
++
+ /*****************************************************************************/
+ 
+ static inline void
+diff --git a/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1 b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1
+new file mode 100644
+index 0000000..ecb36c3
+--- /dev/null
++++ b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1
+@@ -0,0 +1,14 @@
++DNS1="192.0.2.1"
++IPADDR="102.0.2.2"
++GATEWAY="192.0.2.1"
++NETMASK="255.254.0.0"
++BOOTPROTO="static"
++DEVICE="eth1"
++ONBOOT="yes"
++IPV6INIT="yes"
++
++#bogus
++PREFIX1=25
++NETMASK0=255.255.0.0
++
++#end
+diff --git a/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
+new file mode 100644
+index 0000000..4c2294a
+--- /dev/null
++++ b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
+@@ -0,0 +1,22 @@
++DNS1=192.0.2.1
++IPADDR=102.0.2.2
++GATEWAY=192.0.2.1
++BOOTPROTO="static"
++DEVICE=eth1
++ONBOOT=yes
++IPV6INIT=yes
++
++#bogus
++
++#end
++TYPE=Ethernet
++PROXY_METHOD=none
++BROWSER_ONLY=no
++PREFIX=15
++DEFROUTE=yes
++IPV4_FAILURE_FATAL=no
++IPV6_AUTOCONF=yes
++IPV6_DEFROUTE=yes
++IPV6_FAILURE_FATAL=no
++NAME="System netmask-1"
++UUID=${UUID}
+diff --git a/src/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c b/src/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c
+index babb068..e30d2d7 100644
+--- a/src/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c
++++ b/src/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c
+@@ -399,6 +399,48 @@ _writer_new_connection_fail (NMConnection *connection,
+ 
+ /*****************************************************************************/
+ 
++static void
++test_read_netmask_1 (void)
++{
++	nmtst_auto_unlinkfile char *testfile = NULL;
++	gs_unref_object NMConnection *connection = NULL;
++	gs_unref_object NMConnection *reread = NULL;
++	gs_free char *content = NULL;
++	NMSettingConnection *s_con;
++	NMSettingIPConfig *s_ip4;
++	NMIPAddress *ip4_addr;
++	const char *FILENAME = TEST_IFCFG_DIR "/network-scripts/ifcfg-netmask-1";
++
++	connection = _connection_from_file (FILENAME, NULL, TYPE_ETHERNET, NULL);
++
++	s_con = nm_connection_get_setting_connection (connection);
++	g_assert (s_con);
++	g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, "System netmask-1");
++
++	s_ip4 = nm_connection_get_setting_ip4_config (connection);
++	g_assert (s_ip4);
++	g_assert_cmpuint (nm_setting_ip_config_get_num_dns (s_ip4), ==, 1);
++	ip4_addr = nm_setting_ip_config_get_address (s_ip4, 0);
++	g_assert (ip4_addr);
++	g_assert_cmpstr (nm_ip_address_get_address (ip4_addr), ==, "102.0.2.2");
++	g_assert_cmpint (nm_ip_address_get_prefix (ip4_addr), ==, 15);
++
++	nmtst_assert_connection_verifies_without_normalization (connection);
++
++	content = nmtst_file_get_contents (FILENAME);
++
++	testfile = g_strdup (TEST_SCRATCH_DIR "/network-scripts/ifcfg-netmask-1.copy");
++
++	nmtst_file_set_contents (testfile, content);
++
++	_writer_update_connection (connection,
++	                           TEST_SCRATCH_DIR "/network-scripts/",
++	                           testfile,
++	                           TEST_IFCFG_DIR "/network-scripts/ifcfg-netmask-1.cexpected");
++}
++
++/*****************************************************************************/
++
+ static gboolean
+ verify_cert_or_key (NMSetting8021x *s_compare,
+                     const char *file,
+@@ -9348,6 +9390,8 @@ int main (int argc, char **argv)
+ 	nmtst_add_test_func (TPATH "read-static",           test_read_wired_static, TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-static",           "System test-wired-static",           GINT_TO_POINTER (TRUE));
+ 	nmtst_add_test_func (TPATH "read-static-bootproto", test_read_wired_static, TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-static-bootproto", "System test-wired-static-bootproto", GINT_TO_POINTER (FALSE));
+ 
++	g_test_add_func (TPATH "read-netmask-1", test_read_netmask_1);
++
+ 	g_test_add_func (TPATH "read-dhcp", test_read_wired_dhcp);
+ 	g_test_add_func (TPATH "read-dhcp-plus-ip", test_read_wired_dhcp_plus_ip);
+ 	g_test_add_func (TPATH "read-shared-plus-ip", test_read_wired_shared_plus_ip);
+-- 
+2.9.4
+
+
+From 78895ad4d2fcc5fd3b2f845521ac14b9f6030fd6 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 25 May 2017 15:00:27 +0200
+Subject: [PATCH 5/5] ifcfg-rh: fix preserving NETMASK key in
+ write_ip4_setting()
+
+To support legacy scripts, we want to write out the NETMASK
+key whenever the ifcfg file has a NETMASK key previously.
+Note, that we anyway always write the relevant PREFIX key.
+The NETMASK is redundant, only there to help legacy scripts.
+
+That was broken, because we would svUnsetValue("NETMASK") before
+checking whether the NETMASK key is present.
+
+Also, when saving a connection to ifcfg-rh file that was created
+by other tools, we might mix up the numbering. E.g. we never
+write out IPADDR0. Hence, turn on legacy mode whenever the ifcfg-rh
+file has any key starting with "NETMASK".
+
+(cherry picked from commit 844bf3d1a239f409d12ea437dbe866b66f5f1af4)
+(cherry picked from commit 92a277dc6f08d66cf567b9bf6f1c32c513c7325e)
+---
+ .../plugins/ifcfg-rh/nms-ifcfg-rh-writer.c         | 32 ++++++++++++----------
+ .../network-scripts/ifcfg-netmask-1.cexpected      |  1 +
+ 2 files changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c b/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
+index c66af01..d2b7ff6 100644
+--- a/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
++++ b/src/settings/plugins/ifcfg-rh/nms-ifcfg-rh-writer.c
+@@ -2067,6 +2067,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+ 	int timeout;
+ 	GString *searches;
+ 	const char *method = NULL;
++	gboolean has_netmask;
+ 
+ 	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+ 	if (!s_ip4) {
+@@ -2139,16 +2140,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+ 	else if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED))
+ 		svSetValueStr (ifcfg, "BOOTPROTO", "shared");
+ 
+-	/* Clear out un-numbered IP address fields */
+-	svUnsetValue (ifcfg, "IPADDR");
+-	svUnsetValue (ifcfg, "PREFIX");
+-	svUnsetValue (ifcfg, "NETMASK");
+-	svUnsetValue (ifcfg, "GATEWAY");
+-	/* Clear out zero-indexed IP address fields */
+-	svUnsetValue (ifcfg, "IPADDR0");
+-	svUnsetValue (ifcfg, "PREFIX0");
+-	svUnsetValue (ifcfg, "NETMASK0");
+-	svUnsetValue (ifcfg, "GATEWAY0");
++	has_netmask = !!svFindFirstKeyWithPrefix (ifcfg, "NETMASK");
+ 
+ 	/* Write out IPADDR<n>, PREFIX<n>, GATEWAY<n> for current IP addresses
+ 	 * without labels. Unset obsolete NETMASK<n>.
+@@ -2192,20 +2184,30 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+ 		g_free (tmp);
+ 
+ 		/* If the legacy "NETMASK" is present, keep it. */
+-		if (svGetValue (ifcfg, netmask_key, &tmp)) {
++		if (has_netmask) {
+ 			char buf[INET_ADDRSTRLEN];
+ 
+-			g_free (tmp);
+ 			svSetValueStr (ifcfg, netmask_key,
+ 			               nm_utils_inet4_ntop (nm_utils_ip4_prefix_to_netmask (prefix), buf));
+-		}
++		} else
++			svUnsetValue (ifcfg, netmask_key);
+ 
+ 		svUnsetValue (ifcfg, gw_key);
+ 		n++;
+ 	}
+ 
+-	/* Clear remaining IPADDR<n..255>, etc */
+-	for (i = n; i < 256; i++) {
++	svUnsetValue (ifcfg, "IPADDR0");
++	svUnsetValue (ifcfg, "PREFIX0");
++	svUnsetValue (ifcfg, "NETMASK0");
++	svUnsetValue (ifcfg, "GATEWAY0");
++	if (n == 0) {
++		svUnsetValue (ifcfg, "IPADDR");
++		svUnsetValue (ifcfg, "PREFIX");
++		svUnsetValue (ifcfg, "NETMASK");
++		i = 1;
++	} else
++		i = n;
++	for (; i < 256; i++) {
+ 		nm_sprintf_buf (addr_key, "IPADDR%u", i);
+ 		nm_sprintf_buf (prefix_key, "PREFIX%u", i);
+ 		nm_sprintf_buf (netmask_key, "NETMASK%u", i);
+diff --git a/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
+index 4c2294a..5dfdce4 100644
+--- a/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
++++ b/src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected
+@@ -1,6 +1,7 @@
+ DNS1=192.0.2.1
+ IPADDR=102.0.2.2
+ GATEWAY=192.0.2.1
++NETMASK=255.254.0.0
+ BOOTPROTO="static"
+ DEVICE=eth1
+ ONBOOT=yes
+-- 
+2.9.4
+

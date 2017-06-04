@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.0
 %global real_version 1.8.0
-%global release_version 3
+%global release_version 4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -90,6 +90,12 @@ Patch6: 0006-dhcp-don-t-add-route-to-DHCP4-server-rh1448987.patch
 Patch7: 0007-device-update-ext-conf-before-commit-rh1449873.patch
 Patch8: 0008-utf8safe-fixes-rh1443114.patch
 Patch9: 0009-ifcfg-rh-fix-null-next-hop.patch
+Patch10: 0010-bluetooth-nap-crash-rh1454385.patch
+Patch11: 0011-device-release-removed-slaves-rh1448907.patch
+Patch13: 0013-nmcli-fix-8021x-password-raw-rh1456362.patch
+Patch15: 0015-ifcfg-rh-legacy-netmask-rh1445414.patch
+Patch16: 0016-tui-connect-crash-rh1456826.patch
+Patch17: 0017-libnm-fix-reject-vlan-id-4095-rh1456911.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -352,6 +358,12 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch13 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
 
 %build
 %if %{with regen_docs}
@@ -664,6 +676,14 @@ fi
 %endif
 
 %changelog
+* Sun Jun  4 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-4
+- ifcfg-rh: fix writing legacy NETMASK value (rh #1445414)
+- tui: fix crash during connect (rh #1456826)
+- libnm: fix libnm rejecting VLAN ID 4095 (rh #1456911)
+- bluetooth: fix crash on connecting to a NAP (rh #1454385)
+- device: release removed devices from master on cleanup (rh #1448907)
+- nmcli: fix crash when setting 802-1x.password-raw (rh #1456362)
+
 * Mon May 22 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-3
 - device: update external configuration before commit (fix bug) (rh #1449873)
 
@@ -1237,10 +1257,10 @@ fi
 - NM no longer uses /var/run/NetworkManager, so don't claim to own it.
   (rh #656638)
 
-* Wed May  2 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-3.git20120502%{?dist}
+* Wed May  2 2012 Jiří Klimeš <jklimes@redhat.com> - 0.9.4-3.git20120502
 - Update to git snapshot
 
-* Wed Mar 28 2012 Colin Walters <walters@verbum.org> - 1:0.9.4-2.git20120328_2%{?dist}
+* Wed Mar 28 2012 Colin Walters <walters@verbum.org> - 1:0.9.4-2.git20120328_2
 - Add _isa for internal requires; otherwise depsolving may pull in an
   arbitrary architecture.
 

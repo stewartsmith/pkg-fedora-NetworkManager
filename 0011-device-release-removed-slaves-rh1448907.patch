@@ -1,0 +1,73 @@
+From 74b53f2f40e8656be5599a1fcd23f737dcf18bc3 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Mon, 8 May 2017 21:22:00 +0200
+Subject: [PATCH] device: release removed devices from master on cleanup
+
+On cleanup, unconditionally release a device from its master if the
+link is missing or it doesn't have a master, otherwise the master
+would later try to release the slave, hitting the following assertion:
+
+ "nm_platform_link_release: assertion 'slave > 0' failed"
+  #0  g_logv
+  #1  g_log
+  #2  g_return_if_fail_warning
+  #3  nm_platform_link_release
+  #4  release_slave
+  #5  nm_device_master_release_one_slave
+  #6  slave_state_changed
+  #7  ffi_call_unix64
+  #8  ffi_call
+  #9  g_cclosure_marshal_generic
+  #10 g_closure_invoke
+  #11 signal_emit_unlocked_R
+  #12 g_signal_emit_valist
+  #14 _set_state_full
+  #15 nm_device_state_changed
+  #16 nm_device_unrealize
+  #17 _platform_link_cb_idle
+  #18 g_main_context_dispatch
+  #19 g_main_context_dispatch
+  #20 g_main_context_iterate
+  #21 g_main_loop_run
+  #22 main
+
+Fixes: 9e8218f99a2d5a7020703e0fbac1c7c0983930db
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1448907
+(cherry picked from commit 3355a2823be11b15d8f3cf1d2f080ab83739f17d)
+(cherry picked from commit 6110b11235c932b94b0114ff90e8438ffedd2bfb)
+---
+ src/devices/nm-device.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 37b2588..f5eb71d 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -12096,11 +12096,6 @@ nm_device_cleanup (NMDevice *self, NMDeviceStateReason reason, CleanupType clean
+ 		/* master: release slaves */
+ 		nm_device_master_release_slaves (self);
+ 
+-		/* slave: mark no longer enslaved */
+-		if (   priv->master
+-		    && nm_platform_link_get_master (nm_device_get_platform (self), priv->ifindex) <= 0)
+-			nm_device_master_release_one_slave (priv->master, self, FALSE, NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED);
+-
+ 		/* Take out any entries in the routing table and any IP address the device had. */
+ 		ifindex = nm_device_get_ip_ifindex (self);
+ 		if (ifindex > 0) {
+@@ -12109,6 +12104,11 @@ nm_device_cleanup (NMDevice *self, NMDeviceStateReason reason, CleanupType clean
+ 		}
+ 	}
+ 
++	/* slave: mark no longer enslaved */
++	if (   priv->master
++	    && nm_platform_link_get_master (nm_device_get_platform (self), priv->ifindex) <= 0)
++		nm_device_master_release_one_slave (priv->master, self, FALSE, NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED);
++
+ 	if (priv->lldp_listener)
+ 		nm_lldp_listener_stop (priv->lldp_listener);
+ 
+-- 
+2.9.3
+
