@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.0
 %global real_version 1.8.0
-%global release_version 4
+%global release_version 5
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -96,6 +96,15 @@ Patch13: 0013-nmcli-fix-8021x-password-raw-rh1456362.patch
 Patch15: 0015-ifcfg-rh-legacy-netmask-rh1445414.patch
 Patch16: 0016-tui-connect-crash-rh1456826.patch
 Patch17: 0017-libnm-fix-reject-vlan-id-4095-rh1456911.patch
+Patch18: 0018-periodic-connectivity-check-rh1458399.patch
+Patch19: 0019-bond-improve-option-matching-rh1457909.patch
+Patch20: 0020-device-fix-external-assume-rh1457242.patch
+Patch21: 0021-bond-crash-mode-rh1459580.patch
+Patch22: 0022-connectivity-ip-iface-check-rh1459932.patch
+Patch23: 0023-persist-nm-owned-in-device-state-rh1376199.patch
+Patch24: 0024-fix-delayed-assume-master-rh1452062.patch
+Patch25: 0025-improve-logging-assume-rh1452062.patch
+Patch26: 0026-apply-route-penality-only-with-defroute-rh1459604.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -364,6 +373,15 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch15 -p1
 %patch16 -p1
 %patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+%patch22 -p1
+%patch23 -p1
+%patch24 -p1
+%patch25 -p1
+%patch26 -p1
 
 %build
 %if %{with regen_docs}
@@ -676,6 +694,16 @@ fi
 %endif
 
 %changelog
+* Fri Jun  9 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-5
+- bond: fix crash comparing mode while generating bond connection (rh #1459580)
+- connectivity: fix route penalty if WWAN and BT device using ip-ifindex (rh #1459932)
+- device: persist nm-owned in run state (rh #1376199)
+- device: fix assuming master device on restart (rh #1452062)
+- device: apply route metric penality only when the default route exists (rh #1459604)
+- connectivity: fix periodic connectivity check (rh #1458399)
+- bond: improve option matching on daemon restart (rh #1457909)
+- device: fix touching device after external activation (rh #1457242)
+
 * Sun Jun  4 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.0-4
 - ifcfg-rh: fix writing legacy NETMASK value (rh #1445414)
 - tui: fix crash during connect (rh #1456826)

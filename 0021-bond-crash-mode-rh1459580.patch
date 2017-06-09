@@ -1,0 +1,36 @@
+From 27b3757b5beecc9fcd98ce3a1acbc50431c204cb Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Wed, 7 Jun 2017 18:51:41 +0200
+Subject: [PATCH 1/1] bond: check for NULL bond mode value in
+ update_connection()
+
+Don't crash if the bond mode can't be read from sysfs - for example
+when the interface disappears. The generated connection will be bogus,
+but at that point it doesn't matter because the in-memory connection
+will be destroyed.
+
+Fixes: 056a973a4fdb68abe8bc7bfc5f31250345d71f21
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1459580
+(cherry picked from commit 5600a27c2aa1a69c1c72422937bfd4401217046e)
+(cherry picked from commit a3a792dd2253085933ca03e3cb61c37a44a6d304)
+---
+ src/devices/nm-device-bond.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device-bond.c b/src/devices/nm-device-bond.c
+index c8748fe..451a4f0 100644
+--- a/src/devices/nm-device-bond.c
++++ b/src/devices/nm-device-bond.c
+@@ -177,7 +177,7 @@ update_connection (NMDevice *device, NMConnection *connection)
+ 				*p = '\0';
+ 		}
+ 
+-		if (nm_streq (*options, NM_SETTING_BOND_OPTION_MODE))
++		if (value && nm_streq (*options, NM_SETTING_BOND_OPTION_MODE))
+ 			mode = _nm_setting_bond_mode_from_string (value);
+ 
+ 		if (!_nm_setting_bond_option_supported (*options, mode))
+-- 
+2.9.4
+

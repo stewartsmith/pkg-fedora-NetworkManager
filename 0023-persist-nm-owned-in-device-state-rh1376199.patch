@@ -1,0 +1,510 @@
+From ffa247f2a2a70e9484ddb46c8dc66a1a7183ef55 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Wed, 31 May 2017 16:42:05 +0200
+Subject: [PATCH 1/5] device: rename priv->is_nm_owned to priv->nm_owned
+
+Only a matter of taste, but nm_device_get_is_nm_owned() sounds
+strange.
+
+(cherry picked from commit 8cce037bf8078b7dbb8e3abc45f84ae6f7e9299c)
+(cherry picked from commit 84273a35162aaef50c9b9a4f1b565326989d370a)
+---
+ src/devices/nm-device.c | 14 +++++++-------
+ src/devices/nm-device.h |  2 +-
+ src/nm-manager.c        |  2 +-
+ 3 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index f5eb71d..746117d 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -262,7 +262,7 @@ typedef struct _NMDevicePrivate {
+ 
+ 	NMUtilsStableType current_stable_id_type:3;
+ 
+-	bool          is_nm_owned:1; /* whether the device is a device owned and created by NM */
++	bool          nm_owned:1; /* whether the device is a device owned and created by NM */
+ 
+ 	GHashTable *  available_connections;
+ 	char *        hw_addr;
+@@ -2069,7 +2069,7 @@ nm_device_master_release_one_slave (NMDevice *self, NMDevice *slave, gboolean co
+ static gboolean
+ can_unmanaged_external_down (NMDevice *self)
+ {
+-	return    !NM_DEVICE_GET_PRIVATE (self)->is_nm_owned
++	return    !NM_DEVICE_GET_PRIVATE (self)->nm_owned
+ 	       && nm_device_is_software (self);
+ }
+ 
+@@ -2809,9 +2809,9 @@ nm_device_create_and_realize (NMDevice *self,
+ 	const NMPlatformLink *plink = NULL;
+ 
+ 	/* Must be set before device is realized */
+-	priv->is_nm_owned = !nm_platform_link_get_by_ifname (nm_device_get_platform (self), priv->iface);
++	priv->nm_owned = !nm_platform_link_get_by_ifname (nm_device_get_platform (self), priv->iface);
+ 
+-	_LOGD (LOGD_DEVICE, "create (is %snm-owned)", priv->is_nm_owned ? "" : "not ");
++	_LOGD (LOGD_DEVICE, "create (is %snm-owned)", priv->nm_owned ? "" : "not ");
+ 
+ 	/* Create any resources the device needs */
+ 	if (NM_DEVICE_GET_CLASS (self)->create_and_realize) {
+@@ -8682,9 +8682,9 @@ _update_ip4_address (NMDevice *self)
+ }
+ 
+ gboolean
+-nm_device_get_is_nm_owned (NMDevice *self)
++nm_device_is_nm_owned (NMDevice *self)
+ {
+-	return NM_DEVICE_GET_PRIVATE (self)->is_nm_owned;
++	return NM_DEVICE_GET_PRIVATE (self)->nm_owned;
+ }
+ 
+ /*
+@@ -8745,7 +8745,7 @@ delete_on_deactivate_check_and_schedule (NMDevice *self, int ifindex)
+ 
+ 	if (ifindex <= 0)
+ 		return;
+-	if (!priv->is_nm_owned)
++	if (!priv->nm_owned)
+ 		return;
+ 	if (priv->queued_act_request)
+ 		return;
+diff --git a/src/devices/nm-device.h b/src/devices/nm-device.h
+index 5e6abb4..27f5018 100644
+--- a/src/devices/nm-device.h
++++ b/src/devices/nm-device.h
+@@ -605,7 +605,7 @@ void nm_device_set_unmanaged_by_user_settings (NMDevice *self);
+ void nm_device_set_unmanaged_by_user_udev (NMDevice *self);
+ void nm_device_set_unmanaged_by_quitting (NMDevice *device);
+ 
+-gboolean nm_device_get_is_nm_owned (NMDevice *device);
++gboolean nm_device_is_nm_owned (NMDevice *device);
+ 
+ gboolean nm_device_has_capability (NMDevice *self, NMDeviceCapabilities caps);
+ 
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index 283ceda..56852f6 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -1858,7 +1858,7 @@ recheck_assume_connection (NMManager *self,
+ 	g_return_val_if_fail (NM_IS_MANAGER (self), FALSE);
+ 	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+ 
+-	if (nm_device_get_is_nm_owned (device))
++	if (nm_device_is_nm_owned (device))
+ 		return FALSE;
+ 
+ 	if (!nm_device_get_managed (device, FALSE))
+-- 
+2.9.4
+
+
+From 1ee731fc9890001fe5f6ac4884c9f5b8bf047024 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Tue, 30 May 2017 13:36:56 +0200
+Subject: [PATCH 2/5] config: allow persisting the device nm-owned state
+
+(cherry picked from commit 3fbbbb62f0b18a1efdc25ee0c01625ae8da65826)
+(cherry picked from commit a42f3b92b7ef922c491c07a8ab0f24b1cf12b223)
+---
+ src/nm-config.c  | 28 +++++++++++++++++++++++++---
+ src/nm-config.h  |  7 ++++++-
+ src/nm-manager.c |  3 ++-
+ 3 files changed, 33 insertions(+), 5 deletions(-)
+
+diff --git a/src/nm-config.c b/src/nm-config.c
+index 54ccf9a..91c21de 100644
+--- a/src/nm-config.c
++++ b/src/nm-config.c
+@@ -1872,6 +1872,7 @@ _nm_config_state_set (NMConfig *self,
+ #define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED             "managed"
+ #define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_PERM_HW_ADDR_FAKE   "perm-hw-addr-fake"
+ #define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID     "connection-uuid"
++#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_NM_OWNED            "nm-owned"
+ 
+ NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_device_state_managed_type_to_str, NMConfigDeviceStateManagedType,
+ 	NM_UTILS_LOOKUP_DEFAULT_NM_ASSERT ("unknown"),
+@@ -1889,6 +1890,7 @@ _config_device_state_data_new (int ifindex, GKeyFile *kf)
+ 	gs_free char *perm_hw_addr_fake = NULL;
+ 	gsize connection_uuid_len;
+ 	gsize perm_hw_addr_fake_len;
++	gint nm_owned = -1;
+ 	char *p;
+ 
+ 	nm_assert (ifindex > 0);
+@@ -1924,6 +1926,11 @@ _config_device_state_data_new (int ifindex, GKeyFile *kf)
+ 			g_free (perm_hw_addr_fake);
+ 			perm_hw_addr_fake = normalized;
+ 		}
++
++		nm_owned = nm_config_keyfile_get_boolean (kf,
++		                                          DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
++		                                          DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_NM_OWNED,
++		                                          -1);
+ 	}
+ 
+ 	connection_uuid_len = connection_uuid ? strlen (connection_uuid) + 1 : 0;
+@@ -1937,6 +1944,7 @@ _config_device_state_data_new (int ifindex, GKeyFile *kf)
+ 	device_state->managed = managed_type;
+ 	device_state->connection_uuid = NULL;
+ 	device_state->perm_hw_addr_fake = NULL;
++	device_state->nm_owned = nm_owned;
+ 
+ 	p = (char *) (&device_state[1]);
+ 	if (connection_uuid) {
+@@ -1966,6 +1974,7 @@ nm_config_device_state_load (int ifindex)
+ 	NMConfigDeviceStateData *device_state;
+ 	char path[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR) + 60];
+ 	gs_unref_keyfile GKeyFile *kf = NULL;
++	const char *nm_owned_str;
+ 
+ 	g_return_val_if_fail (ifindex > 0, NULL);
+ 
+@@ -1976,13 +1985,18 @@ nm_config_device_state_load (int ifindex)
+ 		g_clear_pointer (&kf, g_key_file_unref);
+ 
+ 	device_state = _config_device_state_data_new (ifindex, kf);
++	nm_owned_str = device_state->nm_owned == TRUE ?
++	               ", nm-owned=1" :
++	               (device_state->nm_owned == FALSE ? ", nm-owned=0" : "");
++
+ 
+-	_LOGT ("device-state: %s #%d (%s); managed=%s%s%s%s%s%s%s",
++	_LOGT ("device-state: %s #%d (%s); managed=%s%s%s%s%s%s%s%s",
+ 	       kf ? "read" : "miss",
+ 	       ifindex, path,
+ 	       _device_state_managed_type_to_str (device_state->managed),
+ 	       NM_PRINT_FMT_QUOTED (device_state->connection_uuid, ", connection-uuid=", device_state->connection_uuid, "", ""),
+-	       NM_PRINT_FMT_QUOTED (device_state->perm_hw_addr_fake, ", perm-hw-addr-fake=", device_state->perm_hw_addr_fake, "", ""));
++	       NM_PRINT_FMT_QUOTED (device_state->perm_hw_addr_fake, ", perm-hw-addr-fake=", device_state->perm_hw_addr_fake, "", ""),
++	       nm_owned_str);
+ 
+ 	return device_state;
+ }
+@@ -1991,7 +2005,8 @@ gboolean
+ nm_config_device_state_write (int ifindex,
+                               NMConfigDeviceStateManagedType managed,
+                               const char *perm_hw_addr_fake,
+-                              const char *connection_uuid)
++                              const char *connection_uuid,
++                              gint nm_owned)
+ {
+ 	char path[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR) + 60];
+ 	GError *local = NULL;
+@@ -2026,6 +2041,13 @@ nm_config_device_state_write (int ifindex,
+ 		                       DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID,
+ 		                       connection_uuid);
+ 	}
++	if (nm_owned >= 0) {
++		g_key_file_set_boolean (kf,
++		                        DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
++		                        DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_NM_OWNED,
++		                        nm_owned);
++	}
++
+ 
+ 	if (!g_key_file_save_to_file (kf, path, &local)) {
+ 		_LOGW ("device-state: write #%d (%s) failed: %s", ifindex, path, local->message);
+diff --git a/src/nm-config.h b/src/nm-config.h
+index ae695fc..c5ff7c6 100644
+--- a/src/nm-config.h
++++ b/src/nm-config.h
+@@ -205,13 +205,18 @@ struct _NMConfigDeviceStateData {
+ 	const char *connection_uuid;
+ 
+ 	const char *perm_hw_addr_fake;
++
++	/* whether the device was nm-owned (0/1) or -1 for
++	 * non-software devices. */
++	gint nm_owned;
+ };
+ 
+ NMConfigDeviceStateData *nm_config_device_state_load (int ifindex);
+ gboolean nm_config_device_state_write (int ifindex,
+                                        NMConfigDeviceStateManagedType managed,
+                                        const char *perm_hw_addr_fake,
+-                                       const char *connection_uuid);
++                                       const char *connection_uuid,
++                                       gint nm_owned);
+ void nm_config_device_state_prune_unseen (GHashTable *seen_ifindexes);
+ 
+ /*****************************************************************************/
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index 56852f6..dc52115 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -5048,7 +5048,8 @@ nm_manager_write_device_state (NMManager *self)
+ 		if (nm_config_device_state_write (ifindex,
+ 		                                  managed_type,
+ 		                                  perm_hw_addr_fake,
+-		                                  uuid))
++		                                  uuid,
++		                                  -1))
+ 			g_hash_table_add (seen_ifindexes, GINT_TO_POINTER (ifindex));
+ 	}
+ 
+-- 
+2.9.4
+
+
+From cf3d67882676ccba5089fd523ccf6337f66e6c3f Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Wed, 31 May 2017 16:58:21 +0200
+Subject: [PATCH 3/5] manager: restore the previous persistent nm-owned state
+ of devices
+
+After a daemon restart, any software device is considered !nm-owned,
+even if it was created by NM. Therefore, a device stays around even if
+the connection which created it gets deactivated or deleted.
+
+Fix this by remembering the previous nm-owned state in the device
+state file.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1376199
+(cherry picked from commit cf9ba271e664ffd93f6ba6294ebc5f7e341a9a78)
+(cherry picked from commit 333ed6ee2a30b0d40a2ac0d59e3fd2e9aaf3bf00)
+---
+ src/devices/nm-device.c | 13 +++++++++++++
+ src/nm-manager.c        |  5 ++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 746117d..fe6e955 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3011,6 +3011,19 @@ realize_start_setup (NMDevice *self,
+ 
+ 	_add_capabilities (self, capabilities);
+ 
++	/* Update nm-owned flag according to state file */
++	if (   !priv->nm_owned
++	    && priv->ifindex > 0
++	    && nm_device_is_software (self)) {
++		gs_free NMConfigDeviceStateData *dev_state = NULL;
++
++		dev_state = nm_config_device_state_load (priv->ifindex);
++		if (dev_state && dev_state->nm_owned == TRUE) {
++			priv->nm_owned = TRUE;
++			_LOGD (LOGD_DEVICE, "set nm-owned from state file");
++		}
++	}
++
+ 	if (!priv->udi) {
+ 		/* Use a placeholder UDI until we get a real one */
+ 		priv->udi = g_strdup_printf ("/virtual/device/placeholder/%d", id++);
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index dc52115..97752c4 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -5006,6 +5006,7 @@ nm_manager_write_device_state (NMManager *self)
+ 	const GSList *devices;
+ 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+ 	gs_unref_hashtable GHashTable *seen_ifindexes = NULL;
++	gint nm_owned;
+ 
+ 	seen_ifindexes = g_hash_table_new (NULL, NULL);
+ 
+@@ -5045,11 +5046,13 @@ nm_manager_write_device_state (NMManager *self)
+ 		if (perm_hw_addr_fake && !perm_hw_addr_is_fake)
+ 			perm_hw_addr_fake = NULL;
+ 
++		nm_owned = nm_device_is_software (device) ? nm_device_is_nm_owned (device) : -1;
++
+ 		if (nm_config_device_state_write (ifindex,
+ 		                                  managed_type,
+ 		                                  perm_hw_addr_fake,
+ 		                                  uuid,
+-		                                  -1))
++		                                  nm_owned))
+ 			g_hash_table_add (seen_ifindexes, GINT_TO_POINTER (ifindex));
+ 	}
+ 
+-- 
+2.9.4
+
+
+From 02b5487b3d3827b3ba6fcda7234f3f7a1976b2d4 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 7 Jun 2017 22:11:50 +0200
+Subject: [PATCH 4/5] device: only set nm-owned from statefile during initial
+ setup
+
+The state file should only be read initially when NM starts, that is:
+during NMManager's platform_query_devices().
+
+At all later points, for example when a software device gets destroyed
+and re-realized, the state file is clearly no longer relevant.
+
+Hence, pass the set-nm-owned flag from NMManager to realize_start_setup().
+
+This is very much the same as with the NM_UNMANAGED_FLAG_USER_EXPLICT flag,
+which we also read from the state-file.
+
+(cherry picked from commit d83848be9dfd0edb5f318b81854b371133d84f6e)
+(cherry picked from commit 8e25de8ab360fc973d7222685f107b81dd872dc1)
+---
+ src/devices/nm-device.c | 22 +++++++++++-----------
+ src/devices/nm-device.h |  1 +
+ src/nm-manager.c        |  3 +++
+ 3 files changed, 15 insertions(+), 11 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index fe6e955..1aea8cb 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -527,6 +527,7 @@ static gboolean dhcp6_start (NMDevice *self, gboolean wait_for_ll);
+ static void nm_device_start_ip_check (NMDevice *self);
+ static void realize_start_setup (NMDevice *self,
+                                  const NMPlatformLink *plink,
++                                 gboolean set_nm_owned,
+                                  NMUnmanFlagOp unmanaged_user_explicit);
+ static void _commit_mtu (NMDevice *self, const NMIP4Config *config);
+ static void dhcp_schedule_restart (NMDevice *self, int family, const char *reason);
+@@ -2740,6 +2741,7 @@ link_type_compatible (NMDevice *self,
+  * nm_device_realize_start():
+  * @self: the #NMDevice
+  * @plink: an existing platform link or %NULL
++ * @set_nm_owned: for software device, if TRUE set nm-owned.
+  * @unmanaged_user_explicit: the user-explicit unmanaged flag to apply
+  *   on the device initially.
+  * @out_compatible: %TRUE on return if @self is compatible with @plink
+@@ -2757,6 +2759,7 @@ link_type_compatible (NMDevice *self,
+ gboolean
+ nm_device_realize_start (NMDevice *self,
+                          const NMPlatformLink *plink,
++                         gboolean set_nm_owned,
+                          NMUnmanFlagOp unmanaged_user_explicit,
+                          gboolean *out_compatible,
+                          GError **error)
+@@ -2781,7 +2784,7 @@ nm_device_realize_start (NMDevice *self,
+ 		plink_copy = *plink;
+ 		plink = &plink_copy;
+ 	}
+-	realize_start_setup (self, plink, unmanaged_user_explicit);
++	realize_start_setup (self, plink, set_nm_owned, unmanaged_user_explicit);
+ 
+ 	return TRUE;
+ }
+@@ -2821,7 +2824,7 @@ nm_device_create_and_realize (NMDevice *self,
+ 		plink = &plink_copy;
+ 	}
+ 
+-	realize_start_setup (self, plink, NM_UNMAN_FLAG_OP_FORGET);
++	realize_start_setup (self, plink, FALSE, NM_UNMAN_FLAG_OP_FORGET);
+ 	nm_device_realize_finish (self, plink);
+ 
+ 	if (nm_device_get_managed (self, FALSE)) {
+@@ -2917,6 +2920,8 @@ realize_start_notify (NMDevice *self,
+  * realize_start_setup():
+  * @self: the #NMDevice
+  * @plink: the #NMPlatformLink if backed by a kernel netdevice
++ * @set_nm_owned: if TRUE and device is a software-device, set nm-owned.
++ *    TRUE.
+  * @unmanaged_user_explicit: the user-explict unmanaged flag to set.
+  *
+  * Update the device from backing resource properties (like hardware
+@@ -2928,6 +2933,7 @@ realize_start_notify (NMDevice *self,
+ static void
+ realize_start_setup (NMDevice *self,
+                      const NMPlatformLink *plink,
++                     gboolean set_nm_owned,
+                      NMUnmanFlagOp unmanaged_user_explicit)
+ {
+ 	NMDevicePrivate *priv;
+@@ -3011,17 +3017,11 @@ realize_start_setup (NMDevice *self,
+ 
+ 	_add_capabilities (self, capabilities);
+ 
+-	/* Update nm-owned flag according to state file */
+ 	if (   !priv->nm_owned
+-	    && priv->ifindex > 0
++	    && set_nm_owned
+ 	    && nm_device_is_software (self)) {
+-		gs_free NMConfigDeviceStateData *dev_state = NULL;
+-
+-		dev_state = nm_config_device_state_load (priv->ifindex);
+-		if (dev_state && dev_state->nm_owned == TRUE) {
+-			priv->nm_owned = TRUE;
+-			_LOGD (LOGD_DEVICE, "set nm-owned from state file");
+-		}
++		priv->nm_owned = TRUE;
++		_LOGD (LOGD_DEVICE, "set nm-owned from state file");
+ 	}
+ 
+ 	if (!priv->udi) {
+diff --git a/src/devices/nm-device.h b/src/devices/nm-device.h
+index 27f5018..74cc230 100644
+--- a/src/devices/nm-device.h
++++ b/src/devices/nm-device.h
+@@ -611,6 +611,7 @@ gboolean nm_device_has_capability (NMDevice *self, NMDeviceCapabilities caps);
+ 
+ gboolean nm_device_realize_start      (NMDevice *device,
+                                        const NMPlatformLink *plink,
++                                       gboolean set_nm_owned,
+                                        NMUnmanFlagOp unmanaged_user_explicit,
+                                        gboolean *out_compatible,
+                                        GError **error);
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index 97752c4..b603b09 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -2215,6 +2215,7 @@ factory_device_added_cb (NMDeviceFactory *factory,
+ 
+ 	if (nm_device_realize_start (device,
+ 	                             NULL,
++	                             FALSE,
+ 	                             NM_UNMAN_FLAG_OP_FORGET,
+ 	                             NULL,
+ 	                             &error)) {
+@@ -2293,6 +2294,7 @@ platform_link_added (NMManager *self,
+ 			return;
+ 		} else if (nm_device_realize_start (candidate,
+ 		                                    plink,
++		                                    FALSE,
+ 		                                    NM_UNMAN_FLAG_OP_FORGET,
+ 		                                    &compatible,
+ 		                                    &error)) {
+@@ -2364,6 +2366,7 @@ platform_link_added (NMManager *self,
+ 
+ 		if (nm_device_realize_start (device,
+ 		                             plink,
++		                             dev_state ? (dev_state->nm_owned == 1) : FALSE,
+ 		                             unmanaged_user_explicit,
+ 		                             NULL,
+ 		                             &error)) {
+-- 
+2.9.4
+
+
+From ba9657314afa3a0eab63281db83fbf38ba3fac2c Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 7 Jun 2017 22:22:14 +0200
+Subject: [PATCH 5/5] core: allow assuming connections on "nm-owned" software
+ devices
+
+Especially now we load the nm-owned flag from run-state. We very much want to
+assume connections on such devices.
+
+(cherry picked from commit 6a7b51f79bf93889665f9f6eb1ebbd4920535e24)
+(cherry picked from commit 122be86c58b39b661b1cf466d5616d6f0006744e)
+---
+ src/nm-manager.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index b603b09..1daf633 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -1858,9 +1858,6 @@ recheck_assume_connection (NMManager *self,
+ 	g_return_val_if_fail (NM_IS_MANAGER (self), FALSE);
+ 	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+ 
+-	if (nm_device_is_nm_owned (device))
+-		return FALSE;
+-
+ 	if (!nm_device_get_managed (device, FALSE))
+ 		return FALSE;
+ 
+-- 
+2.9.4
+
