@@ -1,0 +1,63 @@
+From 8850e02a3d3b6442c7b0f5e658892e167a74f81d Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 15:18:20 +0200
+Subject: [PATCH 1/2] cli: fix output of iface in overview output
+
+Fixes: f14845cc200e21ed3aafadc2f9456cb0e2791f56
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1460219
+(cherry picked from commit 126b0874f19fa3647c0343d73dfdb48d6154bc08)
+(cherry picked from commit be4e1000e8c88753e9ca0fee38c15712e5c1dd16)
+---
+ clients/cli/general.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/clients/cli/general.c b/clients/cli/general.c
+index 12e76ef..4406c84 100644
+--- a/clients/cli/general.c
++++ b/clients/cli/general.c
+@@ -1139,7 +1139,7 @@ device_overview (NmCli *nmc, NMDevice *device)
+ 	if (   nm_device_get_ip_iface (device)
+ 	    && g_strcmp0 (nm_device_get_ip_iface (device), nm_device_get_iface (device))
+ 	    && g_strcmp0 (nm_device_get_ip_iface (device), ""))
+-		g_string_append_printf (outbuf, "%s %s,", _("iface"), nm_device_get_ip_iface (device));
++		g_string_append_printf (outbuf, "%s %s, ", _("iface"), nm_device_get_ip_iface (device));
+ 
+ 	if (nm_device_get_physical_port_id (device))
+ 		g_string_append_printf (outbuf, "%s %s, ", _("port"), nm_device_get_physical_port_id (device));
+-- 
+2.9.3
+
+From d37fefb8b9ee7c6beacf8ea49acbcad83453553d Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 15:23:44 +0200
+Subject: [PATCH 2/2] cli: minor refactoring of if-condition in device_overview
+
+Note that nm_device_get_ip_iface() never returns an emptry string "".
+
+(cherry picked from commit ee5fdcbfb50ec19b82715440e1c45f3c8e6ee5ea)
+(cherry picked from commit c9c0a138294819d1c987d420918fa10d18e9a353)
+---
+ clients/cli/general.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/clients/cli/general.c b/clients/cli/general.c
+index 4406c84..68fab6e 100644
+--- a/clients/cli/general.c
++++ b/clients/cli/general.c
+@@ -1136,9 +1136,9 @@ device_overview (NmCli *nmc, NMDevice *device)
+ 	else
+ 		g_string_append_printf (outbuf, "%s, ", _("hw"));
+ 
+-	if (   nm_device_get_ip_iface (device)
+-	    && g_strcmp0 (nm_device_get_ip_iface (device), nm_device_get_iface (device))
+-	    && g_strcmp0 (nm_device_get_ip_iface (device), ""))
++	if (!NM_IN_STRSET (nm_device_get_ip_iface (device),
++	                   NULL,
++	                   nm_device_get_iface (device)))
+ 		g_string_append_printf (outbuf, "%s %s, ", _("iface"), nm_device_get_ip_iface (device));
+ 
+ 	if (nm_device_get_physical_port_id (device))
+-- 
+2.9.3
+

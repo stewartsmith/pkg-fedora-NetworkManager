@@ -1,0 +1,526 @@
+From 6f9227609de574d1e69154d30025429a78aea4a9 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 7 Jun 2017 16:09:18 +0200
+Subject: [PATCH 1/8] ppp: cast int argument for variadic
+ g_signal_emit(NM_PPP_MANAGER_STATE_CHANGE) call
+
+(cherry picked from commit 7b5251b35c23a625959aac9a1ff617a955b3daa3)
+(cherry picked from commit 2aa4239cba745c67c6b4fa165c5c366d51c961a9)
+---
+ src/ppp/nm-ppp-manager.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index c7836a8..37d7a46 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -365,7 +365,7 @@ impl_ppp_manager_set_state (NMPPPManager *manager,
+                             GDBusMethodInvocation *context,
+                             guint32 state)
+ {
+-	g_signal_emit (manager, signals[STATE_CHANGED], 0, state);
++	g_signal_emit (manager, signals[STATE_CHANGED], 0, (guint) state);
+ 
+ 	g_dbus_method_invocation_return_value (context, NULL);
+ }
+@@ -692,7 +692,7 @@ ppp_watch_cb (GPid pid, gint status, gpointer user_data)
+ 	_LOGD ("pppd pid %d cleaned up", priv->pid);
+ 	priv->pid = 0;
+ 	priv->ppp_watch_id = 0;
+-	g_signal_emit (manager, signals[STATE_CHANGED], 0, NM_PPP_STATUS_DEAD);
++	g_signal_emit (manager, signals[STATE_CHANGED], 0, (guint) NM_PPP_STATUS_DEAD);
+ }
+ 
+ static gboolean
+@@ -704,7 +704,7 @@ pppd_timed_out (gpointer data)
+ 	_ppp_cleanup (manager);
+ 	_ppp_kill (manager);
+ 
+-	g_signal_emit (manager, signals[STATE_CHANGED], 0, NM_PPP_STATUS_DEAD);
++	g_signal_emit (manager, signals[STATE_CHANGED], 0, (guint) NM_PPP_STATUS_DEAD);
+ 
+ 	return FALSE;
+ }
+-- 
+2.9.3
+
+From 7d485d2b0eec62a4b8345e261c958b9e15423220 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 7 Jun 2017 16:28:18 +0200
+Subject: [PATCH 2/8] ppp: unexport NMPPPManager instance on dispose()
+
+Let's explicitly unexports on dispose(). Probably that already
+happened, because NMExportedObject asserts that it is unexported
+during !quitting.
+
+During quitting, we probably don't tear down the manager.
+
+Anyway, we should always unexport.
+
+(cherry picked from commit f07dca941dc327e11c4252688020d5fd0b9b3567)
+(cherry picked from commit 5e656b5872e6399d6536e3fb043ca9c63e298774)
+---
+ src/ppp/nm-ppp-manager.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index 37d7a46..fd0b991 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -1234,8 +1234,12 @@ static void
+ dispose (GObject *object)
+ {
+ 	NMPPPManager *self = (NMPPPManager *) object;
++	NMExportedObject *exported = NM_EXPORTED_OBJECT (self);
+ 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
+ 
++	if (nm_exported_object_is_exported (exported))
++		nm_exported_object_unexport (exported);
++
+ 	_ppp_cleanup (self);
+ 	_ppp_kill (self);
+ 
+-- 
+2.9.3
+
+From ca9bd14f512a060df129da9d490591886ce22ef7 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 13:57:47 +0200
+Subject: [PATCH 3/8] ppp: inline and drop trivial function
+ remove_timeout_handler()
+
+(cherry picked from commit 0f16649ba27942e12c550449cc1669355118890f)
+(cherry picked from commit 620adbcc7b2eb630299b9c0595b48e4823ccecde)
+---
+ src/ppp/nm-ppp-manager.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index fd0b991..efaf73a 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -179,14 +179,6 @@ monitor_stats (NMPPPManager *manager)
+ /*****************************************************************************/
+ 
+ static void
+-remove_timeout_handler (NMPPPManager *manager)
+-{
+-	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
+-
+-	nm_clear_g_source (&priv->ppp_timeout_handler);
+-}
+-
+-static void
+ cancel_get_secrets (NMPPPManager *self)
+ {
+ 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
+@@ -415,7 +407,7 @@ impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
+ 
+ 	_LOGI ("(IPv4 Config Get) reply received.");
+ 
+-	remove_timeout_handler (manager);
++	nm_clear_g_source (&priv->ppp_timeout_handler);
+ 
+ 	config = nm_ip4_config_new (nm_platform_link_get_ifindex (NM_PLATFORM_GET, priv->ip_iface));
+ 
+@@ -511,7 +503,7 @@ impl_ppp_manager_set_ip6_config (NMPPPManager *manager,
+ 
+ 	_LOGI ("(IPv6 Config Get) reply received.");
+ 
+-	remove_timeout_handler (manager);
++	nm_clear_g_source (&priv->ppp_timeout_handler);
+ 
+ 	config = nm_ip6_config_new (nm_platform_link_get_ifindex (NM_PLATFORM_GET, priv->ip_iface));
+ 
+-- 
+2.9.3
+
+From 848af80037e21e9cc6bf9459f39f10ad314217eb Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 14:00:14 +0200
+Subject: [PATCH 4/8] ppp/trivial: fix whitespace
+
+(cherry picked from commit 5c5fbe0a9f90c53215c70cc7a76ea011560172b8)
+(cherry picked from commit 105ef99cbf7f503f05826430df0f8acf1d1f3af9)
+---
+ src/ppp/nm-ppp-manager.c | 76 ++++++++++++++++++++++++------------------------
+ 1 file changed, 38 insertions(+), 38 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index efaf73a..558082f 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -595,64 +595,64 @@ ppp_exit_code (guint pppd_exit_status, GPid pid)
+ 	const char *msg;
+ 
+ 	switch (pppd_exit_status) {
+-	case  1: 
+-		msg = "Fatal pppd error"; 
++	case  1:
++		msg = "Fatal pppd error";
+ 		break;
+-	case  2: 
+-		msg = "pppd options error"; 
++	case  2:
++		msg = "pppd options error";
+ 		break;
+-	case  3: 
+-		msg = "No root priv error"; 
++	case  3:
++		msg = "No root priv error";
+ 		break;
+-	case  4: 
+-		msg = "No ppp module error"; 
++	case  4:
++		msg = "No ppp module error";
+ 		break;
+-	case  5: 
+-		msg = "pppd received a signal"; 
++	case  5:
++		msg = "pppd received a signal";
+ 		break;
+-	case  6: 
+-		msg = "Serial port lock failed"; 
++	case  6:
++		msg = "Serial port lock failed";
+ 		break;
+-	case  7: 
+-		msg = "Serial port open failed"; 
++	case  7:
++		msg = "Serial port open failed";
+ 		break;
+-	case  8: 
+-		msg = "Connect script failed"; 
++	case  8:
++		msg = "Connect script failed";
+ 		break;
+-	case  9: 
+-		msg = "Pty program error"; 
++	case  9:
++		msg = "Pty program error";
+ 		break;
+-	case 10: 
+-		msg = "PPP negotiation failed"; 
++	case 10:
++		msg = "PPP negotiation failed";
+ 		break;
+-	case 11: 
+-		msg = "Peer didn't authenticatie itself"; 
++	case 11:
++		msg = "Peer didn't authenticatie itself";
+ 		break;
+-	case 12: 
+-		msg = "Link idle: Idle Seconds reached."; 
++	case 12:
++		msg = "Link idle: Idle Seconds reached.";
+ 		break;
+-	case 13: 
+-		msg = "Connect time limit reached."; 
++	case 13:
++		msg = "Connect time limit reached.";
+ 		break;
+-	case 14: 
++	case 14:
+ 		msg = "Callback negotiated, call should come back.";
+ 		break;
+-	case 15: 
+-		msg = "Lack of LCP echo responses"; 
++	case 15:
++		msg = "Lack of LCP echo responses";
+ 		break;
+-	case 16: 
+-		msg = "A modem hung up the phone"; 
++	case 16:
++		msg = "A modem hung up the phone";
+ 		break;
+-	case 17: 
+-		msg = "Loopback detected"; 
++	case 17:
++		msg = "Loopback detected";
+ 		break;
+-	case 18: 
+-		msg = "The init script failed"; 
++	case 18:
++		msg = "The init script failed";
+ 		break;
+-	case 19: 
++	case 19:
+ 		msg = "Authentication error.\n"
+-			"We failed to authenticate ourselves to the peer.\n"
+-			"Maybe bad account or password?";
++		      "We failed to authenticate ourselves to the peer.\n"
++		      "Maybe bad account or password?";
+ 		break;
+ 	default:
+ 		msg = "Unknown error";
+-- 
+2.9.3
+
+From e2f6a3d1900949971adc1d44eb7c78465c11fb17 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 14:12:58 +0200
+Subject: [PATCH 5/8] ppp: refactor ppp_exit_code() to split out error to
+ string conversion
+
+ppp_exit_code() does too much or too little. Either it should log
+about all reasons why pppd exited, including signals, or it should
+just do the status to string conversion. Split it.
+
+(cherry picked from commit 3f64910b5249a8535deffddd0fd574c25b28dcea)
+(cherry picked from commit ccda61b6fc0eb90a32ea2a4bc360c82406a26331)
+---
+ src/ppp/nm-ppp-manager.c | 89 ++++++++++++++----------------------------------
+ 1 file changed, 26 insertions(+), 63 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index 558082f..d9044a4 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -589,74 +589,37 @@ nm_cmd_line_add_int (NMCmdLine *cmd, int i)
+ 
+ /*****************************************************************************/
+ 
++NM_UTILS_LOOKUP_STR_DEFINE_STATIC (pppd_exit_code_to_str, int,
++	NM_UTILS_LOOKUP_DEFAULT ("Unknown error"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 1, "Fatal pppd error");
++	NM_UTILS_LOOKUP_STR_ITEM ( 2, "pppd options error"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 3, "No root priv error"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 4, "No ppp module error"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 5, "pppd received a signal"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 6, "Serial port lock failed"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 7, "Serial port open failed"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 8, "Connect script failed"),
++	NM_UTILS_LOOKUP_STR_ITEM ( 9, "Pty program error"),
++	NM_UTILS_LOOKUP_STR_ITEM (10, "PPP negotiation failed"),
++	NM_UTILS_LOOKUP_STR_ITEM (11, "Peer didn't authenticatie itself"),
++	NM_UTILS_LOOKUP_STR_ITEM (12, "Link idle: Idle Seconds reached."),
++	NM_UTILS_LOOKUP_STR_ITEM (13, "Connect time limit reached."),
++	NM_UTILS_LOOKUP_STR_ITEM (14, "Callback negotiated, call should come back."),
++	NM_UTILS_LOOKUP_STR_ITEM (15, "Lack of LCP echo responses"),
++	NM_UTILS_LOOKUP_STR_ITEM (16, "A modem hung up the phone"),
++	NM_UTILS_LOOKUP_STR_ITEM (17, "Loopback detected"),
++	NM_UTILS_LOOKUP_STR_ITEM (18, "The init script failed"),
++	NM_UTILS_LOOKUP_STR_ITEM (19, "Authentication error.\n"
++	                              "We failed to authenticate ourselves to the peer.\n"
++	                              "Maybe bad account or password?"),
++);
++
+ static void
+ ppp_exit_code (guint pppd_exit_status, GPid pid)
+ {
+ 	const char *msg;
+ 
+-	switch (pppd_exit_status) {
+-	case  1:
+-		msg = "Fatal pppd error";
+-		break;
+-	case  2:
+-		msg = "pppd options error";
+-		break;
+-	case  3:
+-		msg = "No root priv error";
+-		break;
+-	case  4:
+-		msg = "No ppp module error";
+-		break;
+-	case  5:
+-		msg = "pppd received a signal";
+-		break;
+-	case  6:
+-		msg = "Serial port lock failed";
+-		break;
+-	case  7:
+-		msg = "Serial port open failed";
+-		break;
+-	case  8:
+-		msg = "Connect script failed";
+-		break;
+-	case  9:
+-		msg = "Pty program error";
+-		break;
+-	case 10:
+-		msg = "PPP negotiation failed";
+-		break;
+-	case 11:
+-		msg = "Peer didn't authenticatie itself";
+-		break;
+-	case 12:
+-		msg = "Link idle: Idle Seconds reached.";
+-		break;
+-	case 13:
+-		msg = "Connect time limit reached.";
+-		break;
+-	case 14:
+-		msg = "Callback negotiated, call should come back.";
+-		break;
+-	case 15:
+-		msg = "Lack of LCP echo responses";
+-		break;
+-	case 16:
+-		msg = "A modem hung up the phone";
+-		break;
+-	case 17:
+-		msg = "Loopback detected";
+-		break;
+-	case 18:
+-		msg = "The init script failed";
+-		break;
+-	case 19:
+-		msg = "Authentication error.\n"
+-		      "We failed to authenticate ourselves to the peer.\n"
+-		      "Maybe bad account or password?";
+-		break;
+-	default:
+-		msg = "Unknown error";
+-	}
++	msg = pppd_exit_code_to_str (pppd_exit_status);
+ 
+ 	_LOGW ("pppd pid %d exited with error: %s", pid, msg);
+ }
+-- 
+2.9.3
+
+From b2b6bf1cecc61d82590041aadee52cb9e95064b2 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 14:13:36 +0200
+Subject: [PATCH 6/8] ppp: don't log newlines
+
+(cherry picked from commit a814b96ebf02fa88f1a431d0a7459723a3af670d)
+(cherry picked from commit 38b5d356de300f717df9c262c4fbf7ea0053aee6)
+---
+ src/ppp/nm-ppp-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index d9044a4..93660ef 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -609,8 +609,8 @@ NM_UTILS_LOOKUP_STR_DEFINE_STATIC (pppd_exit_code_to_str, int,
+ 	NM_UTILS_LOOKUP_STR_ITEM (16, "A modem hung up the phone"),
+ 	NM_UTILS_LOOKUP_STR_ITEM (17, "Loopback detected"),
+ 	NM_UTILS_LOOKUP_STR_ITEM (18, "The init script failed"),
+-	NM_UTILS_LOOKUP_STR_ITEM (19, "Authentication error.\n"
+-	                              "We failed to authenticate ourselves to the peer.\n"
++	NM_UTILS_LOOKUP_STR_ITEM (19, "Authentication error. "
++	                              "We failed to authenticate ourselves to the peer. "
+ 	                              "Maybe bad account or password?"),
+ );
+ 
+-- 
+2.9.3
+
+From 13d2ba85f0ea1835cd5b18fe2844d49d0a1f5592 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 14:19:05 +0200
+Subject: [PATCH 7/8] ppp: cleanup logging pppd exit reason in ppp_watch_cb
+
+- don't use assert but be more graceful with g_return_if_fail().
+- in case of failure, don't log a debug message after the warning.
+  One message is sufficient, drop "pppd pid %d cleaned up".
+- print GPid type as long long.
+- increase log level to warning. pppd dying unexpectedly warrants a
+  warning.
+
+(cherry picked from commit 250e7239511f4c8de6831e3c16d8d5f6fac383dc)
+(cherry picked from commit b87327a5fea4e80a33849b8ff9735c4b61b9434d)
+---
+ src/ppp/nm-ppp-manager.c | 36 ++++++++++++++++--------------------
+ 1 file changed, 16 insertions(+), 20 deletions(-)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index 93660ef..575bf11 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -615,36 +615,32 @@ NM_UTILS_LOOKUP_STR_DEFINE_STATIC (pppd_exit_code_to_str, int,
+ );
+ 
+ static void
+-ppp_exit_code (guint pppd_exit_status, GPid pid)
+-{
+-	const char *msg;
+-
+-	msg = pppd_exit_code_to_str (pppd_exit_status);
+-
+-	_LOGW ("pppd pid %d exited with error: %s", pid, msg);
+-}
+-
+-static void
+-ppp_watch_cb (GPid pid, gint status, gpointer user_data)
++ppp_watch_cb (GPid pid, int status, gpointer user_data)
+ {
+ 	NMPPPManager *manager = NM_PPP_MANAGER (user_data);
+ 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
+-	guint err;
++	int err;
++	const long long lpid = (long long) pid;
+ 
+-	g_assert (pid == priv->pid);
++	g_return_if_fail (pid == priv->pid);
+ 
+ 	if (WIFEXITED (status)) {
+ 		err = WEXITSTATUS (status);
+-		if (err != 0)
+-			ppp_exit_code (err, priv->pid);
++		if (err) {
++			_LOGW ("pppd pid %lld exited with error %d: %s",
++			       lpid, err,
++			       pppd_exit_code_to_str (err));
++		} else
++			_LOGD ("pppd pid %lld exited with success", lpid);
+ 	} else if (WIFSTOPPED (status)) {
+-		_LOGI ("pppd pid %d stopped unexpectedly with signal %d", priv->pid, WSTOPSIG (status));
++		_LOGW ("pppd pid %lld stopped unexpectedly with signal %d",
++		       lpid, WSTOPSIG (status));
+ 	} else if (WIFSIGNALED (status)) {
+-		_LOGI ("pppd pid %d died with signal %d", priv->pid, WTERMSIG (status));
++		_LOGW ("pppd pid %lld died with signal %d",
++		       lpid, WTERMSIG (status));
+ 	} else
+-		_LOGI ("pppd pid %d died from an unknown cause", priv->pid);
++		_LOGW ("pppd pid %lld died from an unknown cause", lpid);
+ 
+-	_LOGD ("pppd pid %d cleaned up", priv->pid);
+ 	priv->pid = 0;
+ 	priv->ppp_watch_id = 0;
+ 	g_signal_emit (manager, signals[STATE_CHANGED], 0, (guint) NM_PPP_STATUS_DEAD);
+@@ -971,7 +967,7 @@ _ppp_manager_start (NMPPPManager *manager,
+ 		goto out;
+ 	}
+ 
+-	_LOGI ("pppd started with pid %d", priv->pid);
++	_LOGI ("pppd started with pid %lld", (long long) priv->pid);
+ 
+ 	priv->ppp_watch_id = g_child_watch_add (priv->pid, (GChildWatchFunc) ppp_watch_cb, manager);
+ 	priv->ppp_timeout_handler = g_timeout_add_seconds (timeout_secs, pppd_timed_out, manager);
+-- 
+2.9.3
+
+From baf5a6b24119671bb8a0edea2fc4830750c16305 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 9 Jun 2017 15:11:24 +0200
+Subject: [PATCH 8/8] ppp: fix cancelling timeout when pppd process exits
+
+Otherwise, we get pppd_timed_out() later, which will
+emit a DEAD state change at unexpected times.
+
+(cherry picked from commit b9af32b056ae7c93b33644b8a24641a86bf66e2c)
+(cherry picked from commit 1b954fe09b3b968aa883bba1027f47487ac4808e)
+---
+ src/ppp/nm-ppp-manager.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/ppp/nm-ppp-manager.c b/src/ppp/nm-ppp-manager.c
+index 575bf11..6343df8 100644
+--- a/src/ppp/nm-ppp-manager.c
++++ b/src/ppp/nm-ppp-manager.c
+@@ -643,6 +643,7 @@ ppp_watch_cb (GPid pid, int status, gpointer user_data)
+ 
+ 	priv->pid = 0;
+ 	priv->ppp_watch_id = 0;
++	_ppp_cleanup (manager);
+ 	g_signal_emit (manager, signals[STATE_CHANGED], 0, (guint) NM_PPP_STATUS_DEAD);
+ }
+ 
+-- 
+2.9.3
+

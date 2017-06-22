@@ -1,0 +1,49 @@
+From 7e13e49f15a43f54391380c76f7074bdaa300d03 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Sun, 11 Jun 2017 22:31:43 +0200
+Subject: [PATCH] cli: remove spurious device names from output
+
+When running one of:
+
+ nmcli device wifi list ifname wlan0
+ nmcli device wifi connect ... ifname wlan0
+
+nmcli wrongly adds the device name to the output.
+
+Do the completion only when requested.
+
+Fixes: 8679793f6b711847d3209ab3cfbd95ab4a2e2488
+Fixes: 1a0dfd31c4af5f3e42b4fc8363a2065d8c5a325b
+(cherry picked from commit d2b4332b36686dd5d7382d996743f0ffa1a0fdda)
+(cherry picked from commit 73e664e3b15e47b20dcdc92d4cde7f8492069f17)
+---
+ clients/cli/devices.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/clients/cli/devices.c b/clients/cli/devices.c
+index 387edef..50983de 100644
+--- a/clients/cli/devices.c
++++ b/clients/cli/devices.c
+@@ -2653,7 +2653,8 @@ do_device_wifi_list (NmCli *nmc, int argc, char **argv)
+ 				return NMC_RESULT_ERROR_USER_INPUT;
+ 			}
+ 			ifname = *argv;
+-			complete_device (devices, ifname, TRUE);
++			if (argc == 1 && nmc->complete)
++				complete_device (devices, ifname, TRUE);
+ 		} else if (strcmp (*argv, "bssid") == 0 || strcmp (*argv, "hwaddr") == 0) {
+ 			/* hwaddr is deprecated and will be removed later */
+ 			argc--;
+@@ -2900,7 +2901,8 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
+ 				goto finish;
+ 			}
+ 			ifname = *argv;
+-			complete_device (devices, ifname, TRUE);
++			if (argc == 1 && nmc->complete)
++				complete_device (devices, ifname, TRUE);
+ 		} else if (strcmp (*argv, "bssid") == 0) {
+ 			argc--;
+ 			argv++;
+-- 
+2.9.3
+

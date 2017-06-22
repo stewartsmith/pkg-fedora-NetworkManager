@@ -1,0 +1,135 @@
+From a222f7e0554fe8057a6d9c6749acbd066798fa9d Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 13 Jun 2017 12:26:51 +0200
+Subject: [PATCH 1/1] device: don't set MTU of device unless explicitly
+ configured
+
+Since commit 2b51d3967 "device: merge branch 'th/device-mtu-bgo777251'",
+we always set the MTU for certain device types during activation. Even
+if the MTU is neither specified via the connection nor other means, like
+DHCP.
+
+Revert that change. On activation, if nothing explicitly configures the
+MTU, leave it unchanged. This is like what we do with ethernet's
+cloned-mac-address, which has a default value "preserve".
+So, as last resort the default value for MTU is now 0 (don't change),
+instead of depending on the device type.
+
+Note that you also can override the default value in global
+configuration via NetworkManager.conf.
+
+This behavior makes sense, because whenever NM actively resets the MTU,
+it remembers the previous value and restores it when deactivating
+the connection. That wasn't implemented before 2b51d3967, and the
+MTU would depend on which connection was previously active. That
+is no longer an issue as the MTU gets reset when deactivating.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1460760
+(cherry picked from commit 4ca3002b86948847711cd5b1937008baef3c30da)
+(cherry picked from commit 588841f2e086774420a7ff4452d87e45ffae578a)
+---
+ man/NetworkManager.conf.xml        | 2 +-
+ src/devices/nm-device-infiniband.c | 2 +-
+ src/devices/nm-device-ip-tunnel.c  | 2 +-
+ src/devices/nm-device-private.h    | 4 ----
+ src/devices/nm-device-vlan.c       | 2 +-
+ src/devices/nm-device.c            | 2 +-
+ src/devices/wifi/nm-device-wifi.c  | 2 +-
+ 7 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/man/NetworkManager.conf.xml b/man/NetworkManager.conf.xml
+index 5e76c0ace..71c62cc15 100644
+--- a/man/NetworkManager.conf.xml
++++ b/man/NetworkManager.conf.xml
+@@ -655,7 +655,7 @@ ipv6.ip6-privacy=0
+         </varlistentry>
+         <varlistentry>
+           <term><varname>ethernet.mtu</varname></term>
+-          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500.</para></listitem>
++          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or the MTU is not reconfigured during activation.</para></listitem>
+         </varlistentry>
+         <varlistentry>
+           <term><varname>ethernet.wake-on-lan</varname></term>
+diff --git a/src/devices/nm-device-infiniband.c b/src/devices/nm-device-infiniband.c
+index f7875d099..7e0412703 100644
+--- a/src/devices/nm-device-infiniband.c
++++ b/src/devices/nm-device-infiniband.c
+@@ -139,7 +139,7 @@ get_configured_mtu (NMDevice *device, gboolean *out_is_user_config)
+ 		}
+ 	}
+ 	*out_is_user_config = (mtu != 0);
+-	return mtu ?: NM_DEVICE_DEFAULT_MTU_INFINIBAND;
++	return mtu;
+ }
+ 
+ static gboolean
+diff --git a/src/devices/nm-device-ip-tunnel.c b/src/devices/nm-device-ip-tunnel.c
+index 53b7cf4e5..2f505ef4c 100644
+--- a/src/devices/nm-device-ip-tunnel.c
++++ b/src/devices/nm-device-ip-tunnel.c
+@@ -767,7 +767,7 @@ get_configured_mtu (NMDevice *self, gboolean *out_is_user_config)
+ 		}
+ 	}
+ 	*out_is_user_config = (mtu != 0);
+-	return mtu ?: NM_DEVICE_DEFAULT_MTU_WIRED;
++	return mtu;
+ }
+ 
+ static NMDeviceCapabilities
+diff --git a/src/devices/nm-device-private.h b/src/devices/nm-device-private.h
+index a4067f9c2..9eccafdc6 100644
+--- a/src/devices/nm-device-private.h
++++ b/src/devices/nm-device-private.h
+@@ -116,10 +116,6 @@ gboolean nm_device_ipv6_sysctl_set (NMDevice *self, const char *property, const
+ 
+ /*****************************************************************************/
+ 
+-#define NM_DEVICE_DEFAULT_MTU_WIRED          ((guint32) 1500)
+-#define NM_DEVICE_DEFAULT_MTU_WIRELESS       ((guint32) 1500)
+-#define NM_DEVICE_DEFAULT_MTU_INFINIBAND     ((guint32) 0)
+-
+ gint64 nm_device_get_configured_mtu_from_connection_default (NMDevice *self,
+                                                              const char *property_name);
+ 
+diff --git a/src/devices/nm-device-vlan.c b/src/devices/nm-device-vlan.c
+index 06db64465..a74da8f22 100644
+--- a/src/devices/nm-device-vlan.c
++++ b/src/devices/nm-device-vlan.c
+@@ -586,7 +586,7 @@ get_configured_mtu (NMDevice *self, gboolean *out_is_user_config)
+ 	if (ifindex > 0)
+ 		mtu = nm_platform_link_get_mtu (nm_device_get_platform (NM_DEVICE (self)), ifindex);
+ 
+-	return mtu ?: NM_DEVICE_DEFAULT_MTU_WIRED;
++	return mtu;
+ }
+ 
+ /*****************************************************************************/
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index e60995d57..e37b24bff 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -7150,7 +7150,7 @@ nm_device_get_configured_mtu_for_wired (NMDevice *self, gboolean *out_is_user_co
+ 	}
+ 
+ 	*out_is_user_config = FALSE;
+-	return NM_DEVICE_DEFAULT_MTU_WIRED;
++	return 0;
+ }
+ 
+ /*****************************************************************************/
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 7359be96e..20692ed9e 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -2742,7 +2742,7 @@ get_configured_mtu (NMDevice *device, gboolean *out_is_user_config)
+ 		}
+ 	}
+ 	*out_is_user_config = (mtu != 0);
+-	return mtu ?: NM_DEVICE_DEFAULT_MTU_WIRELESS;
++	return mtu;
+ }
+ 
+ static gboolean
+-- 
+2.13.0
+
