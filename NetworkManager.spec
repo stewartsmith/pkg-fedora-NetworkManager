@@ -7,9 +7,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.8.0
-%global real_version 1.8.0
-%global release_version 6
+%global rpm_version 1.8.2
+%global real_version 1.8.2
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -82,36 +82,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch2: 0002-utils-fix-maybe-uninitialized-in-nm-udev-utils.c.patch
-Patch3: 0003-fix-device-run-state-unknown-rh1440171.patch
-Patch4: 0004-proxy-crash-rh1450459.patch
-Patch5: 0005-device-fix-wait-carrier-rh1450444.patch
-Patch6: 0006-dhcp-don-t-add-route-to-DHCP4-server-rh1448987.patch
-Patch7: 0007-device-update-ext-conf-before-commit-rh1449873.patch
-Patch8: 0008-utf8safe-fixes-rh1443114.patch
-Patch9: 0009-ifcfg-rh-fix-null-next-hop.patch
-Patch10: 0010-bluetooth-nap-crash-rh1454385.patch
-Patch11: 0011-device-release-removed-slaves-rh1448907.patch
-Patch12: 0012-config-slaves-order-rh1452585.patch
-Patch13: 0013-nmcli-fix-8021x-password-raw-rh1456362.patch
-Patch14: 0014-translations-rh1382625.patch
-Patch15: 0015-ifcfg-rh-legacy-netmask-rh1445414.patch
-Patch16: 0016-tui-connect-crash-rh1456826.patch
-Patch17: 0017-libnm-fix-reject-vlan-id-4095-rh1456911.patch
-Patch18: 0018-periodic-connectivity-check-rh1458399.patch
-Patch19: 0019-bond-improve-option-matching-rh1457909.patch
-Patch20: 0020-device-fix-external-assume-rh1457242.patch
-Patch21: 0021-bond-crash-mode-rh1459580.patch
-Patch22: 0022-connectivity-ip-iface-check-rh1459932.patch
-Patch23: 0023-persist-nm-owned-in-device-state-rh1376199.patch
-Patch24: 0024-fix-delayed-assume-master-rh1452062.patch
-Patch25: 0025-improve-logging-assume-rh1452062.patch
-Patch26: 0026-apply-route-penality-only-with-defroute-rh1459604.patch
-Patch27: 0027-cli-fix-interface-overview-rh1460219.patch
-Patch28: 0028-ppp-unexport-ppp-manager-on-dispose.patch
-Patch29: 0029-cli-wifi-spurious-output.patch
-Patch30: 0030-device-mtu-preserve-rh1460760.patch
-Patch31: 0031-don-t-remove-ext-ipv4-addresses-rh1459813.patch
+#Patch1:
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -366,36 +337,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
-%patch22 -p1
-%patch23 -p1
-%patch24 -p1
-%patch25 -p1
-%patch26 -p1
-%patch27 -p1
-%patch28 -p1
-%patch29 -p1
-%patch30 -p1
-%patch31 -p1
+#%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -708,6 +650,9 @@ fi
 %endif
 
 %changelog
+* Mon Jul 17 2017 Beniamino Galvani <bgalvani@redhat.com> - 1:1.8.2-1
+- Update to 1.8.2 release
+
 * Thu Jun 22 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-6
 - device: don't change MTU unless explicitly configured (rh #1460760)
 - core: don't remove external IPv4 addresses (rh #1459813)
