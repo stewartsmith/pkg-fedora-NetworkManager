@@ -82,7 +82,8 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1:
+Patch1: 0001-dhcp-interface-parsing.patch
+Patch2: 0002-dns-fix-domain-suffix-check.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -337,7 +338,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
+%patch2 -p1
 
 %build
 %if %{with regen_docs}
@@ -652,6 +654,8 @@ fi
 %changelog
 * Mon Jul 17 2017 Beniamino Galvani <bgalvani@redhat.com> - 1:1.8.2-1
 - Update to 1.8.2 release
+- dhcp/dhclient: improve "interface" statement parsing
+- dns: fix public suffix check on search domains (rh #1404350)
 
 * Thu Jun 22 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.0-6
 - device: don't change MTU unless explicitly configured (rh #1460760)
