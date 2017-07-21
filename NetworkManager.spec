@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.2
 %global real_version 1.8.2
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -263,8 +263,8 @@ Requires: %{name}-glib%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
 Requires: dbus-glib-devel >= %{dbus_glib_version}
-Requires: %{name}-devel = %{epoch}:%{version}-%{release}
-Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Provides: %{name}-devel = %{epoch}:%{version}-%{release}
+Provides: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: %{name}-devel < %{epoch}:%{version}-%{release}
 
 %description glib-devel
@@ -652,6 +652,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul 21 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.2-3
+- provide NetworkManager-devel
+
 * Thu Jul 20 2017 Stephen Gallagher <sgallagh@redhat.com> - 1:1.8.2-2
 - NetworkManager-wifi and NetworkManager-glib-devel should require
   NetworkManager, not provide it.
