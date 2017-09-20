@@ -7,9 +7,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.8.2
-%global real_version 1.8.2
-%global release_version 3
+%global rpm_version 1.8.4
+%global real_version 1.8.4
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -29,6 +29,8 @@
 %endif
 
 %global snap %{?snapshot_dot}%{?git_sha_dot}
+
+%global real_version_major %(printf '%s' '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[1-9][0-9]*\\)\\.[1-9][0-9]*$/\\1/p')
 
 %global is_devel_build %(printf '%s' '%{real_version}' | sed -n 's/^1\\.\\([0-9]*[13579]\\)\\..*/1/p')
 
@@ -72,18 +74,17 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.2
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/1.7/%{name}-%{real_version}.tar.xz
+Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch1: 0001-dhcp-interface-parsing.patch
-Patch2: 0002-dns-fix-domain-suffix-check.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -338,8 +339,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch1 -p1
-%patch2 -p1
+#%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -352,7 +352,11 @@ intltoolize --automake --copy --force
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-crypto=nss \
+%if %{with test}
 	--enable-more-warnings=error \
+%else
+	--enable-more-warnings=yes \
+%endif
 %if %{with sanitizer}
 	--enable-address-sanitizer \
 	--enable-undefined-sanitizer \
@@ -411,7 +415,11 @@ intltoolize --automake --copy --force
 	--with-systemdsystemunitdir=%{systemd_dir} \
 	--with-system-ca-path=/etc/pki/tls/cert.pem \
 	--with-dbus-sys-dir=%{dbus_sys_dir} \
+%if %{with test}
 	--with-tests=yes \
+%else
+	--with-tests=no \
+%endif
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
 %if %{with ppp}
@@ -536,8 +544,6 @@ fi
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
 %{systemd_dir}/NetworkManager-dispatcher.service
-%dir %{systemd_dir}/network-online.target.wants
-%{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
 %doc NEWS AUTHORS README CONTRIBUTING TODO
@@ -652,6 +658,10 @@ fi
 %endif
 
 %changelog
+* Wed Sep 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-1
+- Update to 1.8.4 release
+- don't install NetworkManager-wait-online in network-online.target.wants (rh#1455704)
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.8.2-3.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
