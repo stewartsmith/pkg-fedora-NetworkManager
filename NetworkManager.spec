@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -468,6 +468,16 @@ make %{?_smp_mflags} check
 %endif
 
 
+%pre
+if [ -f "%{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service" ] ; then
+    # older versions used to install this file, effectively always enabling
+    # NetworkManager-wait-online.service. We no longer do that and rely on
+    # preset.
+    # But on package upgrade we must explicitly enable it (rh#1455704).
+    systemctl enable NetworkManager-wait-online.service || :
+fi
+
+
 %post
 /usr/bin/udevadm control --reload-rules || :
 /usr/bin/udevadm trigger --subsystem-match=net || :
@@ -658,6 +668,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 27 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-2
+- enable NetworkManager-wait-online.service on package upgrade (rh#1455704)
+
 * Wed Sep 20 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-1
 - Update to 1.8.4 release
 - don't install NetworkManager-wait-online in network-online.target.wants (rh#1455704)
