@@ -1,0 +1,31 @@
+From fad0790a27d693d02c4b8404f9327608a838b8e6 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Mon, 25 Sep 2017 12:15:30 +0200
+Subject: [PATCH 3/3] cli: fix crash in interactive mode for "describe ."
+
+https://bugzilla.gnome.org/show_bug.cgi?id=788104
+(cherry picked from commit 54490be96d77ac2e34d247b58265dd393f5acba7)
+(cherry picked from commit b18ff17d3d4495722745c701826880bf14672827)
+---
+ clients/cli/connections.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/clients/cli/connections.c b/clients/cli/connections.c
+index a93dc15fc..fac1227b7 100644
+--- a/clients/cli/connections.c
++++ b/clients/cli/connections.c
+@@ -7387,7 +7387,10 @@ editor_menu_main (NmCli *nmc, NMConnection *connection)
+ 				} else
+ 					ss = menu_ctx.curr_setting;
+ 
+-				if (descr_all) {
++				if (!ss) {
++					g_print (_("Error: no setting selected; valid are [%s]\n"), valid_settings_str);
++					g_print (_("use 'goto <setting>' first, or 'describe <setting>.<property>'\n"));
++				} else if (descr_all) {
+ 					/* Show description for all properties */
+ 					print_setting_description (ss);
+ 				} else {
+-- 
+2.13.6
+

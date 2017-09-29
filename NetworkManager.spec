@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -85,6 +85,9 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-manager-Disconnect-from-signals-on-the-proxy-when-we.patch
+Patch2: 0002-vpn-remote-connection-disconnect-signal-handlers-whe.patch
+Patch3: 0003-cli-fix-crash-in-interactive-mode-for-describe.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -340,6 +343,9 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
 
 %build
 %if %{with regen_docs}
@@ -668,6 +674,12 @@ fi
 %endif
 
 %changelog
+
+* Fri Sep 29 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-3
+- cli: fix crash in interactive mode for "describe ."
+- libnm/{vpn,remote}-connection: disconnect signal handlers when disposed
+- libnm/manager: disconnect from signals on the proxy when we're disposed
+
 * Wed Sep 27 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-2
 - enable NetworkManager-wait-online.service on package upgrade (rh#1455704)
 
