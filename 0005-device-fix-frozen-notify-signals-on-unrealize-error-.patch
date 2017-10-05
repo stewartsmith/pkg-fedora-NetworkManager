@@ -1,0 +1,40 @@
+From 7d99bbea013d9f01d764e3394b77f1f709047129 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Wed, 4 Oct 2017 14:30:57 +0200
+Subject: [PATCH 5/5] device: fix frozen notify signals on unrealize error path
+
+If unrealize() failed we returned without thawing notify signals. Fix
+this by moving g_object_freeze_notify() after the
+unrealization/deletion but before the properties are reset in
+unrealize_notify().
+
+Fixes: a93807c288743f499362f7edfe0674020762811c
+(cherry picked from commit 24a7f88bc56b66745c1e6b9444df8a80125de059)
+(cherry picked from commit 5bd8269315fc7d41c62e258689a05bf062c6f592)
+---
+ src/devices/nm-device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index a085e466d..6321d2b49 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3257,7 +3257,6 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
+ 	g_return_val_if_fail (priv->iface != NULL, FALSE);
+ 	g_return_val_if_fail (priv->real, FALSE);
+ 
+-	g_object_freeze_notify (G_OBJECT (self));
+ 
+ 	ifindex = nm_device_get_ifindex (self);
+ 
+@@ -3274,6 +3273,7 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
+ 		}
+ 	}
+ 
++	g_object_freeze_notify (G_OBJECT (self));
+ 	NM_DEVICE_GET_CLASS (self)->unrealize_notify (self);
+ 
+ 	_parent_set_ifindex (self, 0, FALSE);
+-- 
+2.13.6
+

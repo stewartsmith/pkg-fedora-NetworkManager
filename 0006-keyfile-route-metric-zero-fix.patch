@@ -1,0 +1,325 @@
+From 5c5876732c51adcf0e1973021bc26a663b240ec9 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 4 Oct 2017 11:14:48 +0200
+Subject: [PATCH 6/8] keyfile: minor cleanup in get_one_int() to use
+ _nm_utils_ascii_str_to_int64()
+
+(cherry picked from commit 72c28cb6bcc26e6a63083e4d92f8f66ee5c121e4)
+(cherry picked from commit 14f0f23e77219364c0ee7ae692aae35551101ed8)
+---
+ libnm-core/nm-keyfile-reader.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/libnm-core/nm-keyfile-reader.c b/libnm-core/nm-keyfile-reader.c
+index eb257eeb1..15a0e406f 100644
+--- a/libnm-core/nm-keyfile-reader.c
++++ b/libnm-core/nm-keyfile-reader.c
+@@ -133,8 +133,7 @@ read_array_of_uint (GKeyFile *file,
+ static gboolean
+ get_one_int (KeyfileReaderInfo *info, const char *property_name, const char *str, guint32 max_val, guint32 *out)
+ {
+-	long tmp;
+-	char *endptr;
++	gint64 tmp;
+ 
+ 	g_return_val_if_fail (!info == !property_name, FALSE);
+ 
+@@ -145,13 +144,13 @@ get_one_int (KeyfileReaderInfo *info, const char *property_name, const char *str
+ 		return FALSE;
+ 	}
+ 
+-	errno = 0;
+-	tmp = strtol (str, &endptr, 10);
+-	if (errno || (tmp < 0) || (tmp > max_val) || *endptr != 0) {
+-		if (property_name)
++	tmp = _nm_utils_ascii_str_to_int64 (str, 10, 0, max_val, -1);
++	if (tmp == -1) {
++		if (property_name) {
+ 			handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+ 			             _("ignoring invalid number '%s'"),
+ 			            str);
++		}
+ 		return FALSE;
+ 	}
+ 
+-- 
+2.13.6
+
+
+From e843259d6a13e9219cf151432ed3794246c7d067 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 4 Oct 2017 11:16:36 +0200
+Subject: [PATCH 7/8] keyfile: cleanup error argument for read_field()
+
+Rename @error to @out_err_str, because @error is usually used for GError
+output arguments.
+
+Also, make the string variables "const char *".
+
+Use nm_assert() in read_field(), because it is a static function
+with only four call sites. It's easily verified that the assertion
+holds, so no need for a run-time check in production builds.
+
+(cherry picked from commit 29e9b567f0938fd202a433e7098092f0a39723ed)
+(cherry picked from commit f889aa783d776afa200587b5891e3578a3033518)
+---
+ libnm-core/nm-keyfile-reader.c | 58 ++++++++++++++++++++++++------------------
+ 1 file changed, 33 insertions(+), 25 deletions(-)
+
+diff --git a/libnm-core/nm-keyfile-reader.c b/libnm-core/nm-keyfile-reader.c
+index 15a0e406f..5934c833b 100644
+--- a/libnm-core/nm-keyfile-reader.c
++++ b/libnm-core/nm-keyfile-reader.c
+@@ -249,17 +249,17 @@ build_route (KeyfileReaderInfo *info,
+  * When @current target is %NULL, gracefully fail returning %NULL while
+  * leaving the @current target %NULL end setting @error to %NULL;
+  */
+-static char *
+-read_field (char **current, char **error, const char *characters, const char *delimiters)
++static const char *
++read_field (char **current, const char **out_err_str, const char *characters, const char *delimiters)
+ {
+-	char *start;
++	const char *start;
+ 
+-	g_return_val_if_fail (current, NULL);
+-	g_return_val_if_fail (error, NULL);
+-	g_return_val_if_fail (characters, NULL);
+-	g_return_val_if_fail (delimiters, NULL);
++	nm_assert (current);
++	nm_assert (out_err_str);
++	nm_assert (characters);
++	nm_assert (delimiters);
+ 
+-	*error = NULL;
++	*out_err_str = NULL;
+ 
+ 	if (!*current) {
+ 		/* graceful failure, leave '*current' NULL */
+@@ -282,8 +282,8 @@ read_field (char **current, char **error, const char *characters, const char *de
+ 			return start;
+ 		} else {
+ 			/* error, bad character */
+-			*error = *current;
+-			*current = start;
++			*out_err_str = *current;
++			*current = (char *) start;
+ 			return NULL;
+ 		}
+ 	else {
+@@ -332,42 +332,50 @@ read_one_ip_address_or_route (KeyfileReaderInfo *info,
+                               char **out_gateway,
+                               NMSetting *setting)
+ {
+-	guint32 plen = G_MAXUINT32;
++	guint plen;
+ 	gpointer result;
+-	char *address_str, *plen_str, *gateway_str, *metric_str, *current, *error;
+-	gs_free char *value = NULL, *value_orig = NULL;
++	const char *address_str;
++	const char *plen_str;
++	const char *gateway_str;
++	const char *metric_str;
++	const char *err_str = NULL;
++	char *current;
++	gs_free char *value = NULL;
++	gs_free char *value_orig = NULL;
+ 
+ #define VALUE_ORIG()   (value_orig ? value_orig : (value_orig = nm_keyfile_plugin_kf_get_string (info->keyfile, setting_name, key_name, NULL)))
+ 
+-	current = value = nm_keyfile_plugin_kf_get_string (info->keyfile, setting_name, key_name, NULL);
++	value = nm_keyfile_plugin_kf_get_string (info->keyfile, setting_name, key_name, NULL);
+ 	if (!value)
+ 		return NULL;
+ 
++	current = value;
++
+ 	/* get address field */
+-	address_str = read_field (&current, &error, IP_ADDRESS_CHARS, DELIMITERS);
+-	if (error) {
++	address_str = read_field (&current, &err_str, IP_ADDRESS_CHARS, DELIMITERS);
++	if (err_str) {
+ 		handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+ 		             _("unexpected character '%c' for address %s: '%s' (position %td)"),
+-		             *error, key_name, VALUE_ORIG (), error - current);
++		             *err_str, key_name, VALUE_ORIG (), err_str - current);
+ 		return NULL;
+ 	}
+ 	/* get prefix length field (skippable) */
+-	plen_str = read_field (&current, &error, DIGITS, DELIMITERS);
++	plen_str = read_field (&current, &err_str, DIGITS, DELIMITERS);
+ 	/* get gateway field */
+-	gateway_str = read_field (&current, &error, IP_ADDRESS_CHARS, DELIMITERS);
+-	if (error) {
++	gateway_str = read_field (&current, &err_str, IP_ADDRESS_CHARS, DELIMITERS);
++	if (err_str) {
+ 		handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+ 		             _("unexpected character '%c' for %s: '%s' (position %td)"),
+-		             *error, key_name, VALUE_ORIG (), error - current);
++		             *err_str, key_name, VALUE_ORIG (), err_str - current);
+ 		return NULL;
+ 	}
+ 	/* for routes, get metric */
+ 	if (route) {
+-		metric_str = read_field (&current, &error, DIGITS, DELIMITERS);
+-		if (error) {
++		metric_str = read_field (&current, &err_str, DIGITS, DELIMITERS);
++		if (err_str) {
+ 			handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+ 			             _("unexpected character '%c' in prefix length for %s: '%s' (position %td)"),
+-			             *error, key_name, VALUE_ORIG (), error - current);
++			             *err_str, key_name, VALUE_ORIG (), err_str - current);
+ 			return NULL;
+ 		}
+ 	} else
+@@ -393,7 +401,7 @@ read_one_ip_address_or_route (KeyfileReaderInfo *info,
+ 
+ 	/* parse plen, fallback to defaults */
+ 	if (plen_str) {
+-		if (!get_one_int (info, property_name, plen_str, ipv6 ? 128 : 32, &plen)
++		if (   !get_one_int (info, property_name, plen_str, ipv6 ? 128 : 32, &plen)
+ 		    || (route && plen == 0)) {
+ 			plen = DEFAULT_PREFIX (route, ipv6);
+ 			if (   info->error
+-- 
+2.13.6
+
+
+From 0a76ddaad11baec08ab0826a5d635fa5b158c6e4 Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 4 Oct 2017 11:28:15 +0200
+Subject: [PATCH 8/8] keyfile: fix reading/writing route metric zero
+
+Zero is a valid route metric and distinct from -1, which means unspecified.
+Fix reader and writer.
+
+Fixes: e374923bbe4a9f608644756f749b9bae9aa5f349
+(cherry picked from commit 099be8e4db0b00d4ff3ded60a4a3cb65d55bbd40)
+(cherry picked from commit 482fcb507e0b7d611701d9537321cdc6d58d3b84)
+---
+ libnm-core/nm-keyfile-reader.c                    | 15 +++++++++------
+ libnm-core/nm-keyfile-writer.c                    | 12 +++++++-----
+ src/settings/plugins/keyfile/tests/test-keyfile.c |  6 +++---
+ 3 files changed, 19 insertions(+), 14 deletions(-)
+
+diff --git a/libnm-core/nm-keyfile-reader.c b/libnm-core/nm-keyfile-reader.c
+index 5934c833b..0ac417cdb 100644
+--- a/libnm-core/nm-keyfile-reader.c
++++ b/libnm-core/nm-keyfile-reader.c
+@@ -185,7 +185,8 @@ build_route (KeyfileReaderInfo *info,
+              const char *gateway_str, const char *metric_str)
+ {
+ 	NMIPRoute *route;
+-	guint32 metric = 0;
++	guint32 u32;
++	gint64 metric = -1;
+ 	GError *error = NULL;
+ 
+ 	g_return_val_if_fail (plen, NULL);
+@@ -204,9 +205,10 @@ build_route (KeyfileReaderInfo *info,
+ 			 **/
+ 			if (   family == AF_INET6
+ 			    && !metric_str
+-			    && get_one_int (NULL, NULL, gateway_str, G_MAXUINT32, &metric))
++			    && get_one_int (NULL, NULL, gateway_str, G_MAXUINT32, &u32)) {
++				metric = u32;
+ 				gateway_str = NULL;
+-			else {
++			} else {
+ 				if (!info->error) {
+ 					handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+ 					             _("ignoring invalid gateway '%s' for %s route"),
+@@ -218,14 +220,15 @@ build_route (KeyfileReaderInfo *info,
+ 	} else
+ 		gateway_str = NULL;
+ 
+-	/* parse metric, default to 0 */
++	/* parse metric, default to -1 */
+ 	if (metric_str) {
+-		if (!get_one_int (info, property_name, metric_str, G_MAXUINT32, &metric))
++		if (!get_one_int (info, property_name, metric_str, G_MAXUINT32, &u32))
+ 			return NULL;
++		metric = u32;
+ 	}
+ 
+ 	route = nm_ip_route_new (family, dest_str, plen, gateway_str,
+-	                         metric ? (gint64) metric : -1,
++	                         metric,
+ 	                         &error);
+ 	if (!route) {
+ 		handle_warn (info, property_name, NM_KEYFILE_WARN_SEVERITY_WARN,
+diff --git a/libnm-core/nm-keyfile-writer.c b/libnm-core/nm-keyfile-writer.c
+index 6a3d9a9f4..19b734a05 100644
+--- a/libnm-core/nm-keyfile-writer.c
++++ b/libnm-core/nm-keyfile-writer.c
+@@ -137,7 +137,7 @@ write_ip_values (GKeyFile *file,
+ 	GString *output;
+ 	int family, i;
+ 	const char *addr, *gw;
+-	guint32 plen, metric;
++	guint32 plen;
+ 	char key_name[64], *key_name_idx;
+ 
+ 	if (!array->len)
+@@ -150,25 +150,27 @@ write_ip_values (GKeyFile *file,
+ 
+ 	output = g_string_sized_new (2*INET_ADDRSTRLEN + 10);
+ 	for (i = 0; i < array->len; i++) {
++		gint64 metric = -1;
++
+ 		if (is_route) {
+ 			NMIPRoute *route = array->pdata[i];
+ 
+ 			addr = nm_ip_route_get_dest (route);
+ 			plen = nm_ip_route_get_prefix (route);
+ 			gw = nm_ip_route_get_next_hop (route);
+-			metric = MAX (0, nm_ip_route_get_metric (route));
++			metric = nm_ip_route_get_metric (route);
+ 		} else {
+ 			NMIPAddress *address = array->pdata[i];
+ 
+ 			addr = nm_ip_address_get_address (address);
+ 			plen = nm_ip_address_get_prefix (address);
+ 			gw = i == 0 ? gateway : NULL;
+-			metric = 0;
+ 		}
+ 
+ 		g_string_set_size (output, 0);
+ 		g_string_append_printf (output, "%s/%u", addr, plen);
+-		if (metric || gw) {
++		if (   metric != -1
++		    || gw) {
+ 			/* Older versions of the plugin do not support the form
+ 			 * "a.b.c.d/plen,,metric", so, we always have to write the
+ 			 * gateway, even if there isn't one.
+@@ -182,7 +184,7 @@ write_ip_values (GKeyFile *file,
+ 			}
+ 
+ 			g_string_append_printf (output, ",%s", gw);
+-			if (metric)
++			if (is_route && metric != -1)
+ 				g_string_append_printf (output, ",%lu", (unsigned long) metric);
+ 		}
+ 
+diff --git a/src/settings/plugins/keyfile/tests/test-keyfile.c b/src/settings/plugins/keyfile/tests/test-keyfile.c
+index d9da53173..2584a7229 100644
+--- a/src/settings/plugins/keyfile/tests/test-keyfile.c
++++ b/src/settings/plugins/keyfile/tests/test-keyfile.c
+@@ -312,11 +312,11 @@ test_read_valid_wired_connection (void)
+ 	check_ip_route (s_ip4, 3, "1.1.1.3", 13, NULL, -1);
+ 	check_ip_route (s_ip4, 4, "1.1.1.4", 14, "2.2.2.4", -1);
+ 	check_ip_route (s_ip4, 5, "1.1.1.5", 15, "2.2.2.5", -1);
+-	check_ip_route (s_ip4, 6, "1.1.1.6", 16, "2.2.2.6", -1);
++	check_ip_route (s_ip4, 6, "1.1.1.6", 16, "2.2.2.6", 0);
+ 	check_ip_route (s_ip4, 7, "1.1.1.7", 17, NULL, -1);
+ 	check_ip_route (s_ip4, 8, "1.1.1.8", 18, NULL, -1);
+-	check_ip_route (s_ip4, 9, "1.1.1.9", 19, NULL, -1);
+-	check_ip_route (s_ip4, 10, "1.1.1.10", 20, NULL, -1);
++	check_ip_route (s_ip4, 9, "1.1.1.9", 19, NULL, 0);
++	check_ip_route (s_ip4, 10, "1.1.1.10", 20, NULL, 0);
+ 	check_ip_route (s_ip4, 11, "1.1.1.11", 21, NULL, 21);
+ 
+ 	/* Route attributes */
+-- 
+2.13.6
+

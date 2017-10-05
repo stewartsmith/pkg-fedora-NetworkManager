@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 3
+%global release_version 4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -88,6 +88,9 @@ Source3: 20-connectivity-fedora.conf
 Patch1: 0001-manager-Disconnect-from-signals-on-the-proxy-when-we.patch
 Patch2: 0002-vpn-remote-connection-disconnect-signal-handlers-whe.patch
 Patch3: 0003-cli-fix-crash-in-interactive-mode-for-describe.patch
+Patch4: 0004-device-fix-delay-startup-complete-for-unrealized-dev.patch
+Patch5: 0005-device-fix-frozen-notify-signals-on-unrealize-error-.patch
+Patch6: 0006-keyfile-route-metric-zero-fix.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -346,6 +349,9 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
 
 %build
 %if %{with regen_docs}
@@ -674,6 +680,10 @@ fi
 %endif
 
 %changelog
+* Thu Oct  5 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-4
+- device: fix frozen notify signals on unrealize error path
+- device: fix delay startup complete for unrealized devices
+- keyfile: fix handling routes with metric zero
 
 * Fri Sep 29 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-3
 - cli: fix crash in interactive mode for "describe ."
