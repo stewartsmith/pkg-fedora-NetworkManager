@@ -91,6 +91,7 @@ Patch3: 0003-cli-fix-crash-in-interactive-mode-for-describe.patch
 Patch4: 0004-device-fix-delay-startup-complete-for-unrealized-dev.patch
 Patch5: 0005-device-fix-frozen-notify-signals-on-unrealize-error-.patch
 Patch6: 0006-keyfile-route-metric-zero-fix.patch
+Patch7: 0007-platform-treat-dsa-devices-as-regular-wired-ethernet.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -680,6 +681,9 @@ fi
 %endif
 
 %changelog
+* Mon Oct  8 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.4-5
+- platform: treat dsa devices as regular wired ethernet (rh #1371289)
+
 * Thu Oct  5 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-4
 - device: fix frozen notify signals on unrealize error path
 - device: fix delay startup complete for unrealized devices
