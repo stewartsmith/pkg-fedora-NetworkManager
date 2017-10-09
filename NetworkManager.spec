@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 4
+%global release_version 5
 %global snapshot %{nil}
 %global git_sha %{nil}
 
