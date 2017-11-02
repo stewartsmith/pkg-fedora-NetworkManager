@@ -688,6 +688,7 @@ fi
 * Mon Nov  2 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-6
 - systemd: let NM-w-o.service require NetworkManager service (rh #1452866)
 - platform: really treat dsa devices as regular wired ethernet (rh #1371289)
+- libnm: fix accessing enabled and metered properties
 
 * Mon Oct  8 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.4-5
 - platform: treat dsa devices as regular wired ethernet (rh #1371289)
