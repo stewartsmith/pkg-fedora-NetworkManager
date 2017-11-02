@@ -1,0 +1,43 @@
+From e9bdc531b64c5603b0c3a5a6e784122b8be1e8ef Mon Sep 17 00:00:00 2001
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 2 Nov 2017 15:14:18 +0100
+Subject: [PATCH 1/1] systemd: let "NetworkManager-wait-online.service" require
+ "NetworkManager.service"
+
+`systemctl start network-online.target` should suffice to start
+"NetworkManager.service".
+
+That would work because
+ - "network-online.target" has "Wants=NetworkManager-wait-online.service"
+ - "NetworkManager-wait-online.service" has "Require=NetworkManager.service".
+
+But previously, "NetworkManager-wait-online.service" would just
+fail with missing dependency.
+
+See also https://github.com/systemd/systemd/pull/6065 which does the
+same for networkd's wait-online serice, and see rh#1452866 for a
+use-case.
+
+Related: https://bugzilla.redhat.com/show_bug.cgi?id=1452866
+(cherry picked from commit 28b97f02f64ecf94e22c8929dfd0ba64151bd9d3)
+(cherry picked from commit eeedf51f087d1cd6c5c4b79f7299b6060d28024f)
+---
+ data/NetworkManager-wait-online.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/NetworkManager-wait-online.service.in b/data/NetworkManager-wait-online.service.in
+index 1753d2039..896324685 100644
+--- a/data/NetworkManager-wait-online.service.in
++++ b/data/NetworkManager-wait-online.service.in
+@@ -1,7 +1,7 @@
+ [Unit]
+ Description=Network Manager Wait Online
+ Documentation=man:nm-online(1)
+-Requisite=NetworkManager.service
++Requires=NetworkManager.service
+ After=NetworkManager.service
+ Before=network-online.target
+ 
+-- 
+2.13.6
+

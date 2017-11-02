@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 5
+%global release_version 6
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -92,6 +92,7 @@ Patch4: 0004-device-fix-delay-startup-complete-for-unrealized-dev.patch
 Patch5: 0005-device-fix-frozen-notify-signals-on-unrealize-error-.patch
 Patch6: 0006-keyfile-route-metric-zero-fix.patch
 Patch7: 0007-platform-treat-dsa-devices-as-regular-wired-ethernet.patch
+Patch8: 0008-systemd-let-NetworkManager-wait-online.service-requi.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -353,6 +354,8 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
+%patch8 -p1
 
 %build
 %if %{with regen_docs}
@@ -364,6 +367,7 @@ intltoolize --automake --copy --force
 	--disable-static \
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
+	--with-config-dhcp-default=dhclient \
 	--with-crypto=nss \
 %if %{with test}
 	--enable-more-warnings=error \
@@ -681,6 +685,10 @@ fi
 %endif
 
 %changelog
+* Mon Nov  2 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-6
+- systemd: let NM-w-o.service require NetworkManager service (rh #1452866)
+- platform: really treat dsa devices as regular wired ethernet (rh #1371289)
+
 * Mon Oct  8 2017 Lubomir Rintel <lkundrak@v3.sk> - 1:1.8.4-5
 - platform: treat dsa devices as regular wired ethernet (rh #1371289)
 
