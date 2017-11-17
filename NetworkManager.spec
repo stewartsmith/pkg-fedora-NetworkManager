@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.8.4
 %global real_version 1.8.4
-%global release_version 6
+%global release_version 7
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -93,6 +93,7 @@ Patch5: 0005-device-fix-frozen-notify-signals-on-unrealize-error-.patch
 Patch6: 0006-keyfile-route-metric-zero-fix.patch
 Patch7: 0007-platform-treat-dsa-devices-as-regular-wired-ethernet.patch
 Patch8: 0008-systemd-let-NetworkManager-wait-online.service-requi.patch
+Patch9: 0009-libnm-client-proxy-_enabled-and-metered-properties-t.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -356,6 +357,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 
 %build
 %if %{with regen_docs}
@@ -685,6 +687,9 @@ fi
 %endif
 
 %changelog
+* Fri Nov 17 2017 Björn Esser <besser82@fedoraproject.org> - 1:1.8.4-7
+- Apply patch from previous commit
+
 * Mon Nov  2 2017 Thomas Haller <thaller@redhat.com> - 1:1.8.4-6
 - systemd: let NM-w-o.service require NetworkManager service (rh #1452866)
 - platform: really treat dsa devices as regular wired ethernet (rh #1371289)
