@@ -75,7 +75,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -522,8 +522,11 @@ fi
 %systemd_postun
 
 
-%ldconfig_scriptlets glib
-%ldconfig_scriptlets libnm
+%post   glib -p /sbin/ldconfig
+%postun glib -p /sbin/ldconfig
+
+%post   libnm -p /sbin/ldconfig
+%postun libnm -p /sbin/ldconfig
 
 
 %files
@@ -693,9 +696,6 @@ fi
 %endif
 
 %changelog
-* Fri Feb 02 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:1.10.2-1.1
-- Switch to %%ldconfig_scriptlets
-
 * Fri Dec 15 2017 Thomas Haller <thaller@redhat.com> - 1:1.10.2-1
 - Update to 1.10.2 release
 
