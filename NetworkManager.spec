@@ -93,7 +93,7 @@ Source3: 20-connectivity-fedora.conf
 #Patch1: 0001-some.patch
 Patch1: 0001-build-fix-configure-check-for-CC-support-of-_Generic.patch
 Patch2: 0002-ovs-fix-compiler-error-for-passing-NMDevice-pointer-.patch
-Patch3: 0001-m4-disable-Wcast-function-type.patch
+Patch3: 0003-m4-disable-Wcast-function-type.patch
 
 Requires(post): systemd
 Requires(preun): systemd
