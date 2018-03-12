@@ -7,9 +7,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.10.4
-%global real_version 1.10.4
-%global release_version 2
+%global rpm_version 1.10.6
+%global real_version 1.10.6
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -91,10 +91,6 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-build-fix-configure-check-for-CC-support-of-_Generic.patch
-Patch2: 0002-ovs-fix-compiler-error-for-passing-NMDevice-pointer-.patch
-Patch3: 0003-m4-disable-Wcast-function-type.patch
-Patch4: 0004-policy-fix-blocking-autoconnect-for-no-secrets-rh1553773.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -363,10 +359,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 %if %{with regen_docs}
@@ -718,6 +710,9 @@ fi
 %endif
 
 %changelog
+* Mon Mar 12 2018 Thomas Haller <thaller@redhat.com> - 1:1.10.6-1
+- Update to 1.10.6 release
+
 * Fri Mar  9 2018 Thomas Haller <thaller@redhat.com> - 1:1.10.4-2
 - policy: fix blocking autoconnect for no-secrets (rh #1553773)
 
