@@ -80,7 +80,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -152,8 +152,8 @@ BuildRequires: ModemManager-glib-devel >= 1.0
 BuildRequires: newt-devel
 %endif
 BuildRequires: /usr/bin/dbus-launch
-BuildRequires: pygobject3-base
-BuildRequires: dbus-python
+BuildRequires: python2-gobject-base
+BuildRequires: python2-dbus
 BuildRequires: libselinux-devel
 BuildRequires: polkit-devel
 BuildRequires: jansson-devel
@@ -710,6 +710,10 @@ fi
 %endif
 
 %changelog
+* Wed Mar 14 2018 Iryna Shcherbina <ishcherb@redhat.com> - 1:1.10.6-1.1
+- Update Python 2 dependency declarations to new packaging standards
+  (See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3)
+
 * Mon Mar 12 2018 Thomas Haller <thaller@redhat.com> - 1:1.10.6-1
 - Update to 1.10.6 release
 
