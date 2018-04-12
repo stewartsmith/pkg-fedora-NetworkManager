@@ -90,7 +90,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-fix-build-with-gcc8.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -358,7 +358,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-#%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}

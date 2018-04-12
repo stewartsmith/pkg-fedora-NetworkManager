@@ -1,0 +1,334 @@
+From 4b25e2e9d7877986eb21319076f9aed0b62456a8 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 7 Feb 2018 19:18:18 +0000
+Subject: [PATCH 1/5] libnm/vpn-plugin: avoid bad function pointer type casts
+
+This makes GCC 8.0 unhappy and it is probably right about that -- it's more
+difficult to get things wrong when the function prototypes actually match.
+
+(cherry picked from commit 7f7207f36bc16cd5dc4550b6307efd72c9d623ee)
+(cherry picked from commit 17b488cfd569bb9039dd5bb6d2c78fed7a6a3f4e)
+---
+ libnm-glib/nm-vpn-plugin.c    | 10 +++++++++-
+ libnm/nm-vpn-plugin-old.c     | 10 +++++++++-
+ libnm/nm-vpn-service-plugin.c | 10 +++++++++-
+ 3 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/libnm-glib/nm-vpn-plugin.c b/libnm-glib/nm-vpn-plugin.c
+index 4c4c3161c..316939ca9 100644
+--- a/libnm-glib/nm-vpn-plugin.c
++++ b/libnm-glib/nm-vpn-plugin.c
+@@ -686,10 +686,18 @@ impl_vpn_plugin_set_failure (NMVPNPlugin *plugin,
+ 
+ /*****************************************************************************/
+ 
++static void
++_emit_quit (gpointer data, gpointer user_data)
++{
++	NMVPNPlugin *plugin = data;
++
++	nm_vpn_plugin_emit_quit (plugin);
++}
++
+ static void
+ sigterm_handler (int signum)
+ {
+-	g_slist_foreach (active_plugins, (GFunc) nm_vpn_plugin_emit_quit, NULL);
++	g_slist_foreach (active_plugins, _emit_quit, NULL);
+ }
+ 
+ static void
+diff --git a/libnm/nm-vpn-plugin-old.c b/libnm/nm-vpn-plugin-old.c
+index 2b5922b92..897f6d408 100644
+--- a/libnm/nm-vpn-plugin-old.c
++++ b/libnm/nm-vpn-plugin-old.c
+@@ -904,10 +904,18 @@ impl_vpn_plugin_old_set_failure (NMVpnPluginOld *plugin,
+ 
+ /*****************************************************************************/
+ 
++static void
++_emit_quit (gpointer data, gpointer user_data)
++{
++	NMVpnPluginOld *plugin = data;
++
++	nm_vpn_plugin_old_emit_quit (plugin);
++}
++
+ static void
+ sigterm_handler (int signum)
+ {
+-	g_slist_foreach (active_plugins, (GFunc) nm_vpn_plugin_old_emit_quit, NULL);
++	g_slist_foreach (active_plugins, _emit_quit, NULL);
+ }
+ 
+ static void
+diff --git a/libnm/nm-vpn-service-plugin.c b/libnm/nm-vpn-service-plugin.c
+index 0a7853965..bf2893754 100644
+--- a/libnm/nm-vpn-service-plugin.c
++++ b/libnm/nm-vpn-service-plugin.c
+@@ -926,10 +926,18 @@ impl_vpn_service_plugin_set_failure (NMVpnServicePlugin *plugin,
+ 
+ /*****************************************************************************/
+ 
++static void
++_emit_quit (gpointer data, gpointer user_data)
++{
++	NMVpnServicePlugin *plugin = data;
++
++	nm_vpn_service_plugin_emit_quit (plugin);
++}
++
+ static void
+ sigterm_handler (int signum)
+ {
+-	g_slist_foreach (active_plugins, (GFunc) nm_vpn_service_plugin_emit_quit, NULL);
++	g_slist_foreach (active_plugins, _emit_quit, NULL);
+ }
+ 
+ static void
+-- 
+2.14.3
+
+From a90a1619ba82ae81f4ef038d339ff3b25ba85e8a Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 7 Feb 2018 19:23:17 +0000
+Subject: [PATCH 2/5] shared/utils/dedup-multi: make nm_dedup_multi_obj_unref()
+ return void
+
+This makes its prototype compatible with GDestroyNotify so that GCC 8.0
+won't warn.
+
+The return value is not used anywhere and the unref() functions typically
+don't return any.
+
+(cherry picked from commit 411e72b3c9f95082751e9b65efd25d7f194501fc)
+(cherry picked from commit 77e4af1991d41a39bdecb8b6f983ddafcecf8389)
+---
+ shared/nm-utils/nm-dedup-multi.c | 4 +---
+ shared/nm-utils/nm-dedup-multi.h | 2 +-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/shared/nm-utils/nm-dedup-multi.c b/shared/nm-utils/nm-dedup-multi.c
+index ee310a7b1..59b647eda 100644
+--- a/shared/nm-utils/nm-dedup-multi.c
++++ b/shared/nm-utils/nm-dedup-multi.c
+@@ -877,7 +877,7 @@ nm_dedup_multi_index_obj_intern (NMDedupMultiIndex *self,
+ 	return obj_new;
+ }
+ 
+-const NMDedupMultiObj *
++void
+ nm_dedup_multi_obj_unref (const NMDedupMultiObj *obj)
+ {
+ 	if (obj) {
+@@ -899,8 +899,6 @@ again:
+ 			obj->klass->obj_destroy ((NMDedupMultiObj *) obj);
+ 		}
+ 	}
+-
+-	return NULL;
+ }
+ 
+ gboolean
+diff --git a/shared/nm-utils/nm-dedup-multi.h b/shared/nm-utils/nm-dedup-multi.h
+index bebfe43d3..6286d6a4c 100644
+--- a/shared/nm-utils/nm-dedup-multi.h
++++ b/shared/nm-utils/nm-dedup-multi.h
+@@ -97,7 +97,7 @@ nm_dedup_multi_obj_ref (const NMDedupMultiObj *obj)
+ 	return obj;
+ }
+ 
+-const NMDedupMultiObj *nm_dedup_multi_obj_unref       (const NMDedupMultiObj *obj);
++void                   nm_dedup_multi_obj_unref       (const NMDedupMultiObj *obj);
+ const NMDedupMultiObj *nm_dedup_multi_obj_clone       (const NMDedupMultiObj *obj);
+ gboolean               nm_dedup_multi_obj_needs_clone (const NMDedupMultiObj *obj);
+ 
+-- 
+2.14.3
+
+From 71747f90bf2be84cc40bce4abe76cbc7402918c3 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 7 Feb 2018 19:27:35 +0000
+Subject: [PATCH 3/5] platform/nmp-object: make nmp_object_unref() return void
+
+This makes its prototype compatible with GDestroyNotify so that GCC 8.0
+won't warn.
+
+The return value is not used anywhere and the unref() functions typically
+don't return any.
+
+(cherry picked from commit 3113e193c0821cb181f8a97b170144aed444fe62)
+(cherry picked from commit 92b78c187acc56ad37cb47f4c1d10126e982736c)
+---
+ src/platform/nmp-object.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/platform/nmp-object.h b/src/platform/nmp-object.h
+index e3862f2dd..e17b17b0a 100644
+--- a/src/platform/nmp-object.h
++++ b/src/platform/nmp-object.h
+@@ -457,11 +457,10 @@ nmp_object_ref (const NMPObject *obj)
+ 	return (const NMPObject *) nm_dedup_multi_obj_ref ((const NMDedupMultiObj *) obj);
+ }
+ 
+-static inline const NMPObject *
++static inline void
+ nmp_object_unref (const NMPObject *obj)
+ {
+ 	nm_dedup_multi_obj_unref ((const NMDedupMultiObj *) obj);
+-	return NULL;
+ }
+ 
+ #define nm_clear_nmp_object(ptr) \
+-- 
+2.14.3
+
+From 8269cd1d5a73edf374066e1c0eeb5949a7c0881b Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Wed, 7 Feb 2018 18:08:58 +0000
+Subject: [PATCH 4/5] all: fix -Wcast-function-type warnings
+
+GCC 8.0's -Wcast-function-type objects casting function pointers to ones
+with incompatible prototypes. Sometimes we do that on purpose though.
+
+Notably, the g_source_set_callback()'s func argument can point to functions
+of various prototypes. Also, libnm-glib/nm-remote-connection is perhaps
+just not worth reworking, that would just be a waste of time.
+
+A cast to void(*)(void) avoids the GCC warning, let's use it.
+
+(cherry picked from commit ee916a1e9ec3f06f8c88dc3d95058a6bd1561c7d)
+(cherry picked from commit 42913505a3c62dac199708f3da338fa97f87d58e)
+---
+ clients/tui/newt/nmt-newt-form.c  |  2 +-
+ libnm-glib/nm-remote-connection.c | 14 +++++++-------
+ shared/nm-utils/nm-udev-utils.c   |  2 +-
+ 3 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/clients/tui/newt/nmt-newt-form.c b/clients/tui/newt/nmt-newt-form.c
+index 835c1aba7..ccf447ead 100644
+--- a/clients/tui/newt/nmt-newt-form.c
++++ b/clients/tui/newt/nmt-newt-form.c
+@@ -360,7 +360,7 @@ nmt_newt_form_real_show (NmtNewtForm *form)
+ 		keypress_source = g_io_create_watch (io, G_IO_IN);
+ 		g_source_set_can_recurse (keypress_source, TRUE);
+ 		g_source_set_callback (keypress_source,
+-		                       (GSourceFunc) nmt_newt_form_keypress_callback,
++		                       (GSourceFunc)(void (*) (void)) nmt_newt_form_keypress_callback,
+ 		                       NULL, NULL);
+ 		g_source_attach (keypress_source, NULL);
+ 		g_io_channel_unref (io);
+diff --git a/libnm-glib/nm-remote-connection.c b/libnm-glib/nm-remote-connection.c
+index 6dcce0ba9..820f9e5ca 100644
+--- a/libnm-glib/nm-remote-connection.c
++++ b/libnm-glib/nm-remote-connection.c
+@@ -218,7 +218,7 @@ proxy_destroy_cb (DBusGProxy* proxy, gpointer user_data) {
+ static void
+ result_cb (RemoteCall *call, DBusGProxyCall *proxy_call, GError *error)
+ {
+-	NMRemoteConnectionResultFunc func = (NMRemoteConnectionResultFunc) call->callback;
++	NMRemoteConnectionResultFunc func = (NMRemoteConnectionResultFunc)(void (*) (void)) call->callback;
+ 	GError *local_error = NULL;
+ 
+ 	if (!error) {
+@@ -254,7 +254,7 @@ nm_remote_connection_commit_changes (NMRemoteConnection *self,
+ 
+ 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
+ 
+-	call = remote_call_new (self, result_cb, (GFunc) callback, user_data);
++	call = remote_call_new (self, result_cb, (GFunc)(void (*) (void)) callback, user_data);
+ 	if (!call)
+ 		return;
+ 
+@@ -294,7 +294,7 @@ nm_remote_connection_commit_changes_unsaved (NMRemoteConnection *connection,
+ 
+ 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (connection);
+ 
+-	call = remote_call_new (connection, result_cb, (GFunc) callback, user_data);
++	call = remote_call_new (connection, result_cb, (GFunc)(void (*) (void)) callback, user_data);
+ 	if (!call)
+ 		return;
+ 
+@@ -331,7 +331,7 @@ nm_remote_connection_save (NMRemoteConnection *connection,
+ 
+ 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (connection);
+ 
+-	call = remote_call_new (connection, result_cb, (GFunc) callback, user_data);
++	call = remote_call_new (connection, result_cb, (GFunc)(void (*) (void)) callback, user_data);
+ 	if (!call)
+ 		return;
+ 
+@@ -359,7 +359,7 @@ nm_remote_connection_delete (NMRemoteConnection *self,
+ 
+ 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
+ 
+-	call = remote_call_new (self, result_cb, (GFunc) callback, user_data);
++	call = remote_call_new (self, result_cb, (GFunc)(void (*) (void)) callback, user_data);
+ 	if (!call)
+ 		return;
+ 
+@@ -372,7 +372,7 @@ nm_remote_connection_delete (NMRemoteConnection *self,
+ static void
+ get_secrets_cb (RemoteCall *call, DBusGProxyCall *proxy_call, GError *error)
+ {
+-	NMRemoteConnectionGetSecretsFunc func = (NMRemoteConnectionGetSecretsFunc) call->callback;
++	NMRemoteConnectionGetSecretsFunc func = (NMRemoteConnectionGetSecretsFunc)(void (*) (void)) call->callback;
+ 	GHashTable *secrets = NULL;
+ 	GError *local_error = NULL;
+ 
+@@ -415,7 +415,7 @@ nm_remote_connection_get_secrets (NMRemoteConnection *self,
+ 
+ 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
+ 
+-	call = remote_call_new (self, get_secrets_cb, (GFunc) callback, user_data);
++	call = remote_call_new (self, get_secrets_cb, (GFunc)(void (*) (void)) callback, user_data);
+ 	if (!call)
+ 		return;
+ 
+diff --git a/shared/nm-utils/nm-udev-utils.c b/shared/nm-utils/nm-udev-utils.c
+index 79d4426de..709f75904 100644
+--- a/shared/nm-utils/nm-udev-utils.c
++++ b/shared/nm-utils/nm-udev-utils.c
+@@ -257,7 +257,7 @@ nm_udev_client_new (const char *const*subsystems,
+ 				channel = g_io_channel_unix_new (udev_monitor_get_fd (self->monitor));
+ 				self->watch_source = g_io_create_watch (channel, G_IO_IN);
+ 				g_io_channel_unref (channel);
+-				g_source_set_callback (self->watch_source, (GSourceFunc) monitor_event, self, NULL);
++				g_source_set_callback (self->watch_source, (GSourceFunc)(void (*) (void)) monitor_event, self, NULL);
+ 				g_source_attach (self->watch_source, g_main_context_get_thread_default ());
+ 				g_source_unref (self->watch_source);
+ 			}
+-- 
+2.14.3
+
+From 247b393914626a92f11956853ea69fc3261e8ec0 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sat, 17 Mar 2018 07:45:10 +0100
+Subject: [PATCH 5/5] session-monitor: fix a -Wcast-function-type warning
+
+See-Also: ee916a1e9ec3f06f8c88dc3d95058a6bd1561c7d
+(cherry picked from commit b686dd8488c3a568f41968596e22f0673c0b5c6e)
+(cherry picked from commit aeaa8950494e9fb481524a13d138881195b7e297)
+---
+ src/nm-session-monitor.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/nm-session-monitor.c b/src/nm-session-monitor.c
+index 20781bd45..e7d1d7429 100644
+--- a/src/nm-session-monitor.c
++++ b/src/nm-session-monitor.c
+@@ -137,7 +137,10 @@ st_sd_init (NMSessionMonitor *monitor)
+ static void
+ st_sd_finalize (NMSessionMonitor *monitor)
+ {
+-	g_clear_pointer (&monitor->sd.monitor, sd_login_monitor_unref);
++	if (monitor->sd.monitor) {
++		sd_login_monitor_unref (monitor->sd.monitor);
++		monitor->sd.monitor = NULL;
++	}
+ 	g_source_remove (monitor->sd.watch);
+ }
+ #endif /* SESSION_TRACKING_SYSTEMD */
+-- 
+2.14.3
+
