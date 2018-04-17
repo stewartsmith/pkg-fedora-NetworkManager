@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.10.6
 %global real_version 1.10.6
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -91,6 +91,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 Patch1: 0001-fix-build-with-gcc8.patch
+Patch2: 0002-device-check-rp_filter-all-rh1565529.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -359,6 +360,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 %patch1 -p1
+%patch2 -p1
 
 %build
 %if %{with regen_docs}
@@ -710,6 +712,9 @@ fi
 %endif
 
 %changelog
+* Tue Apr 17 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.6-2
+- device: fix setting 'rp_filter' value (rh #1565529)
+
 * Wed Mar 14 2018 Iryna Shcherbina <ishcherb@redhat.com> - 1:1.10.6-1.1
 - Update Python 2 dependency declarations to new packaging standards
   (See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3)
