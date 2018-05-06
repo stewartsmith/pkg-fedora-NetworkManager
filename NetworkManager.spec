@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.10.6
 %global real_version 1.10.6
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -92,6 +92,7 @@ Source3: 20-connectivity-fedora.conf
 
 Patch1: 0001-fix-build-with-gcc8.patch
 Patch2: 0002-device-check-rp_filter-all-rh1565529.patch
+Patch3: 0003-dhcp-let-client-continue-on-expiry-rh1575370.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -361,6 +362,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 %if %{with regen_docs}
@@ -712,6 +714,9 @@ fi
 %endif
 
 %changelog
+* Sun May  6 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.6-3
+- dhcp: better handle expiry and nacks (rh #1575370)
+
 * Tue Apr 17 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.6-2
 - device: fix setting 'rp_filter' value (rh #1565529)
 
