@@ -7,9 +7,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.10.6
-%global real_version 1.10.6
-%global release_version 3
+%global rpm_version 1.10.8
+%global real_version 1.10.8
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -90,9 +90,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-Patch1: 0001-fix-build-with-gcc8.patch
-Patch2: 0002-device-check-rp_filter-all-rh1565529.patch
-Patch3: 0003-dhcp-let-client-continue-on-expiry-rh1575370.patch
+# Patch1:
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -360,9 +358,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
+# %patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -714,6 +710,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.8-1
+- Update to 1.10.8 release
+
 * Sun May  6 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.6-3
 - dhcp: better handle expiry and nacks (rh #1575370)
 
