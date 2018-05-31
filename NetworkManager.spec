@@ -1,14 +1,15 @@
 %global dbus_glib_version 0.100
 
 %global wireless_tools_version 1:28-0pre9
-%global libnl3_version 3.2.7
+
+%global wpa_supplicant_version 1:1.1
 
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.10.8
-%global real_version 1.10.8
+%global rpm_version 1.11.4
+%global real_version 1.11.4
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -18,6 +19,7 @@
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global nmlibdir %{_prefix}/lib/%{name}
+%global nmplugindir %{_libdir}/%{name}/%{version}-%{release}
 
 %global _hardened_build 1
 
@@ -41,6 +43,7 @@
 %bcond_without wwan
 %bcond_without team
 %bcond_without wifi
+%bcond_with iwd
 %bcond_without ovs
 %bcond_without ppp
 %bcond_without nmtui
@@ -56,6 +59,16 @@
 %bcond_with libnm_glib
 %else
 %bcond_without libnm_glib
+%endif
+%if 0%{?fedora}
+%bcond_without connectivity_fedora
+%else
+%bcond_with connectivity_fedora
+%endif
+%if 0%{?fedora} > 28 || 0%{?rhel} > 7
+%bcond_without crypto_gnutls
+%else
+%bcond_with crypto_gnutls
 %endif
 
 ###############################################################################
@@ -80,7 +93,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -115,16 +128,19 @@ BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 %if 0%{?fedora}
 BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 %endif
-BuildRequires: glib2-devel >= 2.32.0
+BuildRequires: glib2-devel >= 2.40.0
 BuildRequires: gobject-introspection-devel >= 0.10.3
 BuildRequires: gettext-devel
 BuildRequires: pkgconfig
-BuildRequires: libnl3-devel >= %{libnl3_version}
 BuildRequires: automake autoconf intltool libtool
 %if %{with ppp}
 BuildRequires: ppp-devel >= 2.4.5
 %endif
+%if %{with crypto_gnutls}
+BuildRequires: gnutls-devel >= 2.12
+%else
 BuildRequires: nss-devel >= 3.11.7
+%endif
 BuildRequires: dhclient
 BuildRequires: readline-devel
 BuildRequires: audit-libs-devel
@@ -152,11 +168,24 @@ BuildRequires: ModemManager-glib-devel >= 1.0
 BuildRequires: newt-devel
 %endif
 BuildRequires: /usr/bin/dbus-launch
-BuildRequires: python2-gobject-base
-BuildRequires: python2-dbus
+%if 0%{?fedora} > 27 || 0%{?rhel} > 7
+BuildRequires: python3
+BuildRequires: python3-gobject-base
+BuildRequires: python3-dbus
+%else
+BuildRequires: python2
+BuildRequires: pygobject3-base
+BuildRequires: dbus-python
+%endif
 BuildRequires: libselinux-devel
 BuildRequires: polkit-devel
 BuildRequires: jansson-devel
+%if %{with sanitizer}
+BuildRequires: libasan
+%if 0%{?fedora}
+BuildRequires: libubsan
+%endif
+%endif
 
 
 %description
@@ -215,7 +244,16 @@ This package contains NetworkManager support for team devices.
 Summary: Wifi plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: wpa_supplicant >= 1:1.1
+
+%if %{with iwd} && (0%{?fedora} > 24 || 0%{?rhel} > 7)
+Requires: (wpa_supplicant >= %{wpa_supplicant_version} or iwd)
+%else
+# Just require wpa_supplicant on platforms that don't support boolean
+# dependencies even though the plugin supports both supplicant and
+# iwd backend.
+Requires: wpa_supplicant >= %{wpa_supplicant_version}
+%endif
+
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 
 %description wifi
@@ -318,6 +356,7 @@ applications using NetworkManager functionality from applications.  This
 is the new NetworkManager API. See also NetworkManager-glib-devel.
 
 
+%if %{with connectivity_fedora}
 %package config-connectivity-fedora
 Summary: NetworkManager config file for connectivity checking via Fedora servers
 Group: System Environment/Base
@@ -326,6 +365,7 @@ BuildArch: noarch
 %description config-connectivity-fedora
 This adds a NetworkManager configuration file to enable connectivity checking
 via Fedora infrastructure.
+%endif
 
 %package config-server
 Summary: NetworkManager config file for "server-like" defaults
@@ -341,6 +381,18 @@ ethernet devices with no carrier.
 
 This package is intended to be installed by default for server
 deployments.
+
+%package dispatcher-routing-rules
+Summary: NetworkManager dispatcher file for advanced routing rules
+Group: System Environment/Base
+BuildArch: noarch
+Provides: %{name}-config-routing-rules = %{epoch}:%{version}-%{release}
+Obsoletes: %{name}-config-routing-rules < %{epoch}:%{version}-%{release}
+
+%description dispatcher-routing-rules
+This adds a NetworkManager dispatcher file to support networking
+configurations using "/etc/sysconfig/network-scripts/rule-NAME" files
+(eg, to do policy-based routing).
 
 %if 0%{with_nmtui}
 %package tui
@@ -358,7 +410,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
-# %patch1 -p1
+#%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -367,22 +419,24 @@ gtkdocize
 autoreconf --install --force
 intltoolize --automake --copy --force
 %configure \
+	--disable-silent-rules \
 	--disable-static \
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-dhcpcanon=no \
 	--with-config-dhcp-default=dhclient \
-	--with-crypto=nss \
-%if %{with test}
-	--enable-more-warnings=error \
+%if %{with crypto_gnutls}
+	--with-crypto=gnutls \
 %else
-	--enable-more-warnings=yes \
+	--with-crypto=nss \
 %endif
 %if %{with sanitizer}
-	--enable-address-sanitizer \
+	--with-address-sanitizer=exec \
+%if 0%{?fedora}
 	--enable-undefined-sanitizer \
+%endif
 %else
-	--disable-address-sanitizer \
+	--with-address-sanitizer=no \
 	--disable-undefined-sanitizer \
 %endif
 %if %{with debug}
@@ -408,6 +462,11 @@ intltoolize --automake --copy --force
 %endif
 %else
 	--enable-wifi=no \
+%endif
+%if %{with iwd}
+	--with-iwd=yes \
+%else
+	--with-iwd=no \
 %endif
 	--enable-vala=yes \
 	--enable-introspection \
@@ -444,6 +503,7 @@ intltoolize --automake --copy --force
 %if %{with test}
 	--with-tests=yes \
 %else
+	--enable-more-warnings=yes \
 	--with-tests=no \
 %endif
 	--with-valgrind=no \
@@ -472,7 +532,10 @@ make install DESTDIR=%{buildroot}
 cp %{SOURCE1} %{buildroot}%{_sysconfdir}/%{name}/
 
 cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
+
+%if %{with connectivity_fedora}
 cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
+%endif
 
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
 ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
@@ -482,7 +545,7 @@ ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/n
 
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/pppd/%{ppp_version}/*.la
-rm -f %{buildroot}%{_libdir}/NetworkManager/*.la
+rm -f %{buildroot}%{nmplugindir}/*.la
 
 # Ensure the documentation timestamps are constant to avoid multilib conflicts
 find %{buildroot}%{_datadir}/gtk-doc -exec touch --reference configure.ac '{}' \+
@@ -551,9 +614,6 @@ fi
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
-%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
-%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
-%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
@@ -561,8 +621,9 @@ fi
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
-%dir %{_libdir}/NetworkManager
-%{_libdir}/NetworkManager/libnm-settings-plugin*.so
+%dir %{_libdir}/%{name}
+%dir %{nmplugindir}
+%{nmplugindir}/libnm-settings-plugin*.so
 %if %{with nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
@@ -592,35 +653,35 @@ fi
 
 %if %{with adsl}
 %files adsl
-%{_libdir}/%{name}/libnm-device-plugin-adsl.so
+%{nmplugindir}/libnm-device-plugin-adsl.so
 %else
-%exclude %{_libdir}/%{name}/libnm-device-plugin-adsl.so
+%exclude %{nmplugindir}/libnm-device-plugin-adsl.so
 %endif
 
 %if %{with bluetooth}
 %files bluetooth
-%{_libdir}/%{name}/libnm-device-plugin-bluetooth.so
+%{nmplugindir}/libnm-device-plugin-bluetooth.so
 %endif
 
 %if %{with team}
 %files team
-%{_libdir}/%{name}/libnm-device-plugin-team.so
+%{nmplugindir}/libnm-device-plugin-team.so
 %endif
 
 %if %{with wifi}
 %files wifi
-%{_libdir}/%{name}/libnm-device-plugin-wifi.so
+%{nmplugindir}/libnm-device-plugin-wifi.so
 %endif
 
 %if %{with wwan}
 %files wwan
-%{_libdir}/%{name}/libnm-device-plugin-wwan.so
-%{_libdir}/%{name}/libnm-wwan.so
+%{nmplugindir}/libnm-device-plugin-wwan.so
+%{nmplugindir}/libnm-wwan.so
 %endif
 
 %if %{with ovs}
 %files ovs
-%{_libdir}/%{name}/libnm-device-plugin-ovs.so
+%{nmplugindir}/libnm-device-plugin-ovs.so
 %{systemd_dir}/NetworkManager.service.d/NetworkManager-ovs.conf
 %{_mandir}/man7/nm-openvswitch.7*
 %endif
@@ -628,7 +689,7 @@ fi
 %if %{with ppp}
 %files ppp
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
-%{_libdir}/%{name}/libnm-ppp-plugin.so
+%{nmplugindir}/libnm-ppp-plugin.so
 %endif
 
 %if %{with libnm_glib}
@@ -690,15 +751,22 @@ fi
 %{_datadir}/vala/vapi/libnm.vapi
 %{_datadir}/dbus-1/interfaces/*.xml
 
+%if %{with connectivity_fedora}
 %files config-connectivity-fedora
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/20-connectivity-fedora.conf
+%endif
 
 %files config-server
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/00-server.conf
+
+%files dispatcher-routing-rules
+%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
+%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
+%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 
 %if %{with nmtui}
 %files tui
@@ -710,6 +778,12 @@ fi
 %endif
 
 %changelog
+* Thu May 31 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.11.4-1
+- Update to a development snapshot of NetworkManager 1.12
+- Switch crypto to gnutls
+- Add dispatcher-routing-rules subpackage
+- Switch to Python 3-only build root
+
 * Fri May 11 2018 Beniamino Galvani <bgalvani@redhat.com> - 1:1.10.8-1
 - Update to 1.10.8 release
 
