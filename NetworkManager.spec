@@ -8,9 +8,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.11.4
-%global real_version 1.11.4
-%global release_version 1
+%global rpm_version 1.12.0
+%global real_version 1.11.90
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -106,7 +106,9 @@ Source3: 20-connectivity-fedora.conf
 # Patch1:
 
 Requires(post): systemd
+Requires(post): /usr/sbin/update-alternatives
 Requires(preun): systemd
+Requires(preun): /usr/sbin/update-alternatives
 Requires(postun): systemd
 
 Requires: dbus >= %{dbus_version}
@@ -555,6 +557,8 @@ mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
 cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
 %endif
 
+touch %{buildroot}%{_sbindir}/ifup %{buildroot}%{_sbindir}/ifdown
+
 
 %check
 %if %{with test}
@@ -578,6 +582,15 @@ fi
 
 %systemd_post NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
+%triggerin -- initscripts
+if [ -f %{_sbindir}/ifup -a ! -L %{_sbindir}/ifup ]; then
+    # initscripts package too old, won't let us set an alternative
+    /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
+else
+    /usr/sbin/update-alternatives --install %{_sbindir}/ifup ifup %{_libexecdir}/nm-ifup 50 \
+        --slave %{_sbindir}/ifdown ifdown %{_libexecdir}/nm-ifdown
+fi
+
 %preun
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
@@ -585,6 +598,8 @@ if [ $1 -eq 0 ]; then
 
     # Don't kill networking entirely just on package remove
     #/bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
+
+    /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
 fi
 %systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
@@ -618,6 +633,10 @@ fi
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
+%{_libexecdir}/nm-ifup
+%ghost %{_sbindir}/ifup
+%{_libexecdir}/nm-ifdown
+%ghost %{_sbindir}/ifdown
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
@@ -778,6 +797,9 @@ fi
 %endif
 
 %changelog
+* Sat Jun 16 2018 Thomas Haller <thaller@redhat.com> - 1:1.12.0-0.1
+- Update to 1.12-rc1 pre-release
+
 * Thu May 31 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.11.4-1
 - Update to a development snapshot of NetworkManager 1.12
 - Switch crypto to gnutls
