@@ -104,6 +104,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
 # Patch1:
+Patch1: 0001-fix-clients-tests.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -413,6 +414,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+%patch1 -p1
 
 %build
 %if %{with regen_docs}
