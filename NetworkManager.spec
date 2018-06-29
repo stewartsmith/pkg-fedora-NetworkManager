@@ -9,8 +9,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.12.0
-%global real_version 1.11.90
-%global release_version 0.1
+%global real_version 1.12.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -103,8 +103,7 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 
-# Patch1:
-Patch1: 0001-fix-clients-tests.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -280,13 +279,13 @@ devices.
 
 %if %{with ovs}
 %package ovs
-Summary: OpenVSwitch device plugin for NetworkManager
+Summary: Open vSwitch device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: openvswitch
 
 %description ovs
-This package contains NetworkManager support for OpenVSwitch bridges.
+This package contains NetworkManager support for Open vSwitch bridges.
 %endif
 
 
@@ -414,7 +413,6 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
-%patch1 -p1
 
 %build
 %if %{with regen_docs}
@@ -799,6 +797,9 @@ fi
 %endif
 
 %changelog
+* Fri Jun 29 2018 Thomas Haller <thaller@redhat.com> - 1:1.12.0-1
+- Update to 1.12.0 release
+
 * Sat Jun 16 2018 Thomas Haller <thaller@redhat.com> - 1:1.12.0-0.1
 - Update to 1.12-rc1 pre-release
 
