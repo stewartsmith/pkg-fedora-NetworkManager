@@ -8,8 +8,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.12.0
-%global real_version 1.12.0
+%global rpm_version 1.12.2
+%global real_version 1.12.2
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -65,6 +65,11 @@
 %else
 %bcond_with connectivity_fedora
 %endif
+%if 0%{?rhel}
+%bcond_without connectivity_redhat
+%else
+%bcond_with connectivity_redhat
+%endif
 %if 0%{?fedora} > 28 || 0%{?rhel} > 7
 %bcond_without crypto_gnutls
 %else
@@ -93,7 +98,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -102,6 +107,7 @@ Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
+Source4: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
 
@@ -363,11 +369,26 @@ is the new NetworkManager API. See also NetworkManager-glib-devel.
 Summary: NetworkManager config file for connectivity checking via Fedora servers
 Group: System Environment/Base
 BuildArch: noarch
+Provides: NetworkManager-config-connectivity = %{epoch}:%{version}-%{release}
 
 %description config-connectivity-fedora
 This adds a NetworkManager configuration file to enable connectivity checking
 via Fedora infrastructure.
 %endif
+
+
+%if %{with connectivity_redhat}
+%package config-connectivity-redhat
+Summary: NetworkManager config file for connectivity checking via Red Hat servers
+Group: System Environment/Base
+BuildArch: noarch
+Provides: NetworkManager-config-connectivity = %{epoch}:%{version}-%{release}
+
+%description config-connectivity-redhat
+This adds a NetworkManager configuration file to enable connectivity checking
+via Red Hat infrastructure.
+%endif
+
 
 %package config-server
 Summary: NetworkManager config file for "server-like" defaults
@@ -384,6 +405,7 @@ ethernet devices with no carrier.
 This package is intended to be installed by default for server
 deployments.
 
+
 %package dispatcher-routing-rules
 Summary: NetworkManager dispatcher file for advanced routing rules
 Group: System Environment/Base
@@ -395,6 +417,7 @@ Obsoletes: %{name}-config-routing-rules < %{epoch}:%{version}-%{release}
 This adds a NetworkManager dispatcher file to support networking
 configurations using "/etc/sysconfig/network-scripts/rule-NAME" files
 (eg, to do policy-based routing).
+
 
 %if 0%{with_nmtui}
 %package tui
@@ -409,10 +432,12 @@ NetworkManager, to allow performing some of the operations supported
 by nm-connection-editor and nm-applet in a non-graphical environment.
 %endif
 
+
 %prep
 %setup -q -n NetworkManager-%{real_version}
 
 #%patch1 -p1
+
 
 %build
 %if %{with regen_docs}
@@ -527,6 +552,7 @@ intltoolize --automake --copy --force
 
 make %{?_smp_mflags}
 
+
 %install
 # install NM
 make install DESTDIR=%{buildroot}
@@ -537,6 +563,10 @@ cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
 
 %if %{with connectivity_fedora}
 cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
+%endif
+
+%if %{with connectivity_redhat}
+cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 %endif
 
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
@@ -591,6 +621,7 @@ else
         --slave %{_sbindir}/ifdown ifdown %{_libexecdir}/nm-ifdown
 fi
 
+
 %preun
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
@@ -602,6 +633,7 @@ if [ $1 -eq 0 ]; then
     /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
 fi
 %systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service
+
 
 %postun
 /usr/bin/udevadm control --reload-rules || :
@@ -657,6 +689,7 @@ fi
 %{_mandir}/man8/*
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/NetworkManager/system-connections
+%dir %{_sysconfdir}/sysconfig/network-scripts
 %{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/polkit-1/actions/*.policy
@@ -670,6 +703,7 @@ fi
 %doc NEWS AUTHORS README CONTRIBUTING TODO
 %license COPYING
 
+
 %if %{with adsl}
 %files adsl
 %{nmplugindir}/libnm-device-plugin-adsl.so
@@ -677,26 +711,31 @@ fi
 %exclude %{nmplugindir}/libnm-device-plugin-adsl.so
 %endif
 
+
 %if %{with bluetooth}
 %files bluetooth
 %{nmplugindir}/libnm-device-plugin-bluetooth.so
 %endif
+
 
 %if %{with team}
 %files team
 %{nmplugindir}/libnm-device-plugin-team.so
 %endif
 
+
 %if %{with wifi}
 %files wifi
 %{nmplugindir}/libnm-device-plugin-wifi.so
 %endif
+
 
 %if %{with wwan}
 %files wwan
 %{nmplugindir}/libnm-device-plugin-wwan.so
 %{nmplugindir}/libnm-wwan.so
 %endif
+
 
 %if %{with ovs}
 %files ovs
@@ -705,11 +744,13 @@ fi
 %{_mandir}/man7/nm-openvswitch.7*
 %endif
 
+
 %if %{with ppp}
 %files ppp
 %{_libdir}/pppd/%{ppp_version}/nm-pppd-plugin.so
 %{nmplugindir}/libnm-ppp-plugin.so
 %endif
+
 
 %if %{with libnm_glib}
 %files glib -f %{name}.lang
@@ -719,6 +760,7 @@ fi
 %{_libdir}/girepository-1.0/NetworkManager-1.0.typelib
 %{_libdir}/girepository-1.0/NMClient-1.0.typelib
 %endif
+
 
 %if %{with libnm_glib}
 %files glib-devel
@@ -751,9 +793,11 @@ fi
 %{_datadir}/vala/vapi/libnm-*.vapi
 %endif
 
+
 %files libnm -f %{name}.lang
 %{_libdir}/libnm.so.*
 %{_libdir}/girepository-1.0/NM-1.0.typelib
+
 
 %files libnm-devel
 %doc docs/api/html/*
@@ -770,6 +814,7 @@ fi
 %{_datadir}/vala/vapi/libnm.vapi
 %{_datadir}/dbus-1/interfaces/*.xml
 
+
 %if %{with connectivity_fedora}
 %files config-connectivity-fedora
 %dir %{nmlibdir}
@@ -777,15 +822,26 @@ fi
 %{nmlibdir}/conf.d/20-connectivity-fedora.conf
 %endif
 
+
+%if %{with connectivity_redhat}
+%files config-connectivity-redhat
+%dir %{nmlibdir}
+%dir %{nmlibdir}/conf.d
+%{nmlibdir}/conf.d/20-connectivity-redhat.conf
+%endif
+
+
 %files config-server
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/00-server.conf
 
+
 %files dispatcher-routing-rules
 %{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
 %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
+
 
 %if %{with nmtui}
 %files tui
@@ -797,6 +853,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 25 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.12.2-2
+- Update to 1.12.2 release
+
 * Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.12.0-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
