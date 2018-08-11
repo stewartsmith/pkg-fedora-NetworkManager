@@ -110,7 +110,7 @@ Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
 Patch0: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commit/0a3755c179.patch#/0001-version-fix-compile-error-due-to-NM_AVAILABLE_IN_1_1.patch
-#Patch1: 0001-some.patch
+Patch1: 0001-utils-test-don-t-assert-on-debug-level-messages.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -437,7 +437,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %prep
 %setup -q -n NetworkManager-%{real_version}
 %patch0 -p1
-#%patch1 -p1
+%patch1 -p1
 
 
 %build
