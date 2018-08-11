@@ -10,7 +10,7 @@
 %global epoch_version 1
 %global rpm_version 1.12.2
 %global real_version 1.12.2
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -109,6 +109,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
+Patch0: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commit/0a3755c179.patch#/0001-version-fix-compile-error-due-to-NM_AVAILABLE_IN_1_1.patch
 #Patch1: 0001-some.patch
 
 Requires(post): systemd
@@ -435,7 +436,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 %prep
 %setup -q -n NetworkManager-%{real_version}
-
+%patch0 -p1
 #%patch1 -p1
 
 
@@ -853,7 +854,10 @@ fi
 %endif
 
 %changelog
-* Wed Jul 25 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.12.2-2
+* Sat Aug 11 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.12.2-2
+- fix compile error due to NM_AVAILABLE_IN_1_12_2
+
+* Wed Jul 25 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.12.2-1
 - Update to 1.12.2 release
 
 * Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.12.0-1.1
