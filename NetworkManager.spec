@@ -8,9 +8,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.12.2
-%global real_version 1.12.2
-%global release_version 2
+%global rpm_version 1.14.0
+%global real_version 1.14.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -34,8 +34,6 @@
 
 %global real_version_major %(printf '%s' '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[1-9][0-9]*\\)\\.[1-9][0-9]*$/\\1/p')
 
-%global is_devel_build %(printf '%s' '%{real_version}' | sed -n 's/^1\\.\\([0-9]*[13579]\\)\\..*/1/p')
-
 ###############################################################################
 
 %bcond_without adsl
@@ -48,12 +46,8 @@
 %bcond_without ppp
 %bcond_without nmtui
 %bcond_without regen_docs
-%if 0%{is_devel_build}
-%bcond_without debug
-%else
 %bcond_with    debug
-%endif
-%bcond_without test
+%bcond_with    test
 %bcond_with    sanitizer
 %if 0%{?fedora} > 28 || 0%{?rhel} > 7
 %bcond_with libnm_glib
@@ -65,7 +59,7 @@
 %else
 %bcond_with connectivity_fedora
 %endif
-%if 0%{?rhel}
+%if 0%{?rhel} && 0%{?rhel} > 7
 %bcond_without connectivity_redhat
 %else
 %bcond_with connectivity_redhat
@@ -92,6 +86,12 @@
 %global with_modem_manager_1 0
 %endif
 
+%if 0%{?fedora} || 0%{?rhel} <= 7
+%global dhcp_default dhclient
+%else
+%global dhcp_default internal
+%endif
+
 ###############################################################################
 
 Name: NetworkManager
@@ -109,8 +109,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
-Patch0: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commit/0a3755c179.patch#/0001-version-fix-compile-error-due-to-NM_AVAILABLE_IN_1_1.patch
-Patch1: 0001-utils-test-don-t-assert-on-debug-level-messages.patch
+Patch1: 0001-connectivity-fix-crash-when-removing-easy-handle-fro.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -132,6 +131,14 @@ Conflicts: NetworkManager-pptp < 1:0.7.0.99-1
 Conflicts: NetworkManager-openconnect < 0:0.7.0.99-1
 Conflicts: kde-plasma-networkmanagement < 1:0.9-0.49.20110527git.nm09
 
+BuildRequires: gcc
+BuildRequires: libtool
+BuildRequires: pkgconfig
+BuildRequires: automake
+BuildRequires: autoconf
+BuildRequires: intltool
+BuildRequires: gettext-devel
+
 BuildRequires: dbus-devel >= %{dbus_version}
 BuildRequires: dbus-glib-devel >= %{dbus_glib_version}
 %if 0%{?fedora}
@@ -139,9 +146,6 @@ BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
 %endif
 BuildRequires: glib2-devel >= 2.40.0
 BuildRequires: gobject-introspection-devel >= 0.10.3
-BuildRequires: gettext-devel
-BuildRequires: pkgconfig
-BuildRequires: automake autoconf intltool libtool
 %if %{with ppp}
 BuildRequires: ppp-devel >= 2.4.5
 %endif
@@ -435,9 +439,7 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 
 %prep
-%setup -q -n NetworkManager-%{real_version}
-%patch0 -p1
-%patch1 -p1
+%autosetup -p1 -n NetworkManager-%{real_version}
 
 
 %build
@@ -452,7 +454,7 @@ intltoolize --automake --copy --force
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-dhcpcanon=no \
-	--with-config-dhcp-default=dhclient \
+	--with-config-dhcp-default=%{dhcp_default} \
 %if %{with crypto_gnutls}
 	--with-crypto=gnutls \
 %else
@@ -528,11 +530,11 @@ intltoolize --automake --copy --force
 	--with-systemdsystemunitdir=%{systemd_dir} \
 	--with-system-ca-path=/etc/pki/tls/cert.pem \
 	--with-dbus-sys-dir=%{dbus_sys_dir} \
-%if %{with test}
 	--with-tests=yes \
+%if %{with test}
+	--enable-more-warnings=error \
 %else
 	--enable-more-warnings=yes \
-	--with-tests=no \
 %endif
 	--with-valgrind=no \
 	--enable-ifcfg-rh=yes \
@@ -593,7 +595,9 @@ touch %{buildroot}%{_sbindir}/ifup %{buildroot}%{_sbindir}/ifdown
 
 %check
 %if %{with test}
-make %{?_smp_mflags} check
+make -k %{?_smp_mflags} check
+%else
+make -k %{?_smp_mflags} check || :
 %endif
 
 
@@ -667,9 +671,9 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
 %{_libexecdir}/nm-ifup
-%ghost %{_sbindir}/ifup
+%ghost %attr(755, root, root) %{_sbindir}/ifup
 %{_libexecdir}/nm-ifdown
-%ghost %{_sbindir}/ifdown
+%ghost %attr(755, root, root) %{_sbindir}/ifdown
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
@@ -853,7 +857,11 @@ fi
 %{_mandir}/man1/nmtui*
 %endif
 
+
 %changelog
+* Tue Sep 18 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.0-1
+- Update to 1.14.0 release
+
 * Sat Aug 11 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.12.2-2
 - fix compile error due to NM_AVAILABLE_IN_1_12_2
 
@@ -3292,4 +3300,3 @@ fi
 
 * Fri Aug 20 2004 Dan Williams <dcbw@redhat.com> 0.1-3
 - First public release
-
