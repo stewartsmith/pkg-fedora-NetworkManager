@@ -8,8 +8,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.14.0
-%global real_version 1.14.0
+%global rpm_version 1.14.2
+%global real_version 1.14.2
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -36,6 +36,7 @@
 
 ###############################################################################
 
+%bcond_with meson
 %bcond_without adsl
 %bcond_without bluetooth
 %bcond_without wwan
@@ -109,7 +110,7 @@ Source2: 00-server.conf
 Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
-Patch1: 0001-connectivity-fix-crash-when-removing-easy-handle-fro.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -134,8 +135,12 @@ Conflicts: kde-plasma-networkmanagement < 1:0.9-0.49.20110527git.nm09
 BuildRequires: gcc
 BuildRequires: libtool
 BuildRequires: pkgconfig
+%if %{with meson}
+BuildRequires: meson
+%else
 BuildRequires: automake
 BuildRequires: autoconf
+%endif
 BuildRequires: intltool
 BuildRequires: gettext-devel
 
@@ -443,6 +448,99 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 
 
 %build
+%if %{with meson}
+%meson \
+	-Ddhcpcanon=no \
+	-Ddhcpcd=no \
+	-Dconfig_dhcp_default=%{dhcp_default} \
+%if %{with crypto_gnutls}
+	-Dcrypto=gnutls \
+%else
+	-Dcrypto=nss \
+%endif
+%if %{with debug}
+	-Dmore_logging=true \
+	-Dmore_asserts=10000 \
+%else
+	-Dmore_logging=false \
+	-Dmore_asserts=0 \
+%endif
+	-Dld_gc=true \
+	-Dlibaudit=yes-disabled-by-default \
+%if 0%{?with_modem_manager_1}
+	-Dmodem_manager=true \
+%else
+	-Dmodem_manager=false \
+%endif
+%if %{with wifi}
+	-Dwifi=true \
+%if 0%{?fedora}
+	-Dwext=true \
+%else
+	-Dwext=false \
+%endif
+%else
+	-Dwifi=false \
+%endif
+%if %{with iwd}
+	-Diwd=true \
+%else
+	-Diwd=false \
+%endif
+	-Dvapi=true \
+	-Dintrospection=true \
+%if %{with regen_docs}
+	-Ddocs=true \
+%else
+	-Ddocs=false \
+%endif
+%if %{with team}
+	-Dteamdctl=true \
+%else
+	-Dteamdctl=false \
+%endif
+%if %{with ovs}
+	-Dovs=true \
+%else
+	-Dovs=false \
+%endif
+	-Dselinux=true \
+	-Dpolkit=yes  \
+	-Dpolkit_agent=true \
+	-Dmodify_system=true \
+	-Dconcheck=true \
+%if 0%{?fedora}
+	-Dlibpsl=true \
+%else
+	-Dlibpsl=false \
+%endif
+	-Dsession_tracking=systemd \
+	-Dsuspend_resume=systemd \
+	-Dsystemdsystemunitdir=%{systemd_dir} \
+	-Dsystem_ca_path=/etc/pki/tls/cert.pem \
+	-Ddbus_conf_dir=%{dbus_sys_dir} \
+	-Dtests=yes \
+	-Dvalgrind=no \
+	-Difcfg_rh=true \
+%if %{with ppp}
+	-Dpppd_plugin_dir=%{_libdir}/pppd/%{ppp_version} \
+	-Dppp=true \
+%endif
+	-Ddist_version=%{version}-%{release} \
+	-Dconfig_plugins_default='ifcfg-rh' \
+	-Dconfig_dns_rc_manager_default=symlink \
+	-Dconfig_logging_backend_default=journal \
+	-Djson_validation=true \
+%if %{with libnm_glib}
+	-Dlibnm_glib=true
+%else
+	-Dlibnm_glib=false
+%endif
+
+%meson_build
+
+%else
+# autotools
 %if %{with regen_docs}
 gtkdocize
 %endif
@@ -543,7 +641,7 @@ intltoolize --automake --copy --force
 	--enable-ppp=yes \
 %endif
 	--with-dist-version=%{version}-%{release} \
-	--with-config-plugins-default='ifcfg-rh,ibft' \
+	--with-config-plugins-default='ifcfg-rh' \
 	--with-config-dns-rc-manager-default=symlink \
 	--with-config-logging-backend-default=journal \
 	--enable-json-validation \
@@ -555,10 +653,14 @@ intltoolize --automake --copy --force
 
 make %{?_smp_mflags}
 
+%endif # end autotools
 
 %install
-# install NM
+%if %{with meson}
+%meson_install
+%else
 make install DESTDIR=%{buildroot}
+%endif
 
 cp %{SOURCE1} %{buildroot}%{_sysconfdir}/%{name}/
 
@@ -594,11 +696,20 @@ touch %{buildroot}%{_sbindir}/ifup %{buildroot}%{_sbindir}/ifdown
 
 
 %check
+%if %{with meson}
+%if %{with test}
+%meson_test
+%else
+%ninja_test -C %{_vpath_builddir} || :
+%endif
+%else
+# autotools
 %if %{with test}
 make -k %{?_smp_mflags} check
 %else
 make -k %{?_smp_mflags} check || :
 %endif
+%endif # end autotools
 
 
 %pre
@@ -677,6 +788,7 @@ fi
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
+%{_libexecdir}/nm-initrd-generator
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
 %{nmplugindir}/libnm-settings-plugin*.so
@@ -769,7 +881,6 @@ fi
 
 %if %{with libnm_glib}
 %files glib-devel
-%doc docs/api/html/*
 %dir %{_includedir}/libnm-glib
 %dir %{_includedir}/%{name}
 %{_includedir}/libnm-glib/*.h
@@ -805,7 +916,6 @@ fi
 
 
 %files libnm-devel
-%doc docs/api/html/*
 %dir %{_includedir}/libnm
 %{_includedir}/libnm/*.h
 %{_libdir}/pkgconfig/libnm.pc
@@ -859,6 +969,9 @@ fi
 
 
 %changelog
+* Fri Oct 19 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.14.2-1
+- Update to 1.14.2 release
+
 * Tue Sep 18 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.0-1
 - Update to 1.14.0 release
 
