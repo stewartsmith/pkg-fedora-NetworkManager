@@ -10,7 +10,7 @@
 %global epoch_version 1
 %global rpm_version 1.14.2
 %global real_version 1.14.2
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -111,6 +111,8 @@ Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-device-fix-crash-in-nm_device_generate_connection.patch
+Patch2: 0002-dhcp-dhclient-fix-memory-leak.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -969,6 +971,10 @@ fi
 
 
 %changelog
+* Tue Oct 23 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.2-2
+- device: fix crash in nm_device_generate_connection()
+- dhcp: dhclient: fix memory leak
+
 * Fri Oct 19 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.14.2-1
 - Update to 1.14.2 release
 
