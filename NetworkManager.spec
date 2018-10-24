@@ -111,8 +111,6 @@ Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-device-fix-crash-in-nm_device_generate_connection.patch
-Patch2: 0002-dhcp-dhclient-fix-memory-leak.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
