@@ -8,9 +8,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.14.2
-%global real_version 1.14.2
-%global release_version 2
+%global rpm_version 1.14.4
+%global real_version 1.14.4
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -790,7 +790,7 @@ fi
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
-%{_libexecdir}/nm-initrd-generator
+%exclude %{_libexecdir}/nm-initrd-generator
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
 %{nmplugindir}/libnm-settings-plugin*.so
@@ -971,6 +971,10 @@ fi
 
 
 %changelog
+* Wed Oct 24 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.14.4-1
+- Update to 1.14.4 release
+- Temporarily disable the initrd generator (rh #1641832)
+
 * Tue Oct 23 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.2-2
 - device: fix crash in nm_device_generate_connection()
 - dhcp: dhclient: fix memory leak
