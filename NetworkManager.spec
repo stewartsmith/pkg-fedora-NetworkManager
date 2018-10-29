@@ -10,7 +10,7 @@
 %global epoch_version 1
 %global rpm_version 1.14.4
 %global real_version 1.14.4
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -111,6 +111,7 @@ Source3: 20-connectivity-fedora.conf
 Source4: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-dhcp-CVE-2018-15688.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -969,6 +970,9 @@ fi
 
 
 %changelog
+* Mon Oct 29 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.4-2
+- dhcp: fix out-of-bounds heap write for DHCPv6 with internal plugin (CVE-2018-15688)
+
 * Wed Oct 24 2018 Lubomir Rintel <lkundrak@v3.sk> - 1:1.14.4-1
 - Update to 1.14.4 release
 - Temporarily disable the initrd generator (rh #1641832)
