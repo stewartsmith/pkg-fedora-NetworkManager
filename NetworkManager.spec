@@ -759,11 +759,9 @@ fi
 %systemd_postun
 
 
-%post   glib -p /sbin/ldconfig
-%postun glib -p /sbin/ldconfig
+%ldconfig_scriptlets   glib
 
-%post   libnm -p /sbin/ldconfig
-%postun libnm -p /sbin/ldconfig
+%ldconfig_scriptlets   libnm
 
 
 %files
