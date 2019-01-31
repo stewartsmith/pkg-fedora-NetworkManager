@@ -99,7 +99,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
@@ -951,6 +951,9 @@ fi
 
 
 %changelog
+* Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.14.4-2.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Mon Oct 29 2018 Thomas Haller <thaller@redhat.com> - 1:1.14.4-2
 - dhcp: fix out-of-bounds heap write for DHCPv6 with internal plugin (CVE-2018-15688)
 
