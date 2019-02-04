@@ -99,7 +99,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}.2
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
@@ -167,7 +167,7 @@ BuildRequires: gtk-doc
 %endif
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
-BuildRequires: vala-tools
+BuildRequires: vala
 BuildRequires: iptables
 BuildRequires: libxslt
 %if %{with bluetooth}
@@ -951,6 +951,9 @@ fi
 
 
 %changelog
+* Mon Feb 04 2019 Kalev Lember <klember@redhat.com> - 1:1.14.4-2.2
+- Update BRs for vala packaging changes
+
 * Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.14.4-2.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
