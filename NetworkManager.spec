@@ -99,7 +99,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.2
+Release: %{release_version}%{?snap}%{?dist}.3
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
@@ -951,6 +951,9 @@ fi
 
 
 %changelog
+* Sun Feb 17 2019 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:1.14.4-2.3
+- Rebuild for readline 8.0
+
 * Mon Feb 04 2019 Kalev Lember <klember@redhat.com> - 1:1.14.4-2.2
 - Update BRs for vala packaging changes
 
