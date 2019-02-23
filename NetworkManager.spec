@@ -8,9 +8,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.14.4
-%global real_version 1.14.4
-%global release_version 2
+%global rpm_version 1.16.0
+%global real_version 1.15.90
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -23,10 +23,10 @@
 
 %global _hardened_build 1
 
-%if x%{?snapshot} != x
+%if "x%{?snapshot}" != x
 %global snapshot_dot .%{snapshot}
 %endif
-%if x%{?git_sha} != x
+%if "x%{?git_sha}" != x
 %global git_sha_dot .%{git_sha}
 %endif
 
@@ -49,6 +49,7 @@
 %bcond_without regen_docs
 %bcond_with    debug
 %bcond_with    test
+%bcond_with    lto
 %bcond_with    sanitizer
 %if 0%{?fedora} > 28 || 0%{?rhel} > 7
 %bcond_with libnm_glib
@@ -99,18 +100,17 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.3
+Release: %{release_version}%{?snap}%{?dist}
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
 Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
-Source3: 20-connectivity-fedora.conf
-Source4: 20-connectivity-redhat.conf
+Source4: 20-connectivity-fedora.conf
+Source5: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-dhcp-CVE-2018-15688.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -205,6 +205,18 @@ BuildRequires: libubsan
 %endif
 %endif
 
+# NetworkManager uses various parts of systemd-networkd internally, including
+# DHCP client, IPv4 Link-Local address negotiation or LLDP support.
+# This provide is essentially here so that NetworkManager shows on Security
+# Response Team's radar in case a flaw is found. The code is frequently
+# synchronized and thus it's not easy to establish a good version number
+# here. The version of zero is there just to have something conservative so
+# that the scripts that would parse the SPEC file naively would be unlikely
+# to fail. Refer to git log for the real date and commit number of last
+# synchronization:
+# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commits/master/src/systemd
+Provides: bundled(systemd) = 0
+
 
 %description
 NetworkManager is a system service that manages network interfaces and
@@ -292,7 +304,9 @@ devices.
 %package ovs
 Summary: Open vSwitch device plugin for NetworkManager
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+%if 0%{?rhel} == 0
 Requires: openvswitch
+%endif
 
 %description ovs
 This package contains NetworkManager support for Open vSwitch bridges.
@@ -434,6 +448,10 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 %build
 %if %{with meson}
 %meson \
+	--warnlevel 2 \
+%if %{with test}
+	--werror \
+%endif
 	-Ddhcpcanon=no \
 	-Ddhcpcd=no \
 	-Dconfig_dhcp_default=%{dhcp_default} \
@@ -450,6 +468,11 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	-Dmore_asserts=0 \
 %endif
 	-Dld_gc=true \
+%if %{with lto}
+	-D b_lto=true \
+%else
+	-D b_lto=false \
+%endif
 	-Dlibaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
 	-Dmodem_manager=true \
@@ -489,14 +512,16 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	-Dovs=false \
 %endif
 	-Dselinux=true \
-	-Dpolkit=yes  \
+	-Dpolkit=true  \
 	-Dpolkit_agent=true \
 	-Dmodify_system=true \
 	-Dconcheck=true \
 %if 0%{?fedora}
 	-Dlibpsl=true \
+	-Debpf=true \
 %else
 	-Dlibpsl=false \
+	-Debpf=false \
 %endif
 	-Dsession_tracking=systemd \
 	-Dsuspend_resume=systemd \
@@ -559,6 +584,11 @@ intltoolize --automake --copy --force
 	--without-more-asserts \
 %endif
 	--enable-ld-gc \
+%if %{with lto}
+	--enable-lto \
+%else
+	--disable-lto \
+%endif
 	--with-libaudit=yes-disabled-by-default \
 %if 0%{?with_modem_manager_1}
 	--with-modem-manager-1=yes \
@@ -604,8 +634,10 @@ intltoolize --automake --copy --force
 	--enable-concheck \
 %if 0%{?fedora}
 	--with-libpsl \
+	--with-ebpf \
 %else
 	--without-libpsl \
+	--without-ebpf \
 %endif
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
@@ -651,11 +683,11 @@ cp %{SOURCE1} %{buildroot}%{_sysconfdir}/%{name}/
 cp %{SOURCE2} %{buildroot}%{nmlibdir}/conf.d/
 
 %if %{with connectivity_fedora}
-cp %{SOURCE3} %{buildroot}%{nmlibdir}/conf.d/
+cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 %endif
 
 %if %{with connectivity_redhat}
-cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
+cp %{SOURCE5} %{buildroot}%{nmlibdir}/conf.d/
 %endif
 
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
@@ -789,7 +821,6 @@ fi
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/NetworkManager/system-connections
 %dir %{_sysconfdir}/sysconfig/network-scripts
-%{_datadir}/dbus-1/system-services/org.freedesktop.NetworkManager.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/polkit-1/actions/*.policy
 %{_prefix}/lib/udev/rules.d/*.rules
@@ -951,6 +982,9 @@ fi
 
 
 %changelog
+* Sat Feb 23 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-0.1
+- Update to 1.15.90 release (1.16-rc1)
+
 * Sun Feb 17 2019 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:1.14.4-2.3
 - Rebuild for readline 8.0
 
