@@ -9,8 +9,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.16.0
-%global real_version 1.15.90
-%global release_version 0.1
+%global real_version 1.15.91
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -168,7 +168,7 @@ BuildRequires: gtk-doc
 %endif
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
-BuildRequires: vala
+BuildRequires: /usr/bin/valac
 BuildRequires: iptables
 BuildRequires: libxslt
 %if %{with bluetooth}
@@ -791,9 +791,13 @@ fi
 %systemd_postun
 
 
-%ldconfig_scriptlets   glib
+%if 0%{?fedora} < 28
+%post   glib -p /sbin/ldconfig
+%postun glib -p /sbin/ldconfig
 
-%ldconfig_scriptlets   libnm
+%post   libnm -p /sbin/ldconfig
+%postun libnm -p /sbin/ldconfig
+%endif
 
 
 %files
@@ -999,6 +1003,9 @@ fi
 
 
 %changelog
+* Mon Mar 11 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-0.2
+- Update to 1.15.91 release (1.16-rc2)
+
 * Sat Feb 23 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-0.1
 - Update to 1.15.90 release (1.16-rc1)
 
