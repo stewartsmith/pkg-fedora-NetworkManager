@@ -9,8 +9,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.16.0
-%global real_version 1.15.91
-%global release_version 0.3
+%global real_version 1.16.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -112,7 +112,6 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-shared-systemd-fix-gettid-compat-implementation-shad.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1004,6 +1003,9 @@ fi
 
 
 %changelog
+* Fri Mar 15 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-1
+- Update to 1.16.0 release
+
 * Mon Mar 11 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-0.3
 - Fix compilation error on rawhide for gettid() compat implementation
 
