@@ -8,8 +8,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.16.0
-%global real_version 1.16.0
+%global rpm_version 1.18.0
+%global real_version 1.18.0
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -32,7 +32,7 @@
 
 %global snap %{?snapshot_dot}%{?git_sha_dot}
 
-%global real_version_major %(printf '%s' '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[1-9][0-9]*\\)\\.[1-9][0-9]*$/\\1/p')
+%global real_version_major %(echo '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[0-9][0-9]*\\)\\.[0-9][0-9]*$/\\1/p')
 
 ###############################################################################
 
@@ -1003,6 +1003,9 @@ fi
 
 
 %changelog
+* Fri Apr 26 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.18.0-1
+- Update to 1.18.0 release
+
 * Fri Mar 15 2019 Thomas Haller <thaller@redhat.com> - 1:1.16.0-1
 - Update to 1.16.0 release
 
