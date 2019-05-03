@@ -8,9 +8,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.18.0
-%global real_version 1.18.0
-%global release_version 1
+%global rpm_version 1.20.0
+%global real_version 1.19.2
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -228,6 +228,8 @@ BuildRequires: libasan
 BuildRequires: libubsan
 %endif
 %endif
+
+Provides: %{name}-dispatcher%{?_isa} = %{epoch}:%{version}-%{release}
 
 # NetworkManager uses various parts of systemd-networkd internally, including
 # DHCP client, IPv4 Link-Local address negotiation or LLDP support.
@@ -797,13 +799,15 @@ fi
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
 %{_datadir}/bash-completion/completions/nmcli
-%dir %{_sysconfdir}/%{name}/
+%dir %{_sysconfdir}/%{name}
+%dir %{_sysconfdir}/%{name}/conf.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-down.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/pre-up.d
 %dir %{_sysconfdir}/%{name}/dispatcher.d/no-wait.d
 %dir %{_sysconfdir}/%{name}/dnsmasq.d
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
+%dir %{_sysconfdir}/%{name}/system-connections
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %{_bindir}/nm-online
 %{_libexecdir}/nm-ifup
@@ -820,8 +824,6 @@ fi
 %if %{with nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
-%dir %{_sysconfdir}/%{name}
-%dir %{_sysconfdir}/%{name}/conf.d
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %dir %{nmlibdir}/VPN
@@ -830,7 +832,6 @@ fi
 %{_mandir}/man7/nmcli-examples.7*
 %{_mandir}/man8/*
 %dir %{_localstatedir}/lib/NetworkManager
-%dir %{_sysconfdir}/NetworkManager/system-connections
 %dir %{_sysconfdir}/sysconfig/network-scripts
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/polkit-1/actions/*.policy
@@ -952,6 +953,9 @@ fi
 
 
 %changelog
+* Fri May 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.1
+- Update to an early 1.20.0 snapshot
+
 * Fri Apr 26 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.18.0-1
 - Update to 1.18.0 release
 
