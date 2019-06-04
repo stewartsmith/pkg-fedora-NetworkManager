@@ -818,7 +818,7 @@ fi
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
-%exclude %{_libexecdir}/nm-initrd-generator
+%{_libexecdir}/nm-initrd-generator
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
 %{nmplugindir}/libnm-settings-plugin*.so
@@ -956,6 +956,7 @@ fi
 %changelog
 * Tue Jun 04 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.2
 - Update the 1.20.0 snapshot
+- Re-enable the initrd generator
 
 * Fri May 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.1
 - Update to an early 1.20.0 snapshot
