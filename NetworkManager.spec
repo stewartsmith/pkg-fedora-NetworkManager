@@ -9,8 +9,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.20.0
-%global real_version 1.19.2
-%global release_version 0.1
+%global real_version 1.19.3
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -572,6 +572,7 @@ gtkdocize
 autoreconf --install --force
 intltoolize --automake --copy --force
 %configure \
+	--with-runstatedir=%{_rundir} \
 	--disable-silent-rules \
 	--disable-static \
 	--with-dhclient=yes \
@@ -953,6 +954,9 @@ fi
 
 
 %changelog
+* Tue Jun 04 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.2
+- Update the 1.20.0 snapshot
+
 * Fri May 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.1
 - Update to an early 1.20.0 snapshot
 
