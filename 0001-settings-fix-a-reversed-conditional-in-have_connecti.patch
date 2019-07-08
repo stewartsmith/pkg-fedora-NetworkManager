@@ -1,0 +1,29 @@
+From c6106672861f9a188469f7e490cc38af60943a10 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Mon, 8 Jul 2019 18:02:22 +0200
+Subject: [PATCH] settings: fix a reversed conditional in
+ have_connection_for_device()
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1727411
+
+Fixes: be0018382d4d ('settings: in have_connection_for_device() first skip over irrelevant connection types')
+---
+ src/settings/nm-settings.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/settings/nm-settings.c b/src/settings/nm-settings.c
+index 6fbda5274..47866a442 100644
+--- a/src/settings/nm-settings.c
++++ b/src/settings/nm-settings.c
+@@ -1505,7 +1505,7 @@ have_connection_for_device (NMSettings *self, NMDevice *device)
+ 			continue;
+ 
+ 		iface = nm_setting_connection_get_interface_name (s_con);
+-		if (nm_streq0 (iface, nm_device_get_iface (device)))
++		if (!nm_streq0 (iface, nm_device_get_iface (device)))
+ 			continue;
+ 
+ 		s_wired = nm_connection_get_setting_wired (connection);
+-- 
+2.21.0
+

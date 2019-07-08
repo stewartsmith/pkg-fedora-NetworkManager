@@ -10,7 +10,7 @@
 %global epoch_version 1
 %global rpm_version 1.20.0
 %global real_version 1.19.5
-%global release_version 0.3
+%global release_version 0.4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -130,6 +130,9 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 
 #Patch1: 0001-some.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1727411
+Patch1: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commit/c61066728.patch#/0001-settings-fix-a-reversed-conditional-in-have_connecti.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -942,6 +945,9 @@ fi
 
 
 %changelog
+* Mon Jul 08 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.4
+- settings: fix a reversed conditional in have_connection_for_device() (rh #1727411)
+
 * Wed Jul 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-0.3
 - Update the 1.20.0 snapshot
 - initrd: skip ethernet hwtype in BOOTIF (rh #1726240)
