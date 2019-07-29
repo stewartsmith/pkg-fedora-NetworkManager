@@ -1,4 +1,3 @@
-%global dbus_glib_version 0.100
 
 %global wireless_tools_version 1:28-0pre9
 
@@ -9,8 +8,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.20.0
-%global real_version 1.19.5
-%global release_version 0.4
+%global real_version 1.19.90
+%global release_version 0.5
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -18,6 +17,7 @@
 %global obsoletes_ppp_plugin     1:1.5.3
 
 %global systemd_dir %{_prefix}/lib/systemd/system
+%global sysctl_dir %{_prefix}/lib/sysctl.d
 %global nmlibdir %{_prefix}/lib/%{name}
 %global nmplugindir %{_libdir}/%{name}/%{version}-%{release}
 
@@ -32,7 +32,7 @@
 
 %global snap %{?snapshot_dot}%{?git_sha_dot}
 
-%global real_version_major %(echo '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[0-9][0-9]*\\)\\.[0-9][0-9]*$/\\1/p')
+%global real_version_major %(printf '%s' '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[0-9][0-9]*\\)\\.[0-9][0-9]*$/\\1/p')
 
 %global systemd_units NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
@@ -102,7 +102,7 @@
 %global config_plugins_default ifcfg-rh
 
 %if 0%{?fedora}
-# Altough eBPF would be available on Fedora's kernel, it seems
+# Although eBPF would be available on Fedora's kernel, it seems
 # we often get SELinux denials (rh#1651654). But even aside them,
 # bpf(BPF_MAP_CREATE, ...) randomly fails with EPERM. That might
 # be related to `ulimit -l`. Anyway, this is not usable at the
@@ -118,7 +118,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -128,11 +128,9 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
+Source6: 70-nm-connectivity.conf
 
 #Patch1: 0001-some.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1727411
-Patch1: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commit/c61066728.patch#/0001-settings-fix-a-reversed-conditional-in-have_connecti.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -147,6 +145,11 @@ Obsoletes: dhcdbd
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
 Obsoletes: NetworkManager-wimax < 1.2
+
+%if 0%{?rhel} && 0%{?rhel} <= 7
+# Kept for RHEL to ensure that wired 802.1x works out of the box
+Requires: wpa_supplicant >= 1:1.1
+%endif
 
 Conflicts: NetworkManager-vpnc < 1:0.7.0.99-1
 Conflicts: NetworkManager-openvpn < 1:0.7.0.99-1
@@ -268,7 +271,12 @@ Summary: Bluetooth device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
+%if 0%{?rhel} && 0%{?rhel} <= 7
+# No Requires:bluez to prevent it being installed when updating
+# to the split NM package
+%else
 Requires: bluez >= 4.101-5
+%endif
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager-bt
 
@@ -284,8 +292,12 @@ Group: System Environment/Base
 BuildRequires: teamd-devel
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
+%if 0%{?fedora} || 0%{?rhel} >= 8
 # Team was split from main NM binary between 0.9.10 and 1.0
+# We need this Obsoletes in addition to the one above
+# (git:3aede801521ef7bff039e6e3f1b3c7b566b4338d).
 Obsoletes: NetworkManager < 1.0.0
+%endif
 
 %description team
 This package contains NetworkManager support for team devices.
@@ -319,7 +331,12 @@ This package contains NetworkManager support for Wifi and OLPC devices.
 Summary: Mobile broadband device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+%if 0%{?rhel} && 0%{?rhel} <= 7
+# No Requires:ModemManager to prevent it being installed when updating
+# to the split NM package
+%else
 Requires: ModemManager
+%endif
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 
 %description wwan
@@ -692,6 +709,8 @@ cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 
 %if %{with connectivity_redhat}
 cp %{SOURCE5} %{buildroot}%{nmlibdir}/conf.d/
+mkdir -p %{buildroot}%{_sysctldir}
+cp %{SOURCE6} %{buildroot}%{_sysctldir}
 %endif
 
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
@@ -819,6 +838,7 @@ fi
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %dir %{nmlibdir}/VPN
+%dir %{nmlibdir}/system-connections
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man7/nmcli-examples.7*
@@ -919,6 +939,7 @@ fi
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
 %{nmlibdir}/conf.d/20-connectivity-redhat.conf
+%{_sysctldir}/70-nm-connectivity.conf
 %endif
 
 
@@ -945,6 +966,9 @@ fi
 
 
 %changelog
+* Mon Jul 29 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.0-0.5
+- Update to 1.20-rc1 upstream release candidate
+
 * Wed Jul 24 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.20.0-0.4.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
