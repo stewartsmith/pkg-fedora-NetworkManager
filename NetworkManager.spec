@@ -8,8 +8,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.20.0
-%global real_version 1.19.90
-%global release_version 0.5
+%global real_version 1.20.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -120,7 +120,7 @@ Epoch: %{epoch_version}
 Version: %{rpm_version}
 Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
-License: GPLv2+
+License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
 Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
@@ -377,6 +377,7 @@ This package contains NetworkManager support for PPP.
 Summary: Libraries for adding NetworkManager support to applications (new API).
 Group: Development/Libraries
 Conflicts: NetworkManager-glib < %{epoch}:%{version}-%{release}
+License: LGPLv2+
 
 %description libnm
 This package contains the libraries that make it easier to use some
@@ -390,6 +391,7 @@ Group: Development/Libraries
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
 Requires: pkgconfig
+License: LGPLv2+
 
 %description libnm-devel
 This package contains the header and pkg-config files for development
@@ -966,6 +968,9 @@ fi
 
 
 %changelog
+* Tue Aug  6 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.0-1
+- Update to 1.20.0 release
+
 * Mon Jul 29 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.0-0.5
 - Update to 1.20-rc1 upstream release candidate
 
