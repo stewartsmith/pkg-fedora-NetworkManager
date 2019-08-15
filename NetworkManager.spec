@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.20.0
 %global real_version 1.20.0
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -44,7 +44,6 @@
 %bcond_without wwan
 %bcond_without team
 %bcond_without wifi
-%bcond_with iwd
 %bcond_without ovs
 %bcond_without ppp
 %bcond_without nmtui
@@ -67,6 +66,11 @@
 %bcond_without crypto_gnutls
 %else
 %bcond_with crypto_gnutls
+%endif
+%if 0%{?rhel}
+%bcond_with iwd
+%else
+%bcond_without iwd
 %endif
 
 ###############################################################################
@@ -968,6 +972,9 @@ fi
 
 
 %changelog
+* Thu Aug 15 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-2
+- Enable iwd support
+
 * Tue Aug  6 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.0-1
 - Update to 1.20.0 release
 
