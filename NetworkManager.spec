@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.20.0
 %global real_version 1.20.0
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -719,9 +719,9 @@ mkdir -p %{buildroot}%{_sysctldir}
 cp %{SOURCE6} %{buildroot}%{_sysctldir}
 %endif
 
-cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/
-ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/
-ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/
+cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/
+ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/pre-up.d/
+ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/no-wait.d/
 
 %find_lang %{name}
 
@@ -843,6 +843,10 @@ fi
 %endif
 %dir %{nmlibdir}
 %dir %{nmlibdir}/conf.d
+%dir %{nmlibdir}/dispatcher.d
+%dir %{nmlibdir}/dispatcher.d/pre-down.d
+%dir %{nmlibdir}/dispatcher.d/pre-up.d
+%dir %{nmlibdir}/dispatcher.d/no-wait.d
 %dir %{nmlibdir}/VPN
 %dir %{nmlibdir}/system-connections
 %{_mandir}/man1/*
@@ -956,9 +960,9 @@ fi
 
 
 %files dispatcher-routing-rules
-%{_sysconfdir}/%{name}/dispatcher.d/10-ifcfg-rh-routes.sh
-%{_sysconfdir}/%{name}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
-%{_sysconfdir}/%{name}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
+%{nmlibdir}/dispatcher.d/10-ifcfg-rh-routes.sh
+%{nmlibdir}/dispatcher.d/no-wait.d/10-ifcfg-rh-routes.sh
+%{nmlibdir}/dispatcher.d/pre-up.d/10-ifcfg-rh-routes.sh
 
 
 %if %{with nmtui}
@@ -972,6 +976,9 @@ fi
 
 
 %changelog
+* Fri Aug 23 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-3
+- install our dispatcher scripts into /usr/lib/NetworkManager
+
 * Thu Aug 15 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-2
 - Enable iwd support
 
