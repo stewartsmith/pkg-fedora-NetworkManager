@@ -135,6 +135,7 @@ Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-wifi-detect-FT-support-per-interface-and-avoid-enabl.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -978,6 +979,7 @@ fi
 %changelog
 * Fri Aug 23 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-3
 - install our dispatcher scripts into /usr/lib/NetworkManager
+- wifi: detect FT support per interface and avoid enabling it
 
 * Thu Aug 15 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.0-2
 - Enable iwd support
