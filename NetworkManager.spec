@@ -9,7 +9,7 @@
 %global epoch_version 1
 %global rpm_version 1.20.2
 %global real_version 1.20.2
-%global release_version 2
+%global release_version 3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -316,12 +316,12 @@ Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 
 %if %{with iwd} && (0%{?fedora} > 24 || 0%{?rhel} > 7)
 Requires: (wpa_supplicant >= %{wpa_supplicant_version} or iwd)
+Suggests: wpa_supplicant
 %else
 # Just require wpa_supplicant on platforms that don't support boolean
 # dependencies even though the plugin supports both supplicant and
 # iwd backend.
-Requires: (wpa_supplicant >= %{wpa_supplicant_version} or iwd)
-Suggests: wpa_supplicant
+Requires: wpa_supplicant >= %{wpa_supplicant_version}
 %endif
 
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
@@ -977,6 +977,9 @@ fi
 
 
 %changelog
+* Sat Sep 07 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.2-3
+- Actually fix the boolean dep for the wireless daemon
+
 * Fri Sep 06 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.2-2
 - Bring back the boolean dep for the wireless daemon
 
