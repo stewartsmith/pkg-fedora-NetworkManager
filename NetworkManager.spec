@@ -1,15 +1,13 @@
 
-%global wireless_tools_version 1:28-0pre9
-
 %global wpa_supplicant_version 1:1.1
 
 %global ppp_version %(sed -n 's/^#define\\s*VERSION\\s*"\\([^\\s]*\\)"$/\\1/p' %{_includedir}/pppd/patchlevel.h 2>/dev/null | grep . || echo bad)
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.20.2
-%global real_version 1.20.2
-%global release_version 3
+%global rpm_version 1.20.4
+%global real_version 1.20.4
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -174,9 +172,6 @@ BuildRequires: intltool
 BuildRequires: gettext-devel
 
 BuildRequires: dbus-devel >= %{dbus_version}
-%if 0%{?fedora}
-BuildRequires: wireless-tools-devel >= %{wireless_tools_version}
-%endif
 BuildRequires: glib2-devel >= 2.40.0
 BuildRequires: gobject-introspection-devel >= 0.10.3
 %if %{with ppp}
@@ -977,6 +972,12 @@ fi
 
 
 %changelog
+* Mon Sep 30 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.4-1
+- Update to 1.20.4 release
+- wifi: fix crash related to Wi-Fi P2P
+- initrd: handle rd.znet parameter for s390 (rh #1753975)
+- core: don't generate default-wired-connection if profile exists (rh #1727909)
+
 * Sat Sep 07 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.20.2-3
 - Actually fix the boolean dep for the wireless daemon
 
