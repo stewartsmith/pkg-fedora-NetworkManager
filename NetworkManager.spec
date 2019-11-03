@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.20.4
-%global real_version 1.20.4
-%global release_version 1
+%global rpm_version 1.22.0
+%global real_version 1.21.3
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -972,6 +972,9 @@ fi
 
 
 %changelog
+* Sun Nov 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.21.0-0.1
+- Update to an early 1.22.0 snapshot
+
 * Mon Sep 30 2019 Thomas Haller <thaller@redhat.com> - 1:1.20.4-1
 - Update to 1.20.4 release
 - wifi: fix crash related to Wi-Fi P2P
