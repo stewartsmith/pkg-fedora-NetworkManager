@@ -128,8 +128,7 @@ Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-#Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
-Source: __SOURCE1__
+Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
