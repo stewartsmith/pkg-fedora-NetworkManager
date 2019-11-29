@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.22.0
-%global real_version 1.21.3
-%global release_version 0.1
+%global real_version 1.21.90
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -34,6 +34,8 @@
 
 %global systemd_units NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
+%global systemd_units_cloud_setup nm-cloud-setup.service nm-cloud-setup.timer
+
 ###############################################################################
 
 %bcond_with meson
@@ -45,6 +47,7 @@
 %bcond_without ovs
 %bcond_without ppp
 %bcond_without nmtui
+%bcond_without nm_cloud_setup
 %bcond_without regen_docs
 %bcond_with    debug
 %bcond_with    test
@@ -125,7 +128,8 @@ Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
 
-Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
+#Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
+Source: __SOURCE1__
 Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
@@ -204,6 +208,9 @@ BuildRequires: libcurl-devel
 BuildRequires: libndp-devel >= 1.0
 %if 0%{?with_modem_manager_1}
 BuildRequires: ModemManager-glib-devel >= 1.0
+%endif
+%if %{with wwan}
+BuildRequires: mobile-broadband-provider-info-devel
 %endif
 %if %{with nmtui}
 BuildRequires: newt-devel
@@ -454,7 +461,7 @@ configurations using "/etc/sysconfig/network-scripts/rule-NAME" files
 (eg, to do policy-based routing).
 
 
-%if 0%{with_nmtui}
+%if %{with nmtui}
 %package tui
 Summary: NetworkManager curses-based UI
 Group: System Environment/Base
@@ -465,6 +472,19 @@ Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 This adds a curses-based "TUI" (Text User Interface) to
 NetworkManager, to allow performing some of the operations supported
 by nm-connection-editor and nm-applet in a non-graphical environment.
+%endif
+
+
+%if %{with nm_cloud_setup}
+%package cloud-setup
+Summary: Automatically configure NetworkManager in cloud
+Group: System Environment/Base
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description cloud-setup
+Installs a nm-cloud-setup tool that can automatically configure
+NetworkManager in cloud setups. Currently only EC2 is supported.
 %endif
 
 
@@ -521,6 +541,16 @@ by nm-connection-editor and nm-applet in a non-graphical environment.
 	-Diwd=true \
 %else
 	-Diwd=false \
+%endif
+%if %{with nmtui}
+	-Dnmtui=true \
+%else
+	-Dnmtui=false \
+%endif
+%if %{with nm_cloud_setup}
+	-Dnm_cloud_setup=true \
+%else
+	-Dnm_cloud_setup=false \
 %endif
 	-Dvapi=true \
 	-Dintrospection=true \
@@ -638,6 +668,16 @@ intltoolize --automake --copy --force
 %else
 	--with-iwd=no \
 %endif
+%if %{with nmtui}
+	--with-nmtui=yes \
+%else
+	--with-nmtui=no \
+%endif
+%if %{with nm_cloud_setup}
+	--with-nm-cloud-setup=yes \
+%else
+	--with-nm-cloud-setup=no \
+%endif
 	--enable-vala=yes \
 	--enable-introspection \
 %if %{with regen_docs}
@@ -692,7 +732,7 @@ intltoolize --automake --copy --force
 
 make %{?_smp_mflags}
 
-%endif # end autotools
+%endif
 
 %install
 %if %{with meson}
@@ -750,7 +790,7 @@ make -k %{?_smp_mflags} check
 %else
 make -k %{?_smp_mflags} check || :
 %endif
-%endif # end autotools
+%endif
 
 
 %pre
@@ -779,6 +819,12 @@ else
 fi
 
 
+%if %{with nm_cloud_setup}
+%post cloud-setup
+%systemd_post %{systemd_units_cloud_setup}
+%endif
+
+
 %preun
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
@@ -792,6 +838,12 @@ fi
 %systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service
 
 
+%if %{with nm_cloud_setup}
+%preun cloud-setup
+%systemd_preun %{systemd_units_cloud_setup}
+%endif
+
+
 %postun
 /usr/bin/udevadm control --reload-rules || :
 /usr/bin/udevadm trigger --subsystem-match=net || :
@@ -802,6 +854,12 @@ fi
 %if (0%{?fedora} && 0%{?fedora} < 28) || 0%{?rhel}
 %post   libnm -p /sbin/ldconfig
 %postun libnm -p /sbin/ldconfig
+%endif
+
+
+%if %{with nm_cloud_setup}
+%postun cloud-setup
+%systemd_postun %{systemd_units_cloud_setup}
 %endif
 
 
@@ -862,6 +920,8 @@ fi
 %{_datadir}/doc/NetworkManager/examples/server.conf
 %doc NEWS AUTHORS README CONTRIBUTING TODO
 %license COPYING
+%license COPYING.LGPL
+%license COPYING.GFDL
 
 
 %if %{with adsl}
@@ -971,7 +1031,20 @@ fi
 %endif
 
 
+%if %{with nm_cloud_setup}
+%files cloud-setup
+%{_libexecdir}/nm-cloud-setup
+%{systemd_dir}/nm-cloud-setup.service
+%{systemd_dir}/nm-cloud-setup.timer
+%{nmlibdir}/dispatcher.d/90-nm-cloud-setup.sh
+%{nmlibdir}/dispatcher.d/no-wait.d/90-nm-cloud-setup.sh
+%endif
+
+
 %changelog
+* Fri Nov 29 2019 Thomas Haller <thaller@redhat.com> - 1:1.21.0-0.2
+- Update to 1.21.90 (1.22-rc1)
+
 * Sun Nov 03 2019 Lubomir Rintel <lkundrak@v3.sk> - 1:1.21.0-0.1
 - Update to an early 1.22.0 snapshot
 
