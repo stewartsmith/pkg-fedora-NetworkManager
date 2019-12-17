@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.22.0
-%global real_version 1.21.90
-%global release_version 0.2
+%global real_version 1.22.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -484,6 +484,7 @@ Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 %description cloud-setup
 Installs a nm-cloud-setup tool that can automatically configure
 NetworkManager in cloud setups. Currently only EC2 is supported.
+This tool is still experimental.
 %endif
 
 
@@ -541,6 +542,11 @@ NetworkManager in cloud setups. Currently only EC2 is supported.
 %else
 	-Diwd=false \
 %endif
+%if %{with bluetooth}
+	-Dbluez5_dun=true \
+%else
+	-Dbluez5_dun=false \
+%endif
 %if %{with nmtui}
 	-Dnmtui=true \
 %else
@@ -570,6 +576,7 @@ NetworkManager in cloud setups. Currently only EC2 is supported.
 %endif
 	-Dselinux=true \
 	-Dpolkit=true  \
+	-Dconfig_auth_polkit_default=true \
 	-Dpolkit_agent=true \
 	-Dmodify_system=true \
 	-Dconcheck=true \
@@ -666,6 +673,11 @@ intltoolize --automake --copy --force
 	--with-iwd=yes \
 %else
 	--with-iwd=no \
+%endif
+%if %{with bluetooth}
+	--enable-bluez5-dun=yes \
+%else
+	--enable-bluez5-dun=no \
 %endif
 %if %{with nmtui}
 	--with-nmtui=yes \
@@ -1041,6 +1053,9 @@ fi
 
 
 %changelog
+* Tue Dec 17 2019 Thomas Haller <thaller@redhat.com> - 1:1.22.0-1
+- Update to 1.22.0
+
 * Fri Nov 29 2019 Thomas Haller <thaller@redhat.com> - 1:1.21.0-0.2
 - Update to 1.21.90 (1.22-rc1)
 
