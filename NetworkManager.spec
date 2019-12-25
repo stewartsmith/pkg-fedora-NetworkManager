@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.22.0
-%global real_version 1.22.0
+%global rpm_version 1.22.2
+%global real_version 1.22.2
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -1053,6 +1053,9 @@ fi
 
 
 %changelog
+* Wed Dec 25 2019 Thomas Haller <thaller@redhat.com> - 1:1.22.2-1
+- Update to 1.22.2
+
 * Tue Dec 17 2019 Thomas Haller <thaller@redhat.com> - 1:1.22.0-1
 - Update to 1.22.0
 
