@@ -123,7 +123,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -1053,6 +1053,9 @@ fi
 
 
 %changelog
+* Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.22.4-1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 * Fri Jan 10 2020 Beniamino Galvani <bgalvani@redhat.com> - 1:1.22.4-1
 - Update to 1.22.4
 
