@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.22.6
-%global real_version 1.22.6
-%global release_version 2
+%global rpm_version 1.22.8
+%global real_version 1.22.8
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -134,8 +134,6 @@ Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
-
-Patch1: 0001-fix-build-with-gcc10.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1053,6 +1051,9 @@ fi
 
 
 %changelog
+* Mon Feb 18 2020 Antonio Cardace <acardace@redhat.com> - 1:1.22.8-1
+- Update to 1.22.8
+
 * Mon Feb  3 2020 Beniamino Galvani <bgalvani@redhat.com> - 1:1.22.6-2
 - Fix build with GCC 10
 
