@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.22.8
 %global real_version 1.22.8
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1051,6 +1051,9 @@ fi
 
 
 %changelog
+* Sat Feb 22 2020 Adam Williamson <awilliam@redhat.com> - 1:1.22.8-2
+- Rebuild for new ppp
+
 * Mon Feb 18 2020 Antonio Cardace <acardace@redhat.com> - 1:1.22.8-1
 - Update to 1.22.8
 
