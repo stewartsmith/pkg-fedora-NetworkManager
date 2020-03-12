@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.22.8
-%global real_version 1.22.8
-%global release_version 2
+%global rpm_version 1.22.10
+%global real_version 1.22.10
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -134,6 +134,8 @@ Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
+
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1051,6 +1053,9 @@ fi
 
 
 %changelog
+* Thu Mar 12 2020 Thomas Haller <thaller@redhat.com - 1:1.22.10-1
+- Update to 1.22.10
+
 * Sat Feb 22 2020 Adam Williamson <awilliam@redhat.com> - 1:1.22.8-2
 - Rebuild for new ppp
 
