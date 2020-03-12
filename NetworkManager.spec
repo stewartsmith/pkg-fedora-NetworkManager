@@ -1059,7 +1059,7 @@ fi
 * Sat Feb 22 2020 Adam Williamson <awilliam@redhat.com> - 1:1.22.8-2
 - Rebuild for new ppp
 
-* Mon Feb 18 2020 Antonio Cardace <acardace@redhat.com> - 1:1.22.8-1
+* Tue Feb 18 2020 Antonio Cardace <acardace@redhat.com> - 1:1.22.8-1
 - Update to 1.22.8
 
 * Mon Feb  3 2020 Beniamino Galvani <bgalvani@redhat.com> - 1:1.22.6-2
