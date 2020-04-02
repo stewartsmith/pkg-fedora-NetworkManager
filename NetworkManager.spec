@@ -123,7 +123,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -1053,6 +1053,9 @@ fi
 
 
 %changelog
+* Thu Apr 02 2020 Björn Esser <besser82@fedoraproject.org> - 1:1.22.10-1.1
+- Fix string quoting for rpm >= 4.16
+
 * Thu Mar 12 2020 Thomas Haller <thaller@redhat.com - 1:1.22.10-1
 - Update to 1.22.10
 
