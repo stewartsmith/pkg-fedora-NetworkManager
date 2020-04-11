@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.22.10
-%global real_version 1.22.10
-%global release_version 1
+%global rpm_version 1.24.0
+%global real_version 1.23.90
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -123,7 +123,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -577,7 +577,6 @@ This tool is still experimental.
 	-Dselinux=true \
 	-Dpolkit=true  \
 	-Dconfig_auth_polkit_default=true \
-	-Dpolkit_agent=true \
 	-Dmodify_system=true \
 	-Dconcheck=true \
 %if 0%{?fedora}
@@ -708,7 +707,6 @@ intltoolize --automake --copy --force
 %endif
 	--with-selinux=yes \
 	--enable-polkit=yes \
-	--enable-polkit-agent \
 	--enable-modify-system=yes \
 	--enable-concheck \
 %if 0%{?fedora}
@@ -1053,6 +1051,9 @@ fi
 
 
 %changelog
+* Sat Apr 11 2020 Thomas Haller <thaller@redhat.com - 1:1.24.0-0.1
+- Update to 1.24-rc1 (1.23.90)
+
 * Thu Apr 02 2020 Björn Esser <besser82@fedoraproject.org> - 1:1.22.10-1.1
 - Fix string quoting for rpm >= 4.16
 
