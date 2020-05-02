@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.24.0
-%global real_version 1.23.90
-%global release_version 0.1
+%global real_version 1.23.91
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -112,9 +112,9 @@
 # bpf(BPF_MAP_CREATE, ...) randomly fails with EPERM. That might
 # be related to `ulimit -l`. Anyway, this is not usable at the
 # moment.
-%global ebpf_enabled no
+%global ebpf_enabled "no"
 %else
-%global ebpf_enabled no
+%global ebpf_enabled "no"
 %endif
 
 ###############################################################################
@@ -136,6 +136,7 @@ Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-nm-online-fix-build-of-nm-online-for-missing-libcsip.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -584,7 +585,7 @@ This tool is still experimental.
 %else
 	-Dlibpsl=false \
 %endif
-%if %{ebpf_enabled} != yes
+%if %{ebpf_enabled} != "yes"
 	-Debpf=false \
 %else
 	-Debpf=true \
@@ -1051,6 +1052,9 @@ fi
 
 
 %changelog
+* Sat May  2 2020 Thomas Haller <thaller@redhat.com - 1:1.24.0-0.2
+- Update to 1.24-rc2 (1.23.91)
+
 * Sat Apr 11 2020 Thomas Haller <thaller@redhat.com - 1:1.24.0-0.1
 - Update to 1.24-rc1 (1.23.90)
 
