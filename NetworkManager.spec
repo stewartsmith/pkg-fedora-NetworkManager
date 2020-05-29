@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.24.0
-%global real_version 1.24.0
+%global rpm_version 1.24.2
+%global real_version 1.24.2
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -72,6 +72,11 @@
 %bcond_with iwd
 %else
 %bcond_without iwd
+%endif
+%if 0%{?fedora} > 31 || 0%{?rhel} > 7
+%bcond_without firewalld_zone
+%else
+%bcond_with firewalld_zone
 %endif
 
 ###############################################################################
@@ -229,10 +234,14 @@ BuildRequires: polkit-devel
 BuildRequires: jansson-devel
 %if %{with sanitizer}
 BuildRequires: libasan
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel} >= 8
 BuildRequires: libubsan
 %endif
 %endif
+%if %{with firewalld_zone}
+BuildRequires: firewalld-filesystem
+%endif
+BuildRequires: iproute
 
 Provides: %{name}-dispatcher%{?_isa} = %{epoch}:%{version}-%{release}
 
@@ -602,6 +611,11 @@ This tool is still experimental.
 	-Dpppd_plugin_dir=%{_libdir}/pppd/%{ppp_version} \
 	-Dppp=true \
 %endif
+%if %{with firewalld_zone}
+	-Dfirewalld_zone=true \
+%else
+	-Dfirewalld_zone=false \
+%endif
 	-Ddist_version=%{version}-%{release} \
 	-Dconfig_plugins_default=%{config_plugins_default} \
 	-Dconfig_dns_rc_manager_default=%{dns_rc_manager_default} \
@@ -632,8 +646,10 @@ intltoolize --automake --copy --force
 %endif
 %if %{with sanitizer}
 	--with-address-sanitizer=exec \
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel} >= 8
 	--enable-undefined-sanitizer \
+%else
+	--disable-undefined-sanitizer \
 %endif
 %else
 	--with-address-sanitizer=no \
@@ -733,6 +749,11 @@ intltoolize --automake --copy --force
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--enable-ppp=yes \
 %endif
+%if %{with firewalld_zone}
+	--enable-firewalld-zone \
+%else
+	--disable-firewalld-zone \
+%endif
 	--with-dist-version=%{version}-%{release} \
 	--with-config-plugins-default=%{config_plugins_default} \
 	--with-config-dns-rc-manager-default=%{dns_rc_manager_default} \
@@ -815,6 +836,9 @@ fi
 %post
 /usr/bin/udevadm control --reload-rules || :
 /usr/bin/udevadm trigger --subsystem-match=net || :
+%if %{with firewalld_zone}
+%firewalld_reload
+%endif
 
 %systemd_post %{systemd_units}
 
@@ -856,6 +880,9 @@ fi
 %postun
 /usr/bin/udevadm control --reload-rules || :
 /usr/bin/udevadm trigger --subsystem-match=net || :
+%if %{with firewalld_zone}
+%firewalld_reload
+%endif
 
 %systemd_postun %{systemd_units}
 
@@ -921,6 +948,9 @@ fi
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/polkit-1/actions/*.policy
 %{_prefix}/lib/udev/rules.d/*.rules
+%if %{with firewalld_zone}
+%{_prefix}/lib/firewalld/zones/nm-shared.xml
+%endif
 # systemd stuff
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
@@ -1051,6 +1081,10 @@ fi
 
 
 %changelog
+* Fri May 29 2020 Thomas Haller <thaller@redhat.com> - 1:1.24.2-1
+- Update to 1.24.2 release
+- ifcfg-rh: handle "802-1x.{,phase2-}ca-path" (rh #1841395, CVE-2020-10754)
+
 * Fri May  8 2020 Thomas Haller <thaller@redhat.com - 1:1.24.0-1
 - Update to 1.24.0
 
