@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.24.2
-%global real_version 1.24.2
-%global release_version 1
+%global rpm_version 1.26.0
+%global real_version 1.25.90
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -242,6 +242,9 @@ BuildRequires: libubsan
 BuildRequires: firewalld-filesystem
 %endif
 BuildRequires: iproute
+%if 0%{?fedora} || 0%{?rhel} > 7
+BuildRequires: iproute-tc
+%endif
 
 Provides: %{name}-dispatcher%{?_isa} = %{epoch}:%{version}-%{release}
 
@@ -389,19 +392,18 @@ This package contains NetworkManager support for PPP.
 
 
 %package libnm
-Summary: Libraries for adding NetworkManager support to applications (new API).
+Summary: Libraries for adding NetworkManager support to applications.
 Group: Development/Libraries
 Conflicts: NetworkManager-glib < %{epoch}:%{version}-%{release}
 License: LGPLv2+
 
 %description libnm
 This package contains the libraries that make it easier to use some
-NetworkManager functionality from applications.  This is the new
-NetworkManager API.  See also NetworkManager-glib.
+NetworkManager functionality from applications.
 
 
 %package libnm-devel
-Summary: Header files for adding NetworkManager support to applications (new API).
+Summary: Header files for adding NetworkManager support to applications.
 Group: Development/Libraries
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: glib2-devel
@@ -410,8 +412,7 @@ License: LGPLv2+
 
 %description libnm-devel
 This package contains the header and pkg-config files for development
-applications using NetworkManager functionality from applications.  This
-is the new NetworkManager API. See also NetworkManager-glib-devel.
+applications using NetworkManager functionality from applications.
 
 
 %if %{with connectivity_fedora}
@@ -1081,6 +1082,9 @@ fi
 
 
 %changelog
+* Mon Jun 15 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-0.1
+- update to 1.26-rc1 (1.25.90)
+
 * Fri May 29 2020 Thomas Haller <thaller@redhat.com> - 1:1.24.2-1
 - Update to 1.24.2 release
 - ifcfg-rh: handle "802-1x.{,phase2-}ca-path" (rh #1841395, CVE-2020-10754)
