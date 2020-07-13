@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.26.0
-%global real_version 1.25.90
-%global release_version 0.1
+%global real_version 1.26.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1082,6 +1082,9 @@ fi
 
 
 %changelog
+* Mon Jul 13 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-1
+- update to 1.26.0
+
 * Mon Jun 15 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-0.1
 - update to 1.26-rc1 (1.25.90)
 
