@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.26.0
 %global real_version 1.26.0
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -109,7 +109,11 @@
 %global dns_rc_manager_default file
 %endif
 
+%if 0%{?rhel} > 8 || 0%{?fedora} > 32
+%global config_plugins_default keyfile,ifcfg-rh
+%else
 %global config_plugins_default ifcfg-rh
+%endif
 
 %if 0%{?fedora}
 # Although eBPF would be available on Fedora's kernel, it seems
@@ -1082,6 +1086,9 @@ fi
 
 
 %changelog
+* Mon Jul 13 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-2
+- prefer keyfile settings plugin over ifcfg-rh (rh #1857391)
+
 * Mon Jul 13 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-1
 - update to 1.26.0
 
