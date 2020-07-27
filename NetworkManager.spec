@@ -132,7 +132,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -1086,6 +1086,9 @@ fi
 
 
 %changelog
+* Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.26.0-2.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Mon Jul 13 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.0-2
 - prefer keyfile settings plugin over ifcfg-rh (rh #1857391)
 
