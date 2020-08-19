@@ -141,7 +141,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
