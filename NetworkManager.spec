@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.26.0
-%global real_version 1.26.0
-%global release_version 2
+%global rpm_version 1.26.2
+%global real_version 1.26.2
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -51,7 +51,11 @@
 %bcond_without regen_docs
 %bcond_with    debug
 %bcond_with    test
+%if 0%{?fedora} >= 33 || 0%{?rhel} >= 9
+%bcond_without lto
+%else
 %bcond_with    lto
+%endif
 %bcond_with    sanitizer
 %if 0%{?fedora}
 %bcond_without connectivity_fedora
@@ -125,6 +129,11 @@
 %else
 %global ebpf_enabled "no"
 %endif
+
+# Fedora 33 enables LTO by default by setting CFLAGS="-flto -ffat-lto-objects".
+# However, we also require "-flto -flto-partition=none", so disable Fedora's
+# default and use our configure option --with-lto instead.
+%define _lto_cflags %{nil}
 
 ###############################################################################
 
@@ -1086,6 +1095,10 @@ fi
 
 
 %changelog
+* Wed Aug 19 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.2-1
+- update to 1.26.2
+- enable link time optimization (LTO).
+
 * Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.26.0-2.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
