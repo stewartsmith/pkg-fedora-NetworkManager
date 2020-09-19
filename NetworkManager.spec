@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.26.2
 %global real_version 1.26.2
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -154,6 +154,7 @@ Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
 #Patch1: 0001-some.patch
+Patch1: 0001-nm-fix-generated-xml-docs-syntax.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1095,6 +1096,9 @@ fi
 
 
 %changelog
+* Sat Sep 19 2020 Yaroslav Fedevych <yaroslav@fedevych.name> - 1:1.26.2-2
+- backport commit 54e25f23f53af889703dfc50d51a8afeeea8a439 which fixes building the package by producing well-formed XML documentation
+
 * Wed Aug 19 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.2-1
 - update to 1.26.2
 - enable link time optimization (LTO).
