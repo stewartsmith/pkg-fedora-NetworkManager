@@ -1097,7 +1097,7 @@ fi
 
 %changelog
 * Sat Sep 19 2020 Yaroslav Fedevych <yaroslav@fedevych.name> - 1:1.26.2-2
-- backport commit 54e25f23f53af889703dfc50d51a8afeeea8a439 which fixes building the package by producing well-formed XML documentation
+- fix build failure due to generating invalid XML documentation
 
 * Wed Aug 19 2020 Thomas Haller <thaller@redhat.com> - 1:1.26.2-1
 - update to 1.26.2
