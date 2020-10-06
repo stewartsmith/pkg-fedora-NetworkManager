@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.26.2
-%global real_version 1.26.2
-%global release_version 2
+%global rpm_version 1.28.0
+%global real_version 1.27.90
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -107,7 +107,11 @@
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %global logging_backend_default journal
+%if 0%{?fedora} || 0%{?rhel} > 8
+%global dns_rc_manager_default auto
+%else
 %global dns_rc_manager_default symlink
+%endif
 %else
 %global logging_backend_default syslog
 %global dns_rc_manager_default file
@@ -154,7 +158,6 @@ Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
 #Patch1: 0001-some.patch
-Patch1: 0001-nm-fix-generated-xml-docs-syntax.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -633,6 +636,8 @@ This tool is still experimental.
 %endif
 	-Ddist_version=%{version}-%{release} \
 	-Dconfig_plugins_default=%{config_plugins_default} \
+	-Dresolvconf=no \
+	-Dnetconfig=no \
 	-Dconfig_dns_rc_manager_default=%{dns_rc_manager_default} \
 	-Dconfig_logging_backend_default=%{logging_backend_default} \
 	-Djson_validation=true
@@ -771,6 +776,8 @@ intltoolize --automake --copy --force
 %endif
 	--with-dist-version=%{version}-%{release} \
 	--with-config-plugins-default=%{config_plugins_default} \
+	--with-resolvconf=no \
+	--with-netconfig=no \
 	--with-config-dns-rc-manager-default=%{dns_rc_manager_default} \
 	--with-config-logging-backend-default=%{logging_backend_default} \
 	--enable-json-validation
@@ -1096,6 +1103,9 @@ fi
 
 
 %changelog
+* Tue Oct  6 2020 Thomas Haller <thaller@redhat.com> - 1:1.28.0-0.1
+- update to 1.28-rc1 (1.27.90)
+
 * Sat Sep 19 2020 Yaroslav Fedevych <yaroslav@fedevych.name> - 1:1.26.2-2
 - fix build failure due to generating invalid XML documentation
 
