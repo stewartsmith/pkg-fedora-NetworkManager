@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.28.0
-%global real_version 1.27.90
-%global release_version 0.1
+%global real_version 1.27.91
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1103,6 +1103,9 @@ fi
 
 
 %changelog
+* Tue Oct 20 2020 Beniamino Galvani <bgalvani@redhat.com> - 1:1.28.0-0.2
+- update to 1.28-rc2 (1.27.91)
+
 * Tue Oct  6 2020 Thomas Haller <thaller@redhat.com> - 1:1.28.0-0.1
 - update to 1.28-rc1 (1.27.90)
 
