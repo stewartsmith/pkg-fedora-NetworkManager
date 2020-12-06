@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.28.0
-%global real_version 1.27.91
-%global release_version 0.2
+%global real_version 1.28.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -779,8 +779,7 @@ intltoolize --automake --copy --force
 	--with-resolvconf=no \
 	--with-netconfig=no \
 	--with-config-dns-rc-manager-default=%{dns_rc_manager_default} \
-	--with-config-logging-backend-default=%{logging_backend_default} \
-	--enable-json-validation
+	--with-config-logging-backend-default=%{logging_backend_default}
 
 make %{?_smp_mflags}
 
@@ -1103,6 +1102,9 @@ fi
 
 
 %changelog
+* Sun Dec  6 2020 Thomas Haller <thaller@redhat.com> - 1:1.28.0-1
+- update to 1.28.0
+
 * Tue Oct 20 2020 Beniamino Galvani <bgalvani@redhat.com> - 1:1.28.0-0.2
 - update to 1.28-rc2 (1.27.91)
 
