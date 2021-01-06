@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.28.0
 %global real_version 1.28.0
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1102,6 +1102,9 @@ fi
 
 
 %changelog
+* Wed Jan 06 2021 Mohan Boddu <mboddu@bhujji.com> - 1:1.28.0-2
+- Rebuild for ppp-2.4.9-1
+
 * Sun Dec  6 2020 Thomas Haller <thaller@redhat.com> - 1:1.28.0-1
 - update to 1.28.0
 
