@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.28.0
-%global real_version 1.28.0
-%global release_version 2
+%global rpm_version 1.30.0
+%global real_version 1.29.8
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -38,6 +38,22 @@
 
 ###############################################################################
 
+%if "x__BCOND_DEFAULT_DEBUG__" == "x1" || "x__BCOND_DEFAULT_DEBUG__" == "x0"
+%global bcond_default_debug __BCOND_DEFAULT_DEBUG__
+%else
+%global bcond_default_debug 0
+%endif
+
+%if "x__BCOND_DEFAULT_TEST__" == "x1" || "x__BCOND_DEFAULT_TEST__" == "x0"
+%global bcond_default_test __BCOND_DEFAULT_TEST__
+%else
+%if 0%{?rhel} >= 9
+%global bcond_default_test 1
+%else
+%global bcond_default_test 0
+%endif
+%endif
+
 %bcond_with meson
 %bcond_without adsl
 %bcond_without bluetooth
@@ -49,8 +65,16 @@
 %bcond_without nmtui
 %bcond_without nm_cloud_setup
 %bcond_without regen_docs
+%if %{bcond_default_debug}
+%bcond_without debug
+%else
 %bcond_with    debug
+%endif
+%if %{bcond_default_test}
+%bcond_without test
+%else
 %bcond_with    test
+%endif
 %if 0%{?fedora} >= 33 || 0%{?rhel} >= 9
 %bcond_without lto
 %else
@@ -1103,10 +1127,14 @@ fi
 %{systemd_dir}/nm-cloud-setup.timer
 %{nmlibdir}/dispatcher.d/90-nm-cloud-setup.sh
 %{nmlibdir}/dispatcher.d/no-wait.d/90-nm-cloud-setup.sh
+%{_mandir}/man8/nm-cloud-setup.8*
 %endif
 
 
 %changelog
+* Thu Jan 14 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.1
+- update to 1.29.8-dev snapshot
+
 * Wed Jan 06 2021 Mohan Boddu <mboddu@bhujji.com> - 1:1.28.0-2
 - Rebuild for ppp-2.4.9-1
 
