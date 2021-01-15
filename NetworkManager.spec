@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.30.0
 %global real_version 1.29.8
-%global release_version 0.1
+%global release_version 0.2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -368,7 +368,7 @@ This package contains NetworkManager support for team devices.
 Summary: Wifi plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
-
+Requires: wireless-regdb
 %if %{with iwd} && (0%{?fedora} > 24 || 0%{?rhel} > 7)
 Requires: (wpa_supplicant >= %{wpa_supplicant_version} or iwd)
 Suggests: wpa_supplicant
@@ -1132,6 +1132,9 @@ fi
 
 
 %changelog
+* Fri Jan 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> 1:1.30.0-0.2
+- Require wireless-regdb for wifi support so WiFi region is set
+
 * Thu Jan 14 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.1
 - update to 1.29.8-dev snapshot
 
