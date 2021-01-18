@@ -368,7 +368,13 @@ This package contains NetworkManager support for team devices.
 Summary: Wifi plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%if 0%{?fedora} >= 29 || 0%{?rhel} >= 9
 Requires: wireless-regdb
+%else
+Requires: crda
+%endif
+
 %if %{with iwd} && (0%{?fedora} > 24 || 0%{?rhel} > 7)
 Requires: (wpa_supplicant >= %{wpa_supplicant_version} or iwd)
 Suggests: wpa_supplicant
@@ -992,7 +998,8 @@ fi
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_mandir}/man7/nmcli-examples.7*
-%{_mandir}/man8/*
+%{_mandir}/man8/nm-initrd-generator.8.gz
+%{_mandir}/man8/NetworkManager.8.gz
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/sysconfig/network-scripts
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
