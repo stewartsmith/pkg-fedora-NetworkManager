@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.30.0
-%global real_version 1.29.8
-%global release_version 0.2
+%global real_version 1.29.9
+%global release_version 0.3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1139,6 +1139,9 @@ fi
 
 
 %changelog
+* Thu Jan 19 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.3
+- update to 1.29.9-dev snapshot
+
 * Fri Jan 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> 1:1.30.0-0.2
 - Require wireless-regdb for wifi support so WiFi region is set
 
