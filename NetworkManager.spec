@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.30.0
-%global real_version 1.29.9
-%global release_version 0.3
+%global real_version 1.29.11
+%global release_version 0.4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -169,7 +169,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: http://www.gnome.org/projects/NetworkManager/
@@ -1139,10 +1139,13 @@ fi
 
 
 %changelog
+* Tue Feb  9 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.4
+- update to 1.29.11-dev snapshot
+
 * Mon Jan 25 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.30.0-0.3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
-* Thu Jan 19 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.3
+* Tue Jan 19 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.3
 - update to 1.29.9-dev snapshot
 
 * Fri Jan 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> 1:1.30.0-0.2
