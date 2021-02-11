@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.30.0
-%global real_version 1.29.11
-%global release_version 0.4
+%global real_version 1.29.90
+%global release_version 0.5
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1139,6 +1139,9 @@ fi
 
 
 %changelog
+* Thu Feb 11 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.5
+- update to 1.30-rc1 (1.29.90-dev) snapshot
+
 * Tue Feb  9 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.4
 - update to 1.29.11-dev snapshot
 
