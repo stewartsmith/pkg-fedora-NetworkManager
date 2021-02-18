@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.30.0
-%global real_version 1.29.90
-%global release_version 0.5
+%global real_version 1.30.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -47,11 +47,7 @@
 %if "x__BCOND_DEFAULT_TEST__" == "x1" || "x__BCOND_DEFAULT_TEST__" == "x0"
 %global bcond_default_test __BCOND_DEFAULT_TEST__
 %else
-%if 0%{?rhel} >= 9
-%global bcond_default_test 1
-%else
 %global bcond_default_test 0
-%endif
 %endif
 
 %bcond_with meson
@@ -172,7 +168,7 @@ Version: %{rpm_version}
 Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
-URL: http://www.gnome.org/projects/NetworkManager/
+URL: https://networkmanager.dev/
 
 Source: https://download.gnome.org/sources/NetworkManager/%{real_version_major}/%{name}-%{real_version}.tar.xz
 Source1: NetworkManager.conf
@@ -1139,6 +1135,9 @@ fi
 
 
 %changelog
+* Thu Feb 18 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-1
+- update to 1.30.0 release
+
 * Thu Feb 11 2021 Thomas Haller <thaller@redhat.com> - 1:1.30.0-0.5
 - update to 1.30-rc1 (1.29.90-dev) snapshot
 
