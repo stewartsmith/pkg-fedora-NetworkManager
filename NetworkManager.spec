@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.30.2
-%global real_version 1.30.2
-%global release_version 1
+%global rpm_version 1.32.0
+%global real_version 1.31.2
+%global release_version 0.1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -996,6 +996,7 @@ fi
 %{_mandir}/man7/nmcli-examples.7*
 %{_mandir}/man8/nm-initrd-generator.8.gz
 %{_mandir}/man8/NetworkManager.8.gz
+%{_mandir}/man8/NetworkManager-dispatcher.8.gz
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/sysconfig/network-scripts
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
@@ -1010,7 +1011,7 @@ fi
 %{systemd_dir}/NetworkManager-dispatcher.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
-%doc NEWS AUTHORS README CONTRIBUTING TODO
+%doc NEWS AUTHORS README CONTRIBUTING.md TODO
 %license COPYING
 %license COPYING.LGPL
 %license COPYING.GFDL
@@ -1135,6 +1136,9 @@ fi
 
 
 %changelog
+* Thu Mar 25 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.0-0.1
+- update to an early 1.32 snapshot (1.31.2)
+
 * Fri Mar 12 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.30.2-1
 - update to 1.30.2 release
 
