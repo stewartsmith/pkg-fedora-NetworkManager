@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.32.0
-%global real_version 1.31.3
-%global release_version 0.2
+%global real_version 1.31.4
+%global release_version 0.3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1136,6 +1136,9 @@ fi
 
 
 %changelog
+* Wed May  5 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.0-0.3
+- update to an early 1.32 snapshot (1.31.4)
+
 * Fri Apr 23 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.0-0.2
 - update to an early 1.32 snapshot (1.31.3)
 
