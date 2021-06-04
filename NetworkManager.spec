@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.32.0
-%global real_version 1.31.4
-%global release_version 0.3
+%global real_version 1.31.90
+%global release_version 0.4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -105,12 +105,20 @@
 
 ###############################################################################
 
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel} > 7
 %global dbus_version 1.9.18
 %global dbus_sys_dir %{_datadir}/dbus-1/system.d
 %else
 %global dbus_version 1.1
 %global dbus_sys_dir %{_sysconfdir}/dbus-1/system.d
+%endif
+
+# Older libndp versions use select() (rh#1933041). On well known distros,
+# choose a version that has the necessary fix.
+%if 0%{?rhel} && 0%{?rhel} == 8
+%global libndp_version 1.7-4
+%else
+%global libndp_version %{nil}
 %endif
 
 %if %{with bluetooth} || %{with wwan}
@@ -188,7 +196,9 @@ Requires(postun): systemd
 Requires: dbus >= %{dbus_version}
 Requires: glib2 >= %{glib2_version}
 Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
-Obsoletes: dhcdbd
+%if "%{libndp_version}" != ""
+Requires: libndp >= %{libndp_version}
+%endif
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
 Obsoletes: NetworkManager-wimax < 1.2
@@ -237,7 +247,6 @@ BuildRequires: gtk-doc
 BuildRequires: libudev-devel
 BuildRequires: libuuid-devel
 BuildRequires: /usr/bin/valac
-BuildRequires: iptables
 BuildRequires: libxslt
 %if %{with bluetooth}
 BuildRequires: bluez-libs-devel
@@ -295,7 +304,7 @@ Provides: %{name}-dispatcher%{?_isa} = %{epoch}:%{version}-%{release}
 # that the scripts that would parse the SPEC file naively would be unlikely
 # to fail. Refer to git log for the real date and commit number of last
 # synchronization:
-# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commits/master/src/systemd
+# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/commits/main/src/
 Provides: bundled(systemd) = 0
 
 
@@ -313,7 +322,6 @@ Summary: ADSL device plugin for NetworkManager
 Group: System Environment/Base
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
-Obsoletes: NetworkManager-atm
 
 %description adsl
 This package contains NetworkManager support for ADSL devices.
@@ -333,7 +341,6 @@ Requires: NetworkManager-wwan = %{epoch}:%{version}-%{release}
 Requires: bluez >= 4.101-5
 %endif
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
-Obsoletes: NetworkManager-bt
 
 %description bluetooth
 This package contains NetworkManager support for Bluetooth devices.
@@ -438,7 +445,7 @@ This package contains NetworkManager support for PPP.
 %package libnm
 Summary: Libraries for adding NetworkManager support to applications.
 Group: Development/Libraries
-Conflicts: NetworkManager-glib < %{epoch}:%{version}-%{release}
+Conflicts: NetworkManager-glib < 1:1.31.0
 License: LGPLv2+
 
 %description libnm
@@ -506,7 +513,7 @@ Summary: NetworkManager dispatcher file for advanced routing rules
 Group: System Environment/Base
 BuildArch: noarch
 Provides: %{name}-config-routing-rules = %{epoch}:%{version}-%{release}
-Obsoletes: %{name}-config-routing-rules < %{epoch}:%{version}-%{release}
+Obsoletes: %{name}-config-routing-rules < 1:1.31.0
 
 %description dispatcher-routing-rules
 This adds a NetworkManager dispatcher file to support networking
@@ -554,6 +561,8 @@ This tool is still experimental.
 %if %{with test}
 	--werror \
 %endif
+	-Dnft=/usr/sbin/nft \
+	-Diptables=/usr/sbin/iptables \
 	-Ddhcpcanon=no \
 	-Ddhcpcd=no \
 	-Dconfig_dhcp_default=%{dhcp_default} \
@@ -682,6 +691,8 @@ intltoolize --automake --copy --force
 	--with-runstatedir=%{_rundir} \
 	--disable-silent-rules \
 	--disable-static \
+	--with-nft=/usr/sbin/nft \
+	--with-iptables=/usr/sbin/iptables \
 	--with-dhclient=yes \
 	--with-dhcpcd=no \
 	--with-dhcpcanon=no \
@@ -968,6 +979,7 @@ fi
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
 %dir %{_sysconfdir}/%{name}/system-connections
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
+%ghost %{_sysconfdir}/%{name}/VPN
 %{_bindir}/nm-online
 %{_libexecdir}/nm-ifup
 %ghost %attr(755, root, root) %{_sbindir}/ifup
@@ -1136,6 +1148,9 @@ fi
 
 
 %changelog
+* Fri Jun  4 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.0-0.4
+- update to 1.32-rc1 (1.31.90) (release candidate)
+
 * Wed May  5 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.0-0.3
 - update to an early 1.32 snapshot (1.31.4)
 
