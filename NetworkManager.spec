@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.32.0
-%global real_version 1.31.90
-%global release_version 0.4
+%global real_version 1.32.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -185,7 +185,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-firewall-Fedora-patch-to-default-to-iptables-backend.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -989,6 +989,7 @@ fi
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-iface-helper
 %{_libexecdir}/nm-initrd-generator
+%{_libexecdir}/nm-daemon-helper
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
 %{nmplugindir}/libnm-settings-plugin*.so
@@ -1148,6 +1149,10 @@ fi
 
 
 %changelog
+* Wed Jun 16 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.0-1
+- update to 1.32.0 release
+- default to "iptables" firewall-backend due to SELinux bug rh #1972911.
+
 * Fri Jun  4 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.0-0.4
 - update to 1.32-rc1 (1.31.90) (release candidate)
 
