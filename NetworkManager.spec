@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.32.0
-%global real_version 1.32.0
+%global rpm_version 1.32.4
+%global real_version 1.32.4
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -185,7 +185,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-Patch1: 0001-firewall-Fedora-patch-to-default-to-iptables-backend.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1149,6 +1149,10 @@ fi
 
 
 %changelog
+* Tue Jul 20 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.4-1
+- update to 1.32.4 release
+- default to "nftables" firewall-backend for shared mode.
+
 * Wed Jun 16 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.0-1
 - update to 1.32.0 release
 - default to "iptables" firewall-backend due to SELinux bug rh #1972911.
