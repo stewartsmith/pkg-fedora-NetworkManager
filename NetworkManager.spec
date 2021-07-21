@@ -173,7 +173,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: https://networkmanager.dev/
@@ -1149,6 +1149,9 @@ fi
 
 
 %changelog
+* Wed Jul 21 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.32.4-1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
 * Tue Jul 20 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.4-1
 - update to 1.32.4 release
 - default to "nftables" firewall-backend for shared mode.
