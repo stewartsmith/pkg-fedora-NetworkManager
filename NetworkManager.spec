@@ -3026,7 +3026,7 @@ fi
 - Add dbus-glib-devel BuildRequires for NetworkManager-glib-devel (rh #442978)
 - Add PPP settings page to connection editor
 - Fix a few crashes with PPPoE
-- Fix active connection state changes that confused clients 
+- Fix active connection state changes that confused clients
 
 * Thu Apr 17 2008 Dan Williams <dcbw@redhat.com> - 1:0.7.0-0.9.2.svn3571
 - Fix build in pppd-plugin
@@ -3357,7 +3357,7 @@ fi
 * Fri Feb  2 2007 Christopher Aillon <caillon@redhat.com> - 1:0.6.5-0.2.cvs20061025
 - Move .so file to -devel package
 
-* Sat Nov 25 2006 Matthias Clasen <mclasen@redhat.com> 
+* Sat Nov 25 2006 Matthias Clasen <mclasen@redhat.com>
 - Own the /etc/NetworkManager/dispatcher.d directory
 - Require pkgconfig for the -devel packages
 - Fix compilation with dbus 1.0
@@ -3435,7 +3435,7 @@ fi
   (did he fire ten args, or only nine?)
 
 * Thu Apr 27 2006 Jeremy Katz <katzj@redhat.com> - 0.6.2-2.fc6
-- use the hal device type instead of poking via ioctl so that wireless 
+- use the hal device type instead of poking via ioctl so that wireless
   devices are properly detected even if the kill switch has been used
 
 * Thu Mar 30 2006 Dan Williams <dcbw@redhat.com> - 0.6.2-1
@@ -3579,7 +3579,7 @@ fi
 	o Better caching of information in the applet (Bill Moss)
 	o Generate automatic suggested Ad-Hoc network name from machine's hostname
 		(Robert Love)
-	o Update all network information on successfull connect, not just 
+	o Update all network information on successfull connect, not just
 		authentication method
 
 * Fri Jul 29 2005 Ray Strode  <rstrode@redhat.com> - 0.4-34.cvs20050729
