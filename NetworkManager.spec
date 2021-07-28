@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.32.4
-%global real_version 1.32.4
+%global rpm_version 1.32.6
+%global real_version 1.32.6
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -173,7 +173,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: https://networkmanager.dev/
@@ -1149,6 +1149,9 @@ fi
 
 
 %changelog
+* Wed Jul 28 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.6-1
+- update to 1.32.6 release
+
 * Wed Jul 21 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.32.4-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
