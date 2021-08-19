@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.32.8
-%global real_version 1.32.8
+%global rpm_version 1.32.10
+%global real_version 1.32.10
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -1149,6 +1149,9 @@ fi
 
 
 %changelog
+* Thu Aug 19 2021 Wen Liang <liangwen12year@gmail.com> - 1:1.32.10-1
+- update to 1.32.10 release
+
 * Tue Aug 10 2021 Fernando Fernandez Mancera <ffmancera@riseup.net> - 1:1.32.8-1
 - update to 1.32.8 release
 
