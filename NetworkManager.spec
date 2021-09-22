@@ -5,9 +5,9 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.32.10
-%global real_version 1.32.10
-%global release_version 2
+%global rpm_version 1.32.12
+%global real_version 1.32.12
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -185,7 +185,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-Patch0001: 0001-fix-ipv4-address-order.patch
+# Patch0001: 0001-some.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1149,6 +1149,9 @@ fi
 
 
 %changelog
+* Wed Sep 22 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.12-1
+- update to 1.32.12 release
+
 * Thu Aug 19 2021 Thomas Haller <thaller@redhat.com> - 1:1.32.10-2
 - platform: fix capturing IPv4 addresses from platform for assuming after restart
 
