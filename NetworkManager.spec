@@ -716,6 +716,8 @@ Preferably use nmcli instead.
 %if %{with ppp}
 	-Dpppd_plugin_dir=%{_libdir}/pppd/%{ppp_version} \
 	-Dppp=true \
+%else
+	-Dppp=false \
 %endif
 %if %{with firewalld_zone}
 	-Dfirewalld_zone=true \
@@ -858,6 +860,8 @@ intltoolize --automake --copy --force
 %if %{with ppp}
 	--with-pppd-plugin-dir=%{_libdir}/pppd/%{ppp_version} \
 	--enable-ppp=yes \
+%else
+	--enable-ppp=no \
 %endif
 %if %{with firewalld_zone}
 	--enable-firewalld-zone \
