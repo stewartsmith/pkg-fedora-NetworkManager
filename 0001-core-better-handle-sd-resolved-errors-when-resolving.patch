@@ -1,0 +1,56 @@
+From 61239e69c698b1aff96a3510b6a2324316017693 Mon Sep 17 00:00:00 2001
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Thu, 28 Oct 2021 17:20:12 +0200
+Subject: [PATCH] core: better handle sd-resolved errors when resolving
+ hostnames
+
+If NM tries to resolve a link-local address, systemd-resolved returns
+error "org.freedesktop.resolve1.NoNameServers" because those addresses
+can only be resolved via other protocols like LLMNR or mDNS.
+
+Previously NM would fall back to spawning the helper, which would ask
+again to systemd-resolved via /etc/resolv.conf. In this way, a
+synthetic result (or one obtained not from DNS) would be returned.
+
+We must avoid non-DNS results. When systemd-resolved returns an error
+that is not a D-Bus one (as MethodNotFound) but is a
+"org.fd.resolve1.*" [1], we can assume that systemd-resolved is
+running properly and we shall never fall back to spawning the helper.
+
+[1] https://www.freedesktop.org/wiki/Software/systemd/resolved/#commonerrors
+
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/833
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/merge_requests/1006
+(cherry picked from commit d8186b1253a2e0fe88eb06bede17f4892b4270c1)
+(cherry picked from commit 77a2a53e8abf25b57fd9dc16ca6a81b6f609d6c1)
+---
+ src/core/devices/nm-device-utils.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/devices/nm-device-utils.c b/src/core/devices/nm-device-utils.c
+index f40ca570f6..75b803de4f 100644
+--- a/src/core/devices/nm-device-utils.c
++++ b/src/core/devices/nm-device-utils.c
+@@ -267,7 +267,18 @@ resolve_addr_resolved_cb(NMDnsSystemdResolved *                   resolved,
+         _LOG2D(info, "error resolving via systemd-resolved: %s", error->message);
+ 
+         dbus_error = g_dbus_error_get_remote_error(error);
+-        if (nm_streq0(dbus_error, "org.freedesktop.resolve1.DnsError.NXDOMAIN")) {
++        if (NM_STR_HAS_PREFIX(dbus_error, "org.freedesktop.resolve1.")) {
++            /* systemd-resolved is enabled but it couldn't resolve the
++             * address via DNS.  Don't fall back to spawning the helper,
++             * because the helper will possibly ask again to
++             * systemd-resolved (via /etc/resolv.conf), potentially using
++             * other protocols than DNS or returning synthetic results.
++             *
++             * Consider the error as the final indication that the address
++             * can't be resolved.
++             *
++             * See: https://www.freedesktop.org/wiki/Software/systemd/resolved/#commonerrors
++             */
+             resolve_addr_complete(info, NULL, g_error_copy(error));
+             return;
+         }
+-- 
+2.31.1
+

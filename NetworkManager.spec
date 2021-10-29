@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.32.12
 %global real_version 1.32.12
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -185,7 +185,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-# Patch0001: 0001-some.patch
+Patch0001: 0001-core-better-handle-sd-resolved-errors-when-resolving.patch
 
 Requires(post): systemd
 Requires(post): /usr/sbin/update-alternatives
@@ -1149,6 +1149,9 @@ fi
 
 
 %changelog
+* Fri Oct 29 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.12-2
+- better handle systemd-resolved errors when resolving hostnames
+
 * Wed Sep 22 2021 Beniamino Galvani <bgalvani@redhat.com> - 1:1.32.12-1
 - update to 1.32.12 release
 
