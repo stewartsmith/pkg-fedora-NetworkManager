@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.2
-%global release_version 0.2
+%global real_version 1.35.3
+%global release_version 0.3
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1155,6 +1155,9 @@ fi
 
 
 %changelog
+* Thu Dec 16 2021 Wen Liang <wenliang@redhat.com> - 1:1.36.0-0.3
+- update to an early 1.36 snapshot (1.35.3)
+
 * Thu Dec  2 2021 Wen Liang <wenliang@redhat.com> - 1:1.36.0-0.2
 - update to an early 1.36 snapshot (1.35.2)
 
