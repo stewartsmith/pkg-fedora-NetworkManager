@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.3
-%global release_version 0.3
+%global real_version 1.35.4
+%global release_version 0.4
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -32,7 +32,7 @@
 
 %global real_version_major %(printf '%s' '%{real_version}' | sed -n 's/^\\([1-9][0-9]*\\.[0-9][0-9]*\\)\\.[0-9][0-9]*$/\\1/p')
 
-%global systemd_units NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service nm-sudo.service
+%global systemd_units NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service nm-priv-helper.service
 
 %global systemd_units_cloud_setup nm-cloud-setup.service nm-cloud-setup.timer
 
@@ -185,7 +185,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-# Patch0001: 0001-some.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 %if 0%{?fedora} || 0%{?rhel} > 7
@@ -934,7 +934,7 @@ if [ $1 -eq 0 ]; then
 
     /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
 fi
-%systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service nm-sudo.service
+%systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service nm-priv-helper.service
 
 
 %if %{with nm_cloud_setup}
@@ -968,7 +968,7 @@ fi
 %files
 %{dbus_sys_dir}/org.freedesktop.NetworkManager.conf
 %{dbus_sys_dir}/nm-dispatcher.conf
-%{dbus_sys_dir}/nm-sudo.conf
+%{dbus_sys_dir}/nm-priv-helper.conf
 %{dbus_sys_dir}/nm-ifcfg-rh.conf
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
@@ -993,7 +993,7 @@ fi
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-initrd-generator
 %{_libexecdir}/nm-daemon-helper
-%{_libexecdir}/nm-sudo
+%{_libexecdir}/nm-priv-helper
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
 %{nmplugindir}/libnm-settings-plugin*.so
@@ -1017,7 +1017,7 @@ fi
 %dir %{_localstatedir}/lib/NetworkManager
 %dir %{_sysconfdir}/sysconfig/network-scripts
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
-%{_datadir}/dbus-1/system-services/org.freedesktop.nm.sudo.service
+%{_datadir}/dbus-1/system-services/org.freedesktop.nm-priv-helper.service
 %{_datadir}/polkit-1/actions/*.policy
 %{_prefix}/lib/udev/rules.d/*.rules
 %if %{with firewalld_zone}
@@ -1027,7 +1027,7 @@ fi
 %{systemd_dir}/NetworkManager.service
 %{systemd_dir}/NetworkManager-wait-online.service
 %{systemd_dir}/NetworkManager-dispatcher.service
-%{systemd_dir}/nm-sudo.service
+%{systemd_dir}/nm-priv-helper.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
 %doc NEWS AUTHORS README CONTRIBUTING.md TODO
@@ -1155,6 +1155,9 @@ fi
 
 
 %changelog
+* Thu Jan 13 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.4
+- update to an early 1.36 snapshot (1.35.4)
+
 * Thu Dec 16 2021 Wen Liang <wenliang@redhat.com> - 1:1.36.0-0.3
 - update to an early 1.36 snapshot (1.35.3)
 
