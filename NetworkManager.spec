@@ -173,7 +173,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}
+Release: %{release_version}%{?snap}%{?dist}.1
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: https://networkmanager.dev/
@@ -1155,6 +1155,9 @@ fi
 
 
 %changelog
+* Wed Jan 19 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.36.0-0.4.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Thu Jan 13 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.4
 - update to an early 1.36 snapshot (1.35.4)
 
