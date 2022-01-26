@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global rpm_version 1.36.0
 %global real_version 1.35.6
-%global release_version 0.6
+%global release_version 0.7
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -186,7 +186,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-#Patch1: 0001-some.patch
+Patch1: 0001-500vlans-revert.patch
 
 Requires(post): systemd
 %if 0%{?fedora} || 0%{?rhel} > 7
@@ -1183,6 +1183,9 @@ fi
 
 
 %changelog
+* Thu Jan 27 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.7
+- Revert rework of DHCP client that causes crash
+
 * Wed Jan 26 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.6
 - update to an early 1.36 snapshot (1.35.6)
 - Move ifup/ifdown scripts to new NetworkManager-initscripts-updown package
