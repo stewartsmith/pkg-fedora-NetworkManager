@@ -7,12 +7,13 @@
 %global epoch_version 1
 %global rpm_version 1.36.0
 %global real_version 1.35.4
-%global release_version 0.4
+%global release_version 0.6
 %global snapshot %{nil}
 %global git_sha %{nil}
 
-%global obsoletes_device_plugins 1:0.9.9.95-1
-%global obsoletes_ppp_plugin     1:1.5.3
+%global obsoletes_device_plugins     1:0.9.9.95-1
+%global obsoletes_ppp_plugin         1:1.5.3
+%global obsoletes_initscripts_updown 1:1.36.0-0.6
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global sysctl_dir %{_prefix}/lib/sysctl.d
@@ -173,7 +174,7 @@ Name: NetworkManager
 Summary: Network connection manager and user applications
 Epoch: %{epoch_version}
 Version: %{rpm_version}
-Release: %{release_version}%{?snap}%{?dist}.1
+Release: %{release_version}%{?snap}%{?dist}
 Group: System Environment/Base
 License: GPLv2+ and LGPLv2+
 URL: https://networkmanager.dev/
@@ -205,6 +206,10 @@ Requires: libndp >= %{libndp_version}
 Obsoletes: NetworkManager < %{obsoletes_device_plugins}
 Obsoletes: NetworkManager < %{obsoletes_ppp_plugin}
 Obsoletes: NetworkManager-wimax < 1.2
+%if 0%{?rhel} && 0%{?rhel} == 8
+Suggests: NetworkManager-initscripts-updown
+%endif
+Obsoletes: NetworkManager < %{obsoletes_initscripts_updown}
 
 %if 0%{?rhel} && 0%{?rhel} <= 7
 # Kept for RHEL to ensure that wired 802.1x works out of the box
@@ -552,6 +557,20 @@ This tool is still experimental.
 %endif
 
 
+%package initscripts-updown
+Summary: Legacy ifup/ifdown scripts for NetworkManager that replace initscripts (network-scripts)
+Group: System Environment/Base
+BuildArch: noarch
+Requires: NetworkManager
+Requires: /usr/bin/nmcli
+Obsoletes: NetworkManager < %{obsoletes_initscripts_updown}
+
+%description initscripts-updown
+Installs alternative ifup/ifdown scripts that talk to NetworkManager.
+This is only for backward compatibility with initscripts (network-scripts).
+Preferably use nmcli instead.
+
+
 %prep
 %autosetup -p1 -n NetworkManager-%{real_version}
 
@@ -865,7 +884,8 @@ mkdir -p %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
 cp valgrind.suppressions %{buildroot}%{_prefix}/src/debug/NetworkManager-%{real_version}
 %endif
 
-touch %{buildroot}%{_sbindir}/ifup %{buildroot}%{_sbindir}/ifdown
+touch %{buildroot}%{_sbindir}/ifup
+touch %{buildroot}%{_sbindir}/ifdown
 
 
 %check
@@ -908,7 +928,8 @@ fi
 
 %systemd_post %{systemd_units}
 
-%triggerin -- initscripts
+
+%post initscripts-updown
 if [ -f %{_sbindir}/ifup -a ! -L %{_sbindir}/ifup ]; then
     # initscripts package too old, won't let us set an alternative
     /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
@@ -931,10 +952,14 @@ if [ $1 -eq 0 ]; then
 
     # Don't kill networking entirely just on package remove
     #/bin/systemctl stop NetworkManager.service >/dev/null 2>&1 || :
-
-    /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
 fi
 %systemd_preun NetworkManager-wait-online.service NetworkManager-dispatcher.service nm-priv-helper.service
+
+
+%preun initscripts-updown
+if [ $1 -eq 0 ]; then
+    /usr/sbin/update-alternatives --remove ifup %{_libexecdir}/nm-ifup >/dev/null 2>&1 || :
+fi
 
 
 %if %{with nm_cloud_setup}
@@ -985,10 +1010,6 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
 %ghost %{_sysconfdir}/%{name}/VPN
 %{_bindir}/nm-online
-%{_libexecdir}/nm-ifup
-%ghost %attr(755, root, root) %{_sbindir}/ifup
-%{_libexecdir}/nm-ifdown
-%ghost %attr(755, root, root) %{_sbindir}/ifdown
 %{_libexecdir}/nm-dhcp-helper
 %{_libexecdir}/nm-dispatcher
 %{_libexecdir}/nm-initrd-generator
@@ -1154,7 +1175,18 @@ fi
 %endif
 
 
+%files initscripts-updown
+%{_libexecdir}/nm-ifup
+%ghost %attr(755, root, root) %{_sbindir}/ifup
+%{_libexecdir}/nm-ifdown
+%ghost %attr(755, root, root) %{_sbindir}/ifdown
+
+
 %changelog
+* Wed Jan 26 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.6
+- update to an early 1.36 snapshot (1.35.6)
+- Move ifup/ifdown scripts to new NetworkManager-initscripts-updown package
+
 * Wed Jan 19 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.36.0-0.4.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
