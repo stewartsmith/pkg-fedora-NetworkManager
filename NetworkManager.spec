@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.6
-%global release_version 0.7
+%global real_version 1.35.7
+%global release_version 0.8
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -186,7 +186,7 @@ Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
 
-Patch1: 0001-500vlans-revert.patch
+#Patch1: 0001-some.patch
 
 Requires(post): systemd
 %if 0%{?fedora} || 0%{?rhel} > 7
@@ -1183,6 +1183,9 @@ fi
 
 
 %changelog
+* Fri Jan 28 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.8
+- update to an early 1.36 snapshot (1.35.7)
+
 * Thu Jan 27 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.7
 - Revert rework of DHCP client that causes crash
 
