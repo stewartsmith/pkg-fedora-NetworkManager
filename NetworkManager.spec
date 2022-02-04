@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.7
-%global release_version 0.8
+%global real_version 1.35.90
+%global release_version 0.9
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1183,6 +1183,9 @@ fi
 
 
 %changelog
+* Fri Feb 04 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-0.9
+- Update to 1.36-rc1 (1.35.90) (release candidate)
+
 * Fri Jan 28 2022 Thomas Haller <thaller@redhat.com> - 1:1.36.0-0.8
 - update to an early 1.36 snapshot (1.35.7)
 
