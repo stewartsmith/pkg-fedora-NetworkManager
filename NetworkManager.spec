@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.91
-%global release_version 0.10
+%global real_version 1.35.92
+%global release_version 0.11
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1183,6 +1183,9 @@ fi
 
 
 %changelog
+* Sat Feb 19 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-0.11
+- Update to 1.36-rc3 (1.35.92) (release candidate)
+
 * Thu Feb 10 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-0.10
 - Update to 1.36-rc2 (1.35.91) (release candidate)
 
