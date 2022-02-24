@@ -6,8 +6,8 @@
 
 %global epoch_version 1
 %global rpm_version 1.36.0
-%global real_version 1.35.92
-%global release_version 0.11
+%global real_version 1.36.0
+%global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -697,8 +697,7 @@ Preferably use nmcli instead.
 	-Dresolvconf=no \
 	-Dnetconfig=no \
 	-Dconfig_dns_rc_manager_default=%{dns_rc_manager_default} \
-	-Dconfig_logging_backend_default=%{logging_backend_default} \
-	-Djson_validation=true
+	-Dconfig_logging_backend_default=%{logging_backend_default}
 
 %meson_build
 
@@ -1183,6 +1182,9 @@ fi
 
 
 %changelog
+* Thu Feb 24 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-1
+- Update to 1.36.0 release
+
 * Sat Feb 19 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-0.11
 - Update to 1.36-rc3 (1.35.92) (release candidate)
 
