@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.36.0
-%global real_version 1.36.0
+%global rpm_version 1.36.2
+%global real_version 1.36.2
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -14,6 +14,7 @@
 %global obsoletes_device_plugins     1:0.9.9.95-1
 %global obsoletes_ppp_plugin         1:1.5.3
 %global obsoletes_initscripts_updown 1:1.36.0-0.6
+%global obsoletes_ifcfg_rh           1:1.36.2-1
 
 %global systemd_dir %{_prefix}/lib/systemd/system
 %global sysctl_dir %{_prefix}/lib/sysctl.d
@@ -147,9 +148,15 @@
 %endif
 
 %if 0%{?rhel} > 8 || 0%{?fedora} > 32
-%global config_plugins_default keyfile,ifcfg-rh
+%global config_plugins_default_ifcfg_rh 0
 %else
-%global config_plugins_default ifcfg-rh
+%global config_plugins_default_ifcfg_rh 1
+%endif
+
+%if 0%{?rhel} > 9 || 0%{?fedora} > 35
+%global split_ifcfg_rh 1
+%else
+%global split_ifcfg_rh 0
 %endif
 
 %if 0%{?fedora}
@@ -210,6 +217,9 @@ Obsoletes: NetworkManager-wimax < 1.2
 Suggests: NetworkManager-initscripts-updown
 %endif
 Obsoletes: NetworkManager < %{obsoletes_initscripts_updown}
+%if 0%{?split_ifcfg_rh}
+Obsoletes: NetworkManager < %{obsoletes_ifcfg_rh}
+%endif
 
 %if 0%{?rhel} && 0%{?rhel} <= 7
 # Kept for RHEL to ensure that wired 802.1x works out of the box
@@ -519,6 +529,9 @@ deployments.
 %package dispatcher-routing-rules
 Summary: NetworkManager dispatcher file for advanced routing rules
 Group: System Environment/Base
+%if 0%{?split_ifcfg_rh}
+Requires: %{name}-initscripts-ifcfg-rh
+%endif
 BuildArch: noarch
 Provides: %{name}-config-routing-rules = %{epoch}:%{version}-%{release}
 Obsoletes: %{name}-config-routing-rules < 1:1.31.0
@@ -540,6 +553,19 @@ Requires: %{name}-libnm%{?_isa} = %{epoch}:%{version}-%{release}
 This adds a curses-based "TUI" (Text User Interface) to
 NetworkManager, to allow performing some of the operations supported
 by nm-connection-editor and nm-applet in a non-graphical environment.
+%endif
+
+
+%if 0%{?split_ifcfg_rh}
+%package initscripts-ifcfg-rh
+Summary: NetworkManager plugin for reading and writing connections in ifcfg-rh format
+Group: System Environment/Base
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Obsoletes: NetworkManager < %{obsoletes_ifcfg_rh}
+
+%description initscripts-ifcfg-rh
+Installs a plugin for reading and writing connection profiles using
+the Red Hat ifcfg format in /etc/sysconfig/network-scripts/.
 %endif
 
 
@@ -693,7 +719,9 @@ Preferably use nmcli instead.
 	-Dfirewalld_zone=false \
 %endif
 	-Ddist_version=%{version}-%{release} \
-	-Dconfig_plugins_default=%{config_plugins_default} \
+%if %{?config_plugins_default_ifcfg_rh}
+	-Dconfig_plugins_default=ifcfg-rh \
+%endif
 	-Dresolvconf=no \
 	-Dnetconfig=no \
 	-Dconfig_dns_rc_manager_default=%{dns_rc_manager_default} \
@@ -993,7 +1021,9 @@ fi
 %{dbus_sys_dir}/org.freedesktop.NetworkManager.conf
 %{dbus_sys_dir}/nm-dispatcher.conf
 %{dbus_sys_dir}/nm-priv-helper.conf
+%if 0%{?split_ifcfg_rh} == 0
 %{dbus_sys_dir}/nm-ifcfg-rh.conf
+%endif
 %{_sbindir}/%{name}
 %{_bindir}/nmcli
 %{_datadir}/bash-completion/completions/nmcli
@@ -1016,7 +1046,9 @@ fi
 %{_libexecdir}/nm-priv-helper
 %dir %{_libdir}/%{name}
 %dir %{nmplugindir}
-%{nmplugindir}/libnm-settings-plugin*.so
+%if 0%{?split_ifcfg_rh} == 0
+%{nmplugindir}/libnm-settings-plugin-ifcfg-rh.so
+%endif
 %if %{with nmtui}
 %exclude %{_mandir}/man1/nmtui*
 %endif
@@ -1035,7 +1067,9 @@ fi
 %{_mandir}/man8/NetworkManager.8.gz
 %{_mandir}/man8/NetworkManager-dispatcher.8.gz
 %dir %{_localstatedir}/lib/NetworkManager
+%if 0%{?split_ifcfg_rh} == 0
 %dir %{_sysconfdir}/sysconfig/network-scripts
+%endif
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_priv_helper.service
 %{_datadir}/polkit-1/actions/*.policy
@@ -1163,6 +1197,14 @@ fi
 %endif
 
 
+%if 0%{?split_ifcfg_rh}
+%files initscripts-ifcfg-rh
+%dir %{_sysconfdir}/sysconfig/network-scripts
+%{nmplugindir}/libnm-settings-plugin-ifcfg-rh.so
+%{dbus_sys_dir}/nm-ifcfg-rh.conf
+%endif
+
+
 %if %{with nm_cloud_setup}
 %files cloud-setup
 %{_libexecdir}/nm-cloud-setup
@@ -1182,6 +1224,10 @@ fi
 
 
 %changelog
+* Mon Mar  7 2022 Beniamino Galvani <bgalvani@redhat.com> - 1:1.36.2-1
+- Update to 1.36.2 release
+- Split ifcfg-rh settings plugin into subpackage NetworkManager-initscripts-ifcfg-rh
+
 * Thu Feb 24 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.36.0-1
 - Update to 1.36.0 release
 
