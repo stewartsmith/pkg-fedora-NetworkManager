@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.36.2
-%global real_version 1.36.2
+%global rpm_version 1.36.4
+%global real_version 1.36.4
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -1226,6 +1226,9 @@ fi
 
 
 %changelog
+* Tue Mar 22 2022 Beniamino Galvani <bgalvani@redhat.com> - 1:1.36.4-1
+- Update to 1.36.4 release
+
 * Mon Mar  7 2022 Beniamino Galvani <bgalvani@redhat.com> - 1:1.36.2-1
 - Update to 1.36.2 release
 - Split ifcfg-rh settings plugin into subpackage NetworkManager-initscripts-ifcfg-rh
