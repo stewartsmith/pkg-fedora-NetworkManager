@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.36.4
-%global real_version 1.36.4
+%global rpm_version 1.37.3
+%global real_version 1.37.3
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -16,8 +16,6 @@
 %global obsoletes_initscripts_updown 1:1.36.0-0.6
 %global obsoletes_ifcfg_rh           1:1.36.2-1
 
-%global systemd_dir %{_prefix}/lib/systemd/system
-%global sysctl_dir %{_prefix}/lib/sysctl.d
 %global nmlibdir %{_prefix}/lib/%{name}
 %global nmplugindir %{_libdir}/%{name}/%{version}-%{release}
 
@@ -702,7 +700,6 @@ Preferably use nmcli instead.
 %endif
 	-Dsession_tracking=systemd \
 	-Dsuspend_resume=systemd \
-	-Dsystemdsystemunitdir=%{systemd_dir} \
 	-Dsystem_ca_path=/etc/pki/tls/cert.pem \
 	-Ddbus_conf_dir=%{dbus_sys_dir} \
 	-Dtests=yes \
@@ -840,7 +837,6 @@ intltoolize --automake --copy --force
 	--with-ebpf=%{ebpf_enabled} \
 	--with-session-tracking=systemd \
 	--with-suspend-resume=systemd \
-	--with-systemdsystemunitdir=%{systemd_dir} \
 	--with-system-ca-path=/etc/pki/tls/cert.pem \
 	--with-dbus-sys-dir=%{dbus_sys_dir} \
 	--with-tests=yes \
@@ -935,7 +931,7 @@ make -k %{?_smp_mflags} check || :
 
 
 %pre
-if [ -f "%{systemd_dir}/network-online.target.wants/NetworkManager-wait-online.service" ] ; then
+if [ -f "%{_unitdir}/network-online.target.wants/NetworkManager-wait-online.service" ] ; then
     # older versions used to install this file, effectively always enabling
     # NetworkManager-wait-online.service. We no longer do that and rely on
     # preset.
@@ -1068,6 +1064,7 @@ fi
 %{_mandir}/man8/nm-initrd-generator.8.gz
 %{_mandir}/man8/NetworkManager.8.gz
 %{_mandir}/man8/NetworkManager-dispatcher.8.gz
+%{_mandir}/man8/NetworkManager-wait-online.service.8.gz
 %dir %{_localstatedir}/lib/NetworkManager
 %if 0%{?split_ifcfg_rh} == 0
 %dir %{_sysconfdir}/sysconfig/network-scripts
@@ -1080,13 +1077,13 @@ fi
 %{_prefix}/lib/firewalld/zones/nm-shared.xml
 %endif
 # systemd stuff
-%{systemd_dir}/NetworkManager.service
-%{systemd_dir}/NetworkManager-wait-online.service
-%{systemd_dir}/NetworkManager-dispatcher.service
-%{systemd_dir}/nm-priv-helper.service
+%{_unitdir}/NetworkManager.service
+%{_unitdir}/NetworkManager-wait-online.service
+%{_unitdir}/NetworkManager-dispatcher.service
+%{_unitdir}/nm-priv-helper.service
 %dir %{_datadir}/doc/NetworkManager/examples
 %{_datadir}/doc/NetworkManager/examples/server.conf
-%doc NEWS AUTHORS README CONTRIBUTING.md TODO
+%doc NEWS AUTHORS README.md CONTRIBUTING.md
 %license COPYING
 %license COPYING.LGPL
 %license COPYING.GFDL
@@ -1128,7 +1125,7 @@ fi
 %if %{with ovs}
 %files ovs
 %{nmplugindir}/libnm-device-plugin-ovs.so
-%{systemd_dir}/NetworkManager.service.d/NetworkManager-ovs.conf
+%{_unitdir}/NetworkManager.service.d/NetworkManager-ovs.conf
 %{_mandir}/man7/nm-openvswitch.7*
 %endif
 
@@ -1210,8 +1207,8 @@ fi
 %if %{with nm_cloud_setup}
 %files cloud-setup
 %{_libexecdir}/nm-cloud-setup
-%{systemd_dir}/nm-cloud-setup.service
-%{systemd_dir}/nm-cloud-setup.timer
+%{_unitdir}/nm-cloud-setup.service
+%{_unitdir}/nm-cloud-setup.timer
 %{nmlibdir}/dispatcher.d/90-nm-cloud-setup.sh
 %{nmlibdir}/dispatcher.d/no-wait.d/90-nm-cloud-setup.sh
 %{_mandir}/man8/nm-cloud-setup.8*
@@ -1226,6 +1223,9 @@ fi
 
 
 %changelog
+* Thu Mar 24 2022 Lubomir Rintel <lkundrak@v3.sk> - 1:1.37.3-1
+- Upgrade to 1.37.3 release (development)
+
 * Tue Mar 22 2022 Beniamino Galvani <bgalvani@redhat.com> - 1:1.36.4-1
 - Update to 1.36.4 release
 
