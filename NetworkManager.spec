@@ -5,8 +5,8 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global rpm_version 1.37.90
-%global real_version 1.37.90
+%global real_version 1.37.91
+%global rpm_version %{real_version}
 %global release_version 1
 %global snapshot %{nil}
 %global git_sha %{nil}
@@ -1223,6 +1223,9 @@ fi
 
 
 %changelog
+* Thu Apr 14 2022 Thomas Haller <thaller@redhat.com> - 1:1.39.91-1
+- Upgrade to 1.38-rc2 (1.37.91) (release candidate)
+
 * Wed Apr 6 2022 Ana Cabral <acabral@redhat.com> - 1:1.37.90-1
 - Upgrade to 1.38-rc1 (1.37.90) (release candidate)
 
