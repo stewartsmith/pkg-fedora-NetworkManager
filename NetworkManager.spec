@@ -5,7 +5,7 @@
 %global glib2_version %(pkg-config --modversion glib-2.0 2>/dev/null || echo bad)
 
 %global epoch_version 1
-%global real_version 1.37.92
+%global real_version 1.38.0
 %global rpm_version %{real_version}
 %global release_version 1
 %global snapshot %{nil}
@@ -1223,6 +1223,9 @@ fi
 
 
 %changelog
+* Fri May 13 2022 Thomas Haller <thaller@redhat.com> - 1:1.38.0-1
+- Upgrade to 1.38.0 release
+
 * Wed May  4 2022 Thomas Haller <thaller@redhat.com> - 1:1.37.92-1
 - Upgrade to 1.38-rc3 (1.37.92) (release candidate)
 - core: change order in which IPv6 addresses are configured.
