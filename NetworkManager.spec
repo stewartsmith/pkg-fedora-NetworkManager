@@ -157,6 +157,12 @@
 %global split_ifcfg_rh 0
 %endif
 
+%if 0%{?rhel} > 8 || 0%{?fedora} > 35
+%global ifcfg_warning 1
+%else
+%global ifcfg_warning 0
+%endif
+
 %if 0%{?fedora}
 # Although eBPF would be available on Fedora's kernel, it seems
 # we often get SELinux denials (rh#1651654). But even aside them,
@@ -190,6 +196,7 @@ Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
 Source6: 70-nm-connectivity.conf
+Source7: readme-ifcfg-rh.txt
 
 #Patch1: 0001-some.patch
 
@@ -891,6 +898,10 @@ mkdir -p %{buildroot}%{_sysctldir}
 cp %{SOURCE6} %{buildroot}%{_sysctldir}
 %endif
 
+%if 0%{?ifcfg_warning}
+cp %{SOURCE7} %{buildroot}%{_sysconfdir}/sysconfig/network-scripts
+%endif
+
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/
 ln -s ../no-wait.d/10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/pre-up.d/
 ln -s ../10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/no-wait.d/
@@ -1066,15 +1077,16 @@ fi
 %{_mandir}/man8/NetworkManager-dispatcher.8.gz
 %{_mandir}/man8/NetworkManager-wait-online.service.8.gz
 %dir %{_localstatedir}/lib/NetworkManager
-%if 0%{?split_ifcfg_rh} == 0
 %dir %{_sysconfdir}/sysconfig/network-scripts
-%endif
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_dispatcher.service
 %{_datadir}/dbus-1/system-services/org.freedesktop.nm_priv_helper.service
 %{_datadir}/polkit-1/actions/*.policy
 %{_prefix}/lib/udev/rules.d/*.rules
 %if %{with firewalld_zone}
 %{_prefix}/lib/firewalld/zones/nm-shared.xml
+%endif
+%if 0%{?ifcfg_warning}
+%{_sysconfdir}/sysconfig/network-scripts/readme-ifcfg-rh.txt
 %endif
 # systemd stuff
 %{_unitdir}/NetworkManager.service
@@ -1198,7 +1210,6 @@ fi
 
 %if 0%{?split_ifcfg_rh}
 %files initscripts-ifcfg-rh
-%dir %{_sysconfdir}/sysconfig/network-scripts
 %{nmplugindir}/libnm-settings-plugin-ifcfg-rh.so
 %{dbus_sys_dir}/nm-ifcfg-rh.conf
 %endif
