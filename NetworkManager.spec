@@ -7,7 +7,7 @@
 %global epoch_version 1
 %global real_version 1.38.0
 %global rpm_version %{real_version}
-%global release_version 1
+%global release_version 2
 %global snapshot %{nil}
 %global git_sha %{nil}
 
@@ -1234,6 +1234,9 @@ fi
 
 
 %changelog
+* Mon May 30 2022 Ana Cabral <acabral@redhat.com> - 1:1.38.0-2
+- rpm: include an informational file in ifcfg files directory
+
 * Fri May 13 2022 Thomas Haller <thaller@redhat.com> - 1:1.38.0-1
 - Upgrade to 1.38.0 release
 
